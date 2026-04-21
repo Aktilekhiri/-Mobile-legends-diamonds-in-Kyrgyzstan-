@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MLBBDiamond.kg — Пополнение алмазов Mobile Legends в Кыргызстане</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:       #0B1D3A;
+  --navy-light: #112548;
+  --blue:       #2E7DED;
+  --blue-light: #4d93f5;
+  --blue-dark:  #1a5fb8;
+  --gold:       #FFBA08;
+  --gold-dark:  #d49a00;
+  --gold-light: #ffd24d;
+  --green:      #25D366;
+  --green-dark: #1da851;
+  --white:      #f0f4ff;
+  --muted:      #8ba3cc;
+  --card:       rgba(17,37,72,0.9);
+  --border:     rgba(46,125,237,0.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;overflow-x:hidden}
+
+.bg-mesh{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 10% 20%,rgba(46,125,237,.14) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 80%,rgba(255,186,8,.08) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 70% at 50% 50%,rgba(11,29,58,.97) 0%,transparent 100%)}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.025;
+  background-image:linear-gradient(var(--blue) 1px,transparent 1px),linear-gradient(90deg,var(--blue) 1px,transparent 1px);
+  background-size:40px 40px}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 5%;height:68px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(11,29,58,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:9px;font-family:'Rajdhani',sans-serif;
+  font-size:1.3rem;font-weight:700;color:var(--white);text-decoration:none;letter-spacing:.03em}
+.nav-logo .di{color:var(--gold);font-size:1.4rem}
+.nav-logo .hl{color:var(--gold)}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.88rem;font-weight:600;
+  padding:6px 13px;border-radius:8px;transition:all .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--white);background:rgba(46,125,237,.15)}
+.user-menu{display:flex;align-items:center;gap:8px;margin-left:8px}
+.user-name{color:var(--gold);font-weight:700;font-size:.85rem;background:rgba(255,186,8,.1);padding:4px 10px;border-radius:40px;cursor:pointer}
+.user-name:hover{background:rgba(255,186,8,.2)}
+.lang-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.lang-toggle button{background:none;border:none;color:var(--muted);font-size:.76rem;font-weight:700;
+  cursor:pointer;padding:5px 11px;transition:all .2s;font-family:'Nunito',sans-serif}
+.lang-toggle button.active{background:var(--blue);color:#fff}
+.nav-cta{background:var(--gold)!important;color:var(--navy)!important;font-weight:800!important;
+  padding:7px 16px!important;border-radius:9px!important;font-size:.84rem!important;
+  box-shadow:0 0 16px rgba(255,186,8,.3)!important}
+.nav-cta:hover{background:var(--gold-light)!important;transform:translateY(-1px)!important}
+.online-dot{display:inline-flex;align-items:center;gap:5px;background:rgba(37,211,102,.1);
+  border:1px solid rgba(37,211,102,.28);border-radius:100px;padding:4px 11px;
+  font-size:.73rem;font-weight:700;color:#25d366;margin-left:2px}
+.online-dot::before{content:'';width:6px;height:6px;border-radius:50%;background:#25d366;
+  animation:blink 1.7s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none}
+.hamburger span{width:22px;height:2px;background:var(--white);border-radius:2px;display:block}
+.mobile-menu{display:none;position:fixed;top:68px;left:0;right:0;z-index:99;
+  background:rgba(11,29,58,.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+  padding:16px 5% 20px;flex-direction:column;gap:4px}
+.mobile-menu.open{display:flex}
+.mobile-menu a{color:var(--white);text-decoration:none;font-weight:600;padding:12px 0;
+  border-bottom:1px solid var(--border);font-size:1rem;display:flex;align-items:center;gap:8px}
+
+.page{display:none;position:relative;z-index:1;padding-top:68px;min-height:100vh}
+.page.active{display:block}
+
+.urgency-bar{background:linear-gradient(90deg,rgba(46,125,237,.14),rgba(255,186,8,.1),rgba(46,125,237,.14));
+  border-bottom:1px solid rgba(255,186,8,.18);padding:10px 5%;
+  display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;
+  font-size:.79rem;font-weight:700;position:relative;z-index:1}
+.urgency-bar span{display:inline-flex;align-items:center;gap:5px;color:var(--gold)}
+.urgency-bar .w{color:rgba(240,244,255,.75)}
+
+.hero{min-height:calc(100vh - 108px);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:56px 5% 40px}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(255,186,8,.11);
+  border:1px solid rgba(255,186,8,.3);color:var(--gold);font-size:.76rem;font-weight:800;
+  padding:6px 16px;border-radius:100px;margin-bottom:22px;letter-spacing:.07em;text-transform:uppercase}
+.hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(2rem,5.5vw,3.8rem);font-weight:700;
+  line-height:1.14;letter-spacing:.02em;max-width:800px;margin-bottom:16px}
+.hero h1 em{color:var(--gold);font-style:normal}
+.hero h1 .bl{color:var(--blue-light)}
+.hero-sub{font-size:clamp(.95rem,2vw,1.2rem);color:var(--muted);margin-bottom:30px;
+  font-weight:600;letter-spacing:.07em;text-transform:uppercase}
+.hero-sub span{color:var(--gold)}
+.hero-cta-group{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
+.hero-timer{margin-bottom:44px;font-size:.82rem;color:var(--muted);font-weight:600}
+.hero-timer strong{color:#34d399}
+.hero-stats{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.stat-pill{background:var(--card);border:1px solid var(--border);border-radius:13px;
+  padding:13px 20px;text-align:center;min-width:110px;backdrop-filter:blur(10px)}
+.stat-pill .val{font-family:'Rajdhani',sans-serif;font-size:1.7rem;font-weight:700;color:var(--gold);line-height:1}
+.stat-pill .lbl{font-size:.72rem;color:var(--muted);margin-top:4px;font-weight:600}
+
+.btn-primary{background:var(--gold);color:var(--navy);font-family:'Rajdhani',sans-serif;
+  font-size:1.1rem;font-weight:700;padding:15px 38px;border-radius:13px;border:none;cursor:pointer;
+  letter-spacing:.07em;text-transform:uppercase;transition:all .22s;
+  box-shadow:0 0 24px rgba(255,186,8,.3),0 4px 18px rgba(255,186,8,.25);
+  display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--gold-light);transform:translateY(-2px);
+  box-shadow:0 0 36px rgba(255,186,8,.55),0 8px 28px rgba(255,186,8,.3)}
+.btn-wa{background:var(--green);color:#fff;font-family:'Rajdhani',sans-serif;font-size:1.05rem;
+  font-weight:700;padding:15px 32px;border-radius:13px;border:none;cursor:pointer;
+  letter-spacing:.06em;text-transform:uppercase;transition:all .22s;
+  box-shadow:0 0 22px rgba(37,211,102,.28);display:inline-flex;align-items:center;gap:8px;
+  text-decoration:none}
+.btn-wa:hover{background:var(--green-dark);transform:translateY(-2px);box-shadow:0 0 34px rgba(37,211,102,.45)}
+.btn-secondary{background:transparent;color:var(--white);font-family:'Rajdhani',sans-serif;
+  font-size:1.05rem;font-weight:700;padding:15px 32px;border-radius:13px;
+  border:1.5px solid rgba(46,125,237,.5);cursor:pointer;letter-spacing:.06em;text-transform:uppercase;
+  transition:all .22s;display:inline-flex;align-items:center;gap:8px}
+.btn-secondary:hover{border-color:var(--blue);background:rgba(46,125,237,.12)}
+.btn-tg{background:#0088cc;color:#fff;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;
+  padding:13px 26px;border-radius:12px;border:none;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;
+  transition:all .22s;display:inline-flex;align-items:center;gap:7px;
+  box-shadow:0 4px 16px rgba(0,136,204,.25);text-decoration:none}
+.btn-tg:hover{background:#0099db;transform:translateY(-2px)}
+.btn-full{width:100%;justify-content:center}
+
+section{padding:64px 5%;position:relative}
+.sec-label{font-size:.7rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--blue-light);margin-bottom:8px}
+.sec-divider{width:44px;height:3px;background:var(--gold);border-radius:2px;margin-bottom:14px}
+.sec-title{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,3.5vw,2.45rem);font-weight:700;margin-bottom:10px;line-height:1.2}
+.sec-title em{color:var(--gold);font-style:normal}
+.sec-sub{color:var(--muted);font-size:.93rem;max-width:500px;line-height:1.65;margin-bottom:40px}
+
+.trust-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.trust-card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:24px 20px;backdrop-filter:blur(10px);transition:all .25s}
+.trust-card:hover{transform:translateY(-3px);border-color:rgba(255,186,8,.28);
+  box-shadow:0 8px 32px rgba(255,186,8,.09)}
+.trust-icon{font-size:1.9rem;line-height:1}
+.trust-card h3{font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:700}
+.trust-card p{color:var(--muted);font-size:.86rem;line-height:1.6}
+.trust-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(52,211,153,.11);
+  border:1px solid rgba(52,211,153,.24);color:#34d399;font-size:.7rem;font-weight:800;
+  padding:3px 10px;border-radius:100px;width:fit-content}
+
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.feature-card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:24px 20px;transition:all .25s;backdrop-filter:blur(10px);position:relative;overflow:hidden}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--blue),transparent);opacity:0;transition:opacity .3s}
+.feature-card:hover{border-color:rgba(46,125,237,.38);transform:translateY(-3px);
+  box-shadow:0 10px 32px rgba(0,0,0,.25)}
+.feature-card:hover::before{opacity:1}
+.ficon{width:48px;height:48px;border-radius:11px;display:flex;align-items:center;
+  justify-content:center;font-size:1.45rem;margin-bottom:13px}
+.ficon.g{background:rgba(255,186,8,.12)}
+.ficon.b{background:rgba(46,125,237,.14)}
+.ficon.gr{background:rgba(52,211,153,.12)}
+.feature-card h3{font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:700;margin-bottom:7px}
+.feature-card p{color:var(--muted);font-size:.86rem;line-height:1.6}
+
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:14px}
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:24px 16px;text-align:center;transition:all .25s;backdrop-filter:blur(10px)}
+.step-card:hover{border-color:rgba(255,186,8,.3);transform:translateY(-3px)}
+.step-num{width:48px;height:48px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;
+  font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 13px;
+  box-shadow:0 4px 14px rgba(46,125,237,.38)}
+.step-card h3{font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;margin-bottom:6px}
+.step-card p{color:var(--muted);font-size:.84rem;line-height:1.6}
+
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.contact-card{border-radius:20px;padding:30px 24px;text-align:center;backdrop-filter:blur(12px)}
+.contact-card.wa{background:linear-gradient(135deg,rgba(37,211,102,.13),rgba(11,29,58,.85));
+  border:1px solid rgba(37,211,102,.26)}
+.contact-card.tg{background:linear-gradient(135deg,rgba(0,136,204,.13),rgba(11,29,58,.85));
+  border:1px solid rgba(0,136,204,.24)}
+.contact-icon{font-size:2.8rem;margin-bottom:12px}
+.contact-card h3{font-family:'Rajdhani',sans-serif;font-size:1.35rem;font-weight:700;margin-bottom:8px}
+.contact-card p{color:var(--muted);font-size:.88rem;margin-bottom:18px;line-height:1.6}
+.resp-time{display:inline-flex;align-items:center;gap:5px;background:rgba(255,186,8,.1);
+  border:1px solid rgba(255,186,8,.24);color:var(--gold);font-size:.73rem;font-weight:800;
+  padding:4px 13px;border-radius:100px;margin-bottom:16px}
+
+.topup-layout{display:grid;grid-template-columns:1fr 1.8fr;gap:26px;
+  max-width:1060px;margin:32px auto 0;padding:0 5% 52px}
+.form-card,.packages-card{background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:26px;backdrop-filter:blur(14px)}
+.card-title{font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;
+  margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.card-title .ico{color:var(--gold)}
+label{display:block;font-size:.79rem;font-weight:800;color:var(--muted);
+  margin-bottom:6px;letter-spacing:.06em;text-transform:uppercase}
+.input-field{width:100%;background:rgba(11,29,58,.75);border:1.5px solid var(--border);
+  border-radius:10px;color:var(--white);font-family:'Nunito',sans-serif;font-size:1rem;
+  padding:13px 16px;outline:none;transition:border-color .2s,box-shadow .2s;margin-bottom:14px}
+.input-field:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(46,125,237,.11)}
+.input-field::placeholder{color:rgba(139,163,204,.4)}
+.input-hint{font-size:.76rem;color:var(--muted);margin-top:-9px;margin-bottom:14px;line-height:1.5}
+.id-guide{background:rgba(255,186,8,.06);border:1px solid rgba(255,186,8,.19);
+  border-radius:12px;padding:13px 15px;margin-top:4px}
+.id-guide .gt{font-size:.77rem;color:var(--gold);font-weight:800;margin-bottom:5px}
+.id-guide .gb{font-size:.8rem;color:var(--muted);line-height:1.7}
+.id-guide .gb strong{color:var(--white)}
+.packages-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pkg-card{background:rgba(11,29,58,.75);border:2px solid var(--border);border-radius:13px;
+  padding:14px 9px;text-align:center;cursor:pointer;transition:all .22s;position:relative}
+.pkg-card:hover{border-color:rgba(46,125,237,.5);transform:translateY(-2px);
+  box-shadow:0 6px 18px rgba(46,125,237,.14)}
+.pkg-card.selected{border-color:var(--gold);background:rgba(255,186,8,.07);
+  box-shadow:0 0 18px rgba(255,186,8,.16)}
+.pkg-card.popular::before{content:'ХИТ';position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+  background:var(--gold);color:var(--navy);font-size:.61rem;font-weight:900;
+  padding:2px 9px;border-radius:100px;letter-spacing:.06em;white-space:nowrap}
+.pkg-diamond{font-size:1.3rem;margin-bottom:3px}
+.pkg-amount{font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:2px}
+.pkg-amount span{color:var(--gold)}
+.pkg-price{font-size:.76rem;color:var(--muted);font-weight:600}
+.pkg-price strong{color:var(--white)}
+.pkg-bonus{font-size:.67rem;color:#34d399;margin-top:3px;font-weight:800}
+.sel-info{display:none;background:rgba(255,186,8,.07);border:1px solid rgba(255,186,8,.21);
+  border-radius:11px;padding:12px 15px;margin-bottom:13px}
+.sel-info .sil{font-size:.74rem;color:var(--muted);margin-bottom:4px}
+.sel-info .sir{display:flex;justify-content:space-between;align-items:center}
+
+.payment-layout{max-width:720px;margin:32px auto 0;padding:0 5% 52px}
+.order-summary,.payment-methods,.payment-confirm{background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:24px;margin-bottom:16px;backdrop-filter:blur(14px)}
+.order-row{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--border);font-size:.91rem}
+.order-row:last-child{border-bottom:none;font-weight:800;font-size:1.03rem}
+.order-row .lbl{color:var(--muted)}
+.order-row .val{font-weight:700}
+.order-row .val.gld{color:var(--gold)}
+.pay-steps{background:rgba(46,125,237,.06);border:1px solid rgba(46,125,237,.18);
+  border-radius:15px;padding:18px;margin:16px 0}
+.ps-title{font-size:.76rem;font-weight:800;color:var(--blue-light);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:13px}
+.ps-row{display:flex;gap:11px;margin-bottom:11px;align-items:flex-start}
+.ps-row:last-child{margin-bottom:0}
+.ps-n{width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;
+  font-family:'Rajdhani',sans-serif;font-size:.88rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.ps-t{font-size:.86rem;color:var(--muted);line-height:1.55}
+.ps-t strong{color:var(--white)}
+.wa-remind{background:linear-gradient(135deg,rgba(37,211,102,.11),rgba(11,29,58,.85));
+  border:1px solid rgba(37,211,102,.26);border-radius:15px;padding:18px;text-align:center;margin:16px 0}
+.wa-remind p{font-size:.87rem;color:var(--muted);margin-bottom:13px;line-height:1.6}
+.wa-remind strong{color:#25d366}
+.method-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:13px}
+.method-card{border:2px solid var(--border);border-radius:13px;padding:12px 8px;
+  text-align:center;cursor:pointer;transition:all .22s}
+.method-card:hover{border-color:rgba(46,125,237,.38);transform:translateY(-2px)}
+.method-card.selected{border-color:var(--blue);background:rgba(46,125,237,.07);
+  box-shadow:0 0 14px rgba(46,125,237,.16)}
+.method-logo{font-size:1.6rem;margin-bottom:5px}
+.method-name{font-weight:800;font-size:.85rem}
+.method-sub{color:var(--muted);font-size:.65rem;margin-top:2px}
+.method-note{font-size:.8rem;color:var(--muted);margin-bottom:16px;line-height:1.6;
+  background:rgba(46,125,237,.06);border:1px solid var(--border);border-radius:10px;padding:11px 14px}
+.qr-area{text-align:center;margin:15px 0;padding:10px;background:rgba(255,255,255,.1);border-radius:12px}
+.qr-area img{max-width:160px;border-radius:8px;background:#fff;padding:5px}
+.phone-row{display:flex;gap:8px;align-items:center;margin-bottom:14px}
+.phone-pfx{background:rgba(11,29,58,.75);border:1.5px solid var(--border);border-radius:10px;
+  padding:13px 13px;white-space:nowrap;font-weight:700;color:var(--muted)}
+.success-box{display:none;text-align:center;padding:26px 0}
+.success-box.show{display:block}
+.suc-icon{font-size:3.4rem;margin-bottom:11px;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.5);opacity:0}80%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+.success-box h3{font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;
+  margin-bottom:8px;color:var(--gold)}
+.success-box p{color:var(--muted);font-size:.9rem;line-height:1.6}
+
+.support-layout{max-width:820px;margin:32px auto 0;padding:0 5% 52px}
+.tg-wa-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:26px}
+.sc{border-radius:20px;padding:28px 22px;text-align:center;backdrop-filter:blur(12px)}
+.sc.wa{background:linear-gradient(135deg,rgba(37,211,102,.13),rgba(11,29,58,.85));
+  border:1px solid rgba(37,211,102,.25)}
+.sc.tg{background:linear-gradient(135deg,rgba(0,136,204,.13),rgba(11,29,58,.85));
+  border:1px solid rgba(0,136,204,.23)}
+.sc .si{font-size:2.8rem;margin-bottom:11px}
+.sc h3{font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:7px}
+.sc p{color:var(--muted);font-size:.87rem;margin-bottom:16px}
+.faq-list{display:flex;flex-direction:column;gap:9px}
+.faq-item{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;backdrop-filter:blur(8px)}
+.faq-q{padding:16px 19px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;
+  align-items:center;transition:color .2s;user-select:none;font-size:.93rem}
+.faq-q:hover{color:var(--gold)}
+.faq-q .arr{color:var(--blue);transition:transform .3s;font-size:.76rem;flex-shrink:0;margin-left:8px}
+.faq-q.open .arr{transform:rotate(180deg)}
+.faq-a{display:none;padding:0 19px 15px;color:var(--muted);font-size:.87rem;line-height:1.65;
+  border-top:1px solid var(--border);padding-top:13px}
+.faq-a.open{display:block}
+
+.coming-soon{background:linear-gradient(135deg,rgba(46,125,237,.09),rgba(255,186,8,.06));
+  border:1.5px dashed rgba(255,186,8,.28);border-radius:20px;padding:34px;text-align:center;
+  position:relative;overflow:hidden}
+.coming-soon::after{content:'СКОРО';position:absolute;top:14px;right:18px;
+  background:rgba(255,186,8,.14);border:1px solid rgba(255,186,8,.28);color:var(--gold);
+  font-size:.67rem;font-weight:900;padding:3px 11px;border-radius:100px;letter-spacing:.1em}
+.coming-soon .csi{font-size:2.8rem;margin-bottom:13px}
+.coming-soon h3{font-family:'Rajdhani',sans-serif;font-size:1.45rem;font-weight:700;
+  margin-bottom:9px;color:var(--gold)}
+.coming-soon p{color:var(--muted);font-size:.9rem;line-height:1.6;max-width:360px;margin:0 auto 20px}
+
+.page-header{background:linear-gradient(180deg,rgba(46,125,237,.07) 0%,transparent 100%);
+  border-bottom:1px solid var(--border);padding:34px 5% 26px;position:relative;z-index:1}
+.page-header h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.4rem,3vw,2rem);font-weight:700}
+.page-header p{color:var(--muted);margin-top:5px;font-size:.91rem}
+.breadcrumb{font-size:.74rem;color:var(--muted);margin-bottom:8px}
+.breadcrumb span{color:var(--blue-light)}
+.disclaimer{background:rgba(255,186,8,.06);border:1px solid rgba(255,186,8,.19);
+  border-radius:10px;padding:10px 15px;font-size:.75rem;color:rgba(255,186,8,.72);
+  text-align:center;margin:0 5% 13px;position:relative;z-index:1}
+
+footer{background:rgba(5,12,24,.96);border-top:1px solid var(--border);
+  padding:38px 5% 22px;position:relative;z-index:1;
+  display:grid;grid-template-columns:1fr auto;gap:22px;align-items:start}
+.footer-brand .nav-logo{margin-bottom:9px}
+.footer-brand p{color:var(--muted);font-size:.82rem;line-height:1.65;max-width:300px}
+.footer-links{display:flex;flex-direction:column;gap:7px;text-align:right}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:.83rem;transition:color .2s}
+.footer-links a:hover{color:var(--white)}
+.footer-bottom{text-align:center;margin-top:24px;padding-top:15px;
+  border-top:1px solid var(--border);color:var(--muted);font-size:.74rem;
+  grid-column:1/-1;line-height:1.7}
+
+.float-wa{position:fixed;bottom:26px;right:22px;z-index:200;
+  width:56px;height:56px;border-radius:50%;background:var(--green);
+  display:flex;align-items:center;justify-content:center;font-size:1.55rem;
+  cursor:pointer;border:none;text-decoration:none;
+  box-shadow:0 4px 18px rgba(37,211,102,.45),0 0 0 0 rgba(37,211,102,.35);
+  animation:wapulse 2.8s infinite;transition:transform .2s}
+.float-wa:hover{transform:scale(1.1)}
+.float-wa-tip{position:absolute;right:64px;background:rgba(11,29,58,.95);
+  border:1px solid rgba(37,211,102,.3);color:#25d366;font-size:.76rem;font-weight:800;
+  padding:5px 11px;border-radius:9px;white-space:nowrap;opacity:0;
+  transform:translateX(6px);transition:all .25s;pointer-events:none}
+.float-wa:hover .float-wa-tip{opacity:1;transform:translateX(0)}
+@keyframes wapulse{
+  0%,100%{box-shadow:0 4px 18px rgba(37,211,102,.45),0 0 0 0 rgba(37,211,102,.35)}
+  55%{box-shadow:0 4px 18px rgba(37,211,102,.45),0 0 0 13px rgba(37,211,102,0)}
+}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--navy)}
+::-webkit-scrollbar-thumb{background:rgba(46,125,237,.38);border-radius:3px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fade{animation:fadeUp .52s ease forwards}
+.d1{animation-delay:.1s;opacity:0}.d2{animation-delay:.22s;opacity:0}
+.d3{animation-delay:.34s;opacity:0}.d4{animation-delay:.46s;opacity:0}
+@keyframes glow{0%,100%{box-shadow:0 0 22px rgba(255,186,8,.32),0 4px 18px rgba(255,186,8,.24)}
+  55%{box-shadow:0 0 38px rgba(255,186,8,.58),0 4px 18px rgba(255,186,8,.24)}}
+.glow{animation:glow 2.4s infinite}
+
+@media(max-width:900px){
+  .topup-layout,.contact-grid,.tg-wa-grid{grid-template-columns:1fr}
+  footer{grid-template-columns:1fr}
+  .footer-links{text-align:left}
+  .method-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:640px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .packages-grid{grid-template-columns:repeat(2,1fr)}
+  .method-grid{grid-template-columns:1fr 1fr}
+  .urgency-bar{gap:10px}
+  .hero-cta-group{flex-direction:column;align-items:center}
+  .btn-primary,.btn-wa,.btn-secondary{width:100%;justify-content:center}
+  section{padding:48px 5%}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+
+<!-- FLOATING WHATSAPP -->
+<a class="float-wa" href="https://wa.me/996702097127" target="_blank">
+  📲
+  <span class="float-wa-tip">Написать в WhatsApp</span>
+</a>
+
+<nav>
+  <a href="#" class="nav-logo" onclick="showPage('home')">
+    <span class="di">💎</span>MLBB<span class="hl">Diamond</span>.kg
+  </a>
+  <div class="nav-links">
+    <a href="#" onclick="showPage('home')" class="active" id="nav-home">Главная</a>
+    <a href="#" onclick="showPage('topup')" id="nav-topup">Пополнить</a>
+    <a href="#" onclick="showPage('support')" id="nav-support">Поддержка</a>
+    <a href="#" onclick="showPage('orders')" id="nav-orders">История</a>
+    <span class="online-dot">Онлайн</span>
+    <div class="lang-toggle">
+      <button class="active" id="lang-ru" onclick="setLang('ru')">RU</button>
+      <button id="lang-ky" onclick="setLang('ky')">KY</button>
+    </div>
+    <div class="user-menu">
+      <span class="user-name" id="userNameDisplay" onclick="toggleAuthModal()">👤 Войти</span>
+    </div>
+    <a href="#" class="nav-cta" onclick="showPage('topup')">💎 Купить →</a>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#" onclick="showPage('home');toggleMenu()">🏠 Главная</a>
+  <a href="#" onclick="showPage('topup');toggleMenu()">💎 Пополнить</a>
+  <a href="#" onclick="showPage('support');toggleMenu()">💬 Поддержка</a>
+  <a href="#" onclick="showPage('orders');toggleMenu()">📜 История</a>
+  <a href="https://wa.me/996702097127" target="_blank" style="color:#25d366">📲 WhatsApp</a>
+</div>
+
+<!-- Аутентификация модалка -->
+<div id="authModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:var(--card);border-radius:20px;padding:32px;max-width:400px;width:90%;border:1px solid var(--gold);">
+    <h3 style="font-family:Rajdhani;margin-bottom:20px">Вход / Гость</h3>
+    <input type="text" id="authName" placeholder="Ваше имя (ник)" class="input-field" style="margin-bottom:15px">
+    <button class="btn-primary btn-full" onclick="loginAsUser()" style="margin-bottom:10px">Войти</button>
+    <button class="btn-secondary btn-full" onclick="loginAsGuest()">Продолжить как гость</button>
+    <button style="margin-top:15px;background:none;border:none;color:var(--muted);cursor:pointer" onclick="closeAuthModal()">✖ Закрыть</button>
+  </div>
+</div>
+
+<!-- Страница истории заказов -->
+<div class="page" id="page-orders">
+  <div class="page-header">
+    <div class="breadcrumb">Главная → <span>История заказов</span></div>
+    <h1>📋 Мои заказы</h1>
+    <p>Все ваши предыдущие пополнения</p>
+  </div>
+  <div style="max-width:800px;margin:32px auto;padding:0 5%">
+    <div id="ordersList" style="display:flex;flex-direction:column;gap:12px">
+      <!-- сюда js вставит заказы -->
+    </div>
+    <p id="noOrdersMsg" style="text-align:center;color:var(--muted);margin-top:40px">У вас пока нет заказов. Перейдите в раздел "Пополнить".</p>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="urgency-bar">
+    <span>⚡ Пополнение за 5–10 минут</span>
+    <span>🕐 Работаем 24/7</span>
+    <span class="w">✅ Много успешных пополнений</span>
+    <span>🔒 Безопасная оплата</span>
+  </div>
+  <section class="hero">
+    <div class="hero-badge fade">🇰🇬 Кыргызстан · Центральная Азия</div>
+    <h1 class="fade d1">Пополнение <em>алмазов</em><br>Mobile Legends<br><span class="bl">в Кыргызстане</span></h1>
+    <p class="hero-sub fade d2"><span>Быстро.</span> &nbsp;Надежно. &nbsp;<span>Удобно.</span></p>
+    <div class="hero-cta-group fade d3">
+      <button class="btn-primary glow" onclick="showPage('topup')">💎 Купить алмазы</button>
+      <a class="btn-wa" href="https://wa.me/996702097127" target="_blank">📲 WhatsApp</a>
+    </div>
+    <div class="hero-timer fade d3">⏱ Среднее время зачисления: <strong>5–10 минут</strong></div>
+    <div class="hero-stats fade d4">
+      <div class="stat-pill"><div class="val">5-10 мин</div><div class="lbl">Время доставки</div></div>
+      <div class="stat-pill"><div class="val">24/7</div><div class="lbl">Поддержка</div></div>
+      <div class="stat-pill"><div class="val">4.9★</div><div class="lbl">Рейтинг</div></div>
+    </div>
+  </section>
+  <div class="disclaimer">⚠️ <strong>Неофициальный сервис. Не связан с Moonton.</strong> MLBBDiamond.kg — независимый сервис пополнения алмазов в Кыргызстане.</div>
+
+  <section style="background:rgba(255,186,8,.03);border-top:1px solid rgba(255,186,8,.09);border-bottom:1px solid rgba(255,186,8,.09)">
+    <div class="sec-label">Доверие</div>
+    <div class="sec-divider"></div>
+    <h2 class="sec-title">Почему нам <em>доверяют</em></h2>
+    <p class="sec-sub">Тысячи игроков уже пополняли через нас — и возвращаются снова.</p>
+    <div class="trust-grid">
+      <div class="trust-card"><div class="trust-icon">✅</div><h3>Успешные пополнения</h3><p>Игроки из Бишкека, Оша, Чолпон-Аты и других городов КР.</p><div class="trust-badge">✓ Проверено игроками</div></div>
+      <div class="trust-card"><div class="trust-icon">🕐</div><h3>Работаем каждый день</h3><p>Онлайн 24/7 — без выходных и праздников. Пополняй в любое время.</p><div class="trust-badge">✓ Без выходных</div></div>
+      <div class="trust-card"><div class="trust-icon">🔒</div><h3>Безопасная оплата</h3><p>Только ID игрока. Никогда не запрашиваем пароль.</p><div class="trust-badge">✓ Без пароля</div></div>
+      <div class="trust-card"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Ошибка? Вернём деньги или исправим заказ. Гарантируем.</p><div class="trust-badge">✓ 100% гарантия</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-label">Преимущества</div>
+    <div class="sec-divider"></div>
+    <h2 class="sec-title">Почему выбирают <em>нас</em></h2>
+    <p class="sec-sub">Локальный сервис для игроков Mobile Legends в Кыргызстане.</p>
+    <div class="features-grid">
+      <div class="feature-card"><div class="ficon g">⚡</div><h3>Мгновенно</h3><p>Алмазы зачисляются в течение 5–10 минут после получения чека.</p></div>
+      <div class="feature-card"><div class="ficon b">🏦</div><h3>Локальные платежи</h3><p>Mbank, O!Money, Элсом, Баланс, KICB, Demirbank. Оплата в сомах.</p></div>
+      <div class="feature-card"><div class="ficon gr">🛡️</div><h3>Безопасно</h3><p>Не нужен пароль — только ID. Ваш аккаунт в безопасности.</p></div>
+      <div class="feature-card"><div class="ficon g">💰</div><h3>Честные цены</h3><p>Конкурентные цены в сомах. Без скрытых комиссий.</p></div>
+      <div class="feature-card"><div class="ficon b">📲</div><h3>WhatsApp поддержка</h3><p>Отвечаем за 1–5 минут на русском и кыргызском.</p></div>
+      <div class="feature-card"><div class="ficon gr">🔄</div><h3>Гарантия возврата</h3><p>Ошиблись с ID? Напишите — вернём деньги или исправим.</p></div>
+    </div>
+  </section>
+
+  <section style="background:rgba(46,125,237,.04);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div class="sec-label">Процесс</div>
+    <div class="sec-divider"></div>
+    <h2 class="sec-title">Как это <em>работает</em></h2>
+    <p class="sec-sub">Всего 4 простых шага — и алмазы уже у вас.</p>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-num">1</div><h3>Введите ID</h3><p>Укажите ID игрока и номер сервера из профиля Mobile Legends.</p></div>
+      <div class="step-card"><div class="step-num">2</div><h3>Выберите пакет</h3><p>Подберите нужное количество алмазов по выгодной цене в KGS.</p></div>
+      <div class="step-card"><div class="step-num">3</div><h3>Оплатите и отправьте чек</h3><p>Оплатите через любой локальный способ, затем <strong style="color:var(--gold)">отправьте чек в WhatsApp</strong>.</p></div>
+      <div class="step-card"><div class="step-num">4</div><h3>Получите алмазы</h3><p>Мы зачислим алмазы в течение 5–10 минут после получения чека. ✅</p></div>
+    </div>
+  </section>
+
+  <section style="padding-bottom:72px">
+    <div style="background:linear-gradient(135deg,rgba(46,125,237,.14),rgba(255,186,8,.07));border:1px solid rgba(46,125,237,.24);border-radius:22px;padding:46px 26px;text-align:center">
+      <h2 class="sec-title" style="margin-bottom:9px">Готов пополнить <em>алмазы</em>?</h2>
+      <p style="color:var(--muted);margin-bottom:26px;font-size:.95rem">Быстро, безопасно, по лучшей цене в сомах. Зачисление за 5–10 минут.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-primary glow" onclick="showPage('topup')">💎 Пополнить сейчас</button>
+        <a class="btn-wa" href="https://wa.me/996702097127" target="_blank">📲 Написать в WhatsApp</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- TOP-UP -->
+<div class="page" id="page-topup">
+  <div class="page-header">
+    <div class="breadcrumb">Главная → <span>Пополнение</span></div>
+    <h1>💎 Пополнить алмазы</h1>
+    <p>Введите ID, выберите пакет. Зачисление за 5–10 минут после оплаты.</p>
+  </div>
+  <div class="disclaimer" style="margin-top:14px">⚠️ Неофициальный сервис. Не связан с Moonton. После оплаты — <strong>отправьте чек в WhatsApp</strong>.</div>
+  <div class="topup-layout">
+    <div>
+      <div class="form-card">
+        <div class="card-title"><span class="ico">🎮</span> Данные игрока</div>
+        <label>ID ИГРОКА</label>
+        <input type="text" class="input-field" id="playerId" placeholder="Например: 123456789" oninput="updateBuyBtn()">
+        <p class="input-hint">Найдите в игре: Профиль → ваш числовой ID</p>
+        <label>СЕРВЕР (ЗОНА)</label>
+        <input type="text" class="input-field" id="serverId" placeholder="Например: 1234" oninput="updateBuyBtn()">
+        <p class="input-hint">Цифры в скобках рядом с ID: 123456789 <strong>(1234)</strong></p>
+        <div class="id-guide"><div class="gt">📖 ГДЕ НАЙТИ МОЙ ID?</div><div class="gb">1. Откройте Mobile Legends<br>2. Нажмите на <strong>аватар</strong> (верхний левый угол)<br>3. ID под ником: <strong>123456789 (1234)</strong><br>Первые цифры — ID, в скобках — сервер.</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="packages-card">
+        <div class="card-title"><span class="ico">💎</span> Выберите пакет (как SEAGM)</div>
+        <div class="packages-grid" id="packagesGrid"></div>
+        <div class="sel-info" id="selectedInfo"><div class="sil">ВЫБРАННЫЙ ПАКЕТ</div><div class="sir"><span id="selDiamonds"></span><span id="selPrice"></span></div></div>
+        <button class="btn-primary btn-full" onclick="proceedToPayment()" id="buyBtn" disabled style="opacity:.5;cursor:not-allowed;margin-top:4px">Перейти к оплате →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT -->
+<div class="page" id="page-payment">
+  <div class="page-header">
+    <div class="breadcrumb">Главная → Пополнение → <span>Оплата</span></div>
+    <h1>💳 Оплата заказа</h1>
+    <p>Выберите способ оплаты и следуйте инструкции.</p>
+  </div>
+  <div class="payment-layout">
+    <div class="order-summary">
+      <div class="card-title"><span class="ico">📋</span> Ваш заказ</div>
+      <div class="order-row"><span class="lbl">Товар</span><span class="val">Mobile Legends — Алмазы</span></div>
+      <div class="order-row"><span class="lbl">ID игрока</span><span class="val" id="payPlayerId">—</span></div>
+      <div class="order-row"><span class="lbl">Сервер</span><span class="val" id="payServerId">—</span></div>
+      <div class="order-row"><span class="lbl">Пакет</span><span class="val gld" id="payPackage">—</span></div>
+      <div class="order-row"><span class="lbl">Итого</span><span class="val gld" id="payTotal">—</span></div>
+    </div>
+    <div class="pay-steps">
+      <div class="ps-title">📋 Пошаговая инструкция</div>
+      <div class="ps-row"><div class="ps-n">1</div><div class="ps-t">Выберите <strong>способ оплаты</strong> ниже</div></div>
+      <div class="ps-row"><div class="ps-n">2</div><div class="ps-t">Переведите <strong id="instrAmt">сумму</strong> на номер: <strong>+996 702 097 127</strong></div></div>
+      <div class="ps-row"><div class="ps-n">3</div><div class="ps-t">Сделайте <strong>скриншот чека</strong> об оплате</div></div>
+      <div class="ps-row"><div class="ps-n">4</div><div class="ps-t">Отправьте чек + ваш <strong>ID игрока</strong> в <strong style="color:#25d366">WhatsApp: +996 702 097 127</strong></div></div>
+      <div class="ps-row"><div class="ps-n">5</div><div class="ps-t">Получите алмазы в течение <strong>5–10 минут</strong> ✅</div></div>
+    </div>
+    <div class="wa-remind">
+      <p>После оплаты отправьте чек в WhatsApp:<br><strong>📲 +996 702 097 127</strong></p>
+      <a class="btn-wa" href="https://wa.me/996702097127" target="_blank" style="display:inline-flex">📲 Открыть WhatsApp</a>
+    </div>
+    <div class="payment-methods">
+      <div class="card-title"><span class="ico">🏦</span> Локальные платежи Кыргызстана</div>
+      <div class="method-grid">
+        <div class="method-card" onclick="selectMethod('mbank')"><div class="method-logo">🟢</div><div class="method-name">Mbank</div><div class="method-sub">Мобильный банк</div></div>
+        <div class="method-card" onclick="selectMethod('omoney')"><div class="method-logo">🔵</div><div class="method-name">O!Money</div><div class="method-sub">Эл. кошелёк</div></div>
+        <div class="method-card" onclick="selectMethod('elsom')"><div class="method-logo">🔷</div><div class="method-name">Элсом</div><div class="method-sub">Мобильный оператор</div></div>
+        <div class="method-card" onclick="selectMethod('balance')"><div class="method-logo">⚖️</div><div class="method-name">Баланс</div><div class="method-sub">Платежный терминал</div></div>
+        <div class="method-card" onclick="selectMethod('kicb')"><div class="method-logo">🏛️</div><div class="method-name">KICB</div><div class="method-sub">Банк</div></div>
+        <div class="method-card" onclick="selectMethod('demir')"><div class="method-logo">🌙</div><div class="method-name">Demirbank</div><div class="method-sub">Банк</div></div>
+      </div>
+    </div>
+    <div class="payment-confirm">
+      <div class="card-title"><span class="ico">📱</span> Подтверждение</div>
+      <div id="confirmForm">
+        <label>ВАШ НОМЕР ТЕЛЕФОНА</label>
+        <div class="phone-row"><div class="phone-pfx">+996</div><input type="tel" class="input-field" id="phoneNumber" placeholder="702 097 127" style="margin-bottom:0;flex:1"></div>
+        <div class="method-note" id="methodNote">Выберите способ оплаты выше.</div>
+        <div id="qrContainer" style="display:none" class="qr-area"></div>
+        <button class="btn-primary btn-full" onclick="confirmPayment()">✅ Я оплатил — подтвердить</button>
+        <p style="font-size:.74rem;color:var(--muted);text-align:center;margin-top:10px">Нажимая, вы подтверждаете оплату и отправку чека в WhatsApp.</p>
+      </div>
+      <div class="success-box" id="successBox"><div class="suc-icon">✅</div><h3>Заказ принят!</h3><p>Алмазы будут зачислены в течение 5–10 минут после проверки чека.</p><p style="font-size:.8rem;margin-bottom:20px">Не пришли через 15 минут? Напишите нам.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn-wa" href="https://wa.me/996702097127" target="_blank">📲 WhatsApp</a><button class="btn-secondary" onclick="showPage('topup')">Новый заказ</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUPPORT -->
+<div class="page" id="page-support">
+  <div class="page-header"><div class="breadcrumb">Главная → <span>Поддержка</span></div><h1>💬 Поддержка</h1><p>Отвечаем в течение 1–5 минут. Каждый день, без выходных.</p></div>
+  <div class="support-layout">
+    <div class="tg-wa-grid">
+      <div class="sc wa"><div class="si">📲</div><h3>WhatsApp</h3><p>Основной канал. Принимаем чеки и отвечаем на вопросы.</p><a class="btn-wa" href="https://wa.me/996702097127" target="_blank">📲 Написать в WhatsApp</a><div style="margin-top:11px;font-size:.73rem;color:var(--muted)">+996 702 097 127</div></div>
+      <div class="sc tg"><div class="si">✈️</div><h3>Telegram</h3><p>Дополнительный канал. @AktilekKaziev</p><button class="btn-tg" onclick="alert('Telegram: @AktilekKaziev')">✈️ @AktilekKaziev</button><div style="margin-top:11px;font-size:.73rem;color:var(--muted)">@AktilekKaziev</div></div>
+    </div>
+    <div style="background:rgba(37,211,102,.07);border:1px solid rgba(37,211,102,.18);border-radius:14px;padding:17px 20px;text-align:center;margin-bottom:28px;display:flex;gap:28px;justify-content:center;flex-wrap:wrap">
+      <div><div style="font-family:'Rajdhani',sans-serif;font-size:1.45rem;font-weight:700;color:#25d366">1–5 мин</div><div style="font-size:.74rem;color:var(--muted)">Время ответа</div></div>
+      <div><div style="font-family:'Rajdhani',sans-serif;font-size:1.45rem;font-weight:700;color:#25d366">24/7</div><div style="font-size:.74rem;color:var(--muted)">Без выходных</div></div>
+      <div><div style="font-family:'Rajdhani',sans-serif;font-size:1.45rem;font-weight:700;color:#25d366">RU/KY</div><div style="font-size:.74rem;color:var(--muted)">Языки</div></div>
+    </div>
+    <div class="sec-label">Часто задаваемые вопросы</div><div class="sec-divider"></div>
+    <div class="faq-list">
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Как найти мой ID игрока?</span><span class="arr">▼</span></div><div class="faq-a">Откройте Mobile Legends → аватар → ID под ником: <strong>123456789 (1234)</strong>. Первые цифры — ID, в скобках — сервер.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Что делать после оплаты?</span><span class="arr">▼</span></div><div class="faq-a">Сделайте скриншот чека и отправьте в WhatsApp (+996702097127) или Telegram (@AktilekKaziev) вместе с ID. Зачислим за 5–10 минут.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Как долго ждать алмазы?</span><span class="arr">▼</span></div><div class="faq-a">После получения чека — <strong>5–10 минут</strong>. Если не пришли через 15 минут — напишите нам.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Нужен ли пароль от аккаунта?</span><span class="arr">▼</span></div><div class="faq-a"><strong>Нет!</strong> Только ID и сервер. Пароль никогда не запрашиваем.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Какие способы оплаты?</span><span class="arr">▼</span></div><div class="faq-a">Mbank, O!Money, Элсом, Баланс, KICB, Demirbank. Все цены в сомах.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Что если ввёл неправильный ID?</span><span class="arr">▼</span></div><div class="faq-a">Сразу напишите в WhatsApp. Если заказ не выполнен — исправим или вернём деньги.</div></div>
+    </div>
+    <div class="coming-soon" style="margin-top:30px"><div class="csi">🎮</div><h3>Скоро: продажа аккаунтов</h3><p>Проверенные аккаунты Mobile Legends. Напишите в WhatsApp — узнаете первыми!</p><a class="btn-wa" href="https://wa.me/996702097127" target="_blank">📲 Уведомить меня</a></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand"><a href="#" class="nav-logo" onclick="showPage('home')"><span class="di">💎</span>MLBB<span class="hl">Diamond</span>.kg</a><p>Независимый сервис пополнения алмазов Mobile Legends в Кыргызстане. Быстро, безопасно, удобно.</p><p style="margin-top:9px;font-size:.71rem;color:rgba(139,163,204,.45)">Неофициальный сервис. Не связан с Moonton.</p><div style="margin-top:13px;display:flex;gap:9px;flex-wrap:wrap"><a class="btn-wa" href="https://wa.me/996702097127" target="_blank" style="padding:9px 16px;font-size:.8rem">📲 WhatsApp</a><button class="btn-tg" onclick="alert('@AktilekKaziev')" style="padding:9px 16px;font-size:.8rem">✈️ Telegram</button></div></div>
+  <div class="footer-links"><a href="#" onclick="showPage('home')">Главная</a><a href="#" onclick="showPage('topup')">Пополнить</a><a href="#" onclick="showPage('support')">Поддержка</a><a href="#" onclick="showPage('orders')">История</a><a href="https://wa.me/996702097127" target="_blank">WhatsApp</a><a href="#" onclick="alert('@AktilekKaziev')">Telegram</a></div>
+  <div class="footer-bottom">© 2025 MLBBDiamond.kg · Все права защищены<br><span style="color:rgba(139,163,204,.4)">Неофициальный сервис. Не связан с Moonton. Mobile Legends® — торговая марка Moonton.</span></div>
+</footer>
+
+<script>
+// Пакеты как SEAGM + цена +25 сом
+const packages=[
+  {id:1,diamonds:11,  price:80,  bonus:''},
+  {id:2,diamonds:22,  price:130, bonus:''},
+  {id:3,diamonds:56,  price:260, bonus:''},
+  {id:4,diamonds:86,  price:380, bonus:''},
+  {id:5,diamonds:112, price:480, bonus:'+11 бонус',popular:true},
+  {id:6,diamonds:172, price:700, bonus:''},
+  {id:7,diamonds:223, price:920, bonus:''},
+  {id:8,diamonds:336, price:1365,bonus:''},
+  {id:9,diamonds:570, price:2215,bonus:'+58 бонус'},
+  {id:10,diamonds:688,price:2650,bonus:''},
+  {id:11,diamonds:1160,price:4315,bonus:'+116 бонус'},
+  {id:12,diamonds:2195,price:8015,bonus:'+220 бонус'},
+  {id:13,diamonds:3688,price:13200,bonus:'+370 бонус'},
+  {id:14,diamonds:4000,price:14300,bonus:'+400 бонус'}
+];
+let selectedPkg=null, selectedMethod=null;
+
+function renderPackages(){
+  document.getElementById('packagesGrid').innerHTML=packages.map(p=>`
+    <div class="pkg-card${p.popular?' popular':''}${selectedPkg?.id===p.id?' selected':''}" id="pkg-${p.id}" onclick="selectPackage(${p.id})">
+      <div class="pkg-diamond">💎</div>
+      <div class="pkg-amount"><span>${p.diamonds.toLocaleString()}</span></div>
+      <div class="pkg-price"><strong>${p.price.toLocaleString()} KGS</strong></div>
+      ${p.bonus?`<div class="pkg-bonus">${p.bonus}</div>`:''}
+    </div>`).join('');
+}
+
+function selectPackage(id){
+  selectedPkg=packages.find(p=>p.id===id);
+  document.querySelectorAll('.pkg-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('pkg-'+id).classList.add('selected');
+  const si=document.getElementById('selectedInfo');si.style.display='block';
+  document.getElementById('selDiamonds').textContent=`💎 ${selectedPkg.diamonds.toLocaleString()} алмазов`;
+  document.getElementById('selPrice').textContent=`${selectedPkg.price.toLocaleString()} KGS`;
+  updateBuyBtn();
+}
+
+function updateBuyBtn(){
+  const ok=document.getElementById('playerId')?.value.trim() && document.getElementById('serverId')?.value.trim() && selectedPkg;
+  const btn=document.getElementById('buyBtn');
+  btn.disabled=!ok; btn.style.opacity=ok?'1':'.5'; btn.style.cursor=ok?'pointer':'not-allowed';
+}
+
+function proceedToPayment(){
+  const pid=document.getElementById('playerId').value.trim();
+  const sid=document.getElementById('serverId').value.trim();
+  if(!pid||!sid||!selectedPkg) return;
+  document.getElementById('payPlayerId').textContent=pid;
+  document.getElementById('payServerId').textContent=sid;
+  document.getElementById('payPackage').textContent=`💎 ${selectedPkg.diamonds.toLocaleString()} алмазов`;
+  document.getElementById('payTotal').textContent=`${selectedPkg.price.toLocaleString()} KGS`;
+  document.getElementById('instrAmt').textContent=selectedPkg.price.toLocaleString()+' KGS';
+  showPage('payment');
+  selectedMethod=null;
+  document.getElementById('successBox').classList.remove('show');
+  document.getElementById('confirmForm').style.display='block';
+  document.querySelectorAll('.method-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('methodNote').textContent='Выберите способ оплаты выше.';
+  document.getElementById('qrContainer').style.display='none';
+}
+
+function selectMethod(m){
+  selectedMethod=m;
+  document.querySelectorAll('.method-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelector(`.method-card:has(.method-name:contains('${m}'))`)?.classList.add('selected');
+  const notes={
+    mbank:'Откройте Mbank → Переводы → По номеру → +996 702 097 127. Переведите сумму, сделайте скриншот чека и отправьте в WhatsApp.',
+    omoney:'O!Money → Перевод → +996 702 097 127. Сохраните чек и отправьте скриншот в WhatsApp.',
+    elsom:'Элсом: через приложение или USSD-команду переведите на +996 702 097 127.',
+    balance:'Баланс: через терминалы или приложение, получатель +996702097127.',
+    kicb:'KICB: мобильный банкинг, перевод по номеру телефона.',
+    demir:'Demirbank: перевод по номеру карты или телефона.'
+  };
+  document.getElementById('methodNote').textContent=notes[m] || 'Переведите на номер +996702097127 и отправьте чек в WhatsApp.';
+  // Показываем QR код для всех методов (общий номер)
+  const qrDiv=document.getElementById('qrContainer');
+  qrDiv.style.display='block';
+  qrDiv.innerHTML=`<div style="font-size:.7rem;margin-bottom:5px">QR код для оплаты (номер +996702097127)</div><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=+996702097127" alt="QR-код">`;
+}
+
+function confirmPayment(){
+  if(!selectedMethod){alert('Выберите способ оплаты.');return;}
+  const phone=document.getElementById('phoneNumber').value.trim();
+  if(!phone){alert('Введите номер телефона.');return;}
+  // Сохраняем заказ в localStorage для истории
+  const user=getCurrentUser();
+  if(user){
+    const order={
+      id:Date.now(),
+      playerId:document.getElementById('payPlayerId').textContent,
+      serverId:document.getElementById('payServerId').textContent,
+      diamonds:selectedPkg.diamonds,
+      price:selectedPkg.price,
+      method:selectedMethod,
+      date:new Date().toLocaleString(),
+      status:'Ожидает подтверждения'
+    };
+    let orders=JSON.parse(localStorage.getItem(`orders_${user.id}`)||'[]');
+    orders.unshift(order);
+    localStorage.setItem(`orders_${user.id}`,JSON.stringify(orders));
+  }
+  document.getElementById('confirmForm').style.display='none';
+  document.getElementById('successBox').classList.add('show');
+}
+
+function toggleFaq(el){ el.classList.toggle('open'); el.nextElementSibling.classList.toggle('open'); }
+
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+  const n=document.getElementById('nav-'+name); if(n) n.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(name==='topup') renderPackages();
+  if(name==='orders') renderOrders();
+}
+
+function toggleMenu(){ document.getElementById('mobileMenu').classList.toggle('open'); }
+
+function setLang(lang){ /* упрощённо */ }
+
+// --- Аутентификация и история заказов ---
+let currentUser=null;
+function getCurrentUser(){
+  const saved=localStorage.getItem('mlbb_current_user');
+  if(saved) return JSON.parse(saved);
+  return null;
+}
+function updateUserUI(){
+  const user=getCurrentUser();
+  const displaySpan=document.getElementById('userNameDisplay');
+  if(user){
+    displaySpan.innerHTML=`👤 ${user.name}`;
+  } else {
+    displaySpan.innerHTML=`👤 Войти`;
+  }
+}
+function toggleAuthModal(){
+  document.getElementById('authModal').style.display='flex';
+}
+function closeAuthModal(){
+  document.getElementById('authModal').style.display='none';
+}
+function loginAsUser(){
+  const name=document.getElementById('authName').value.trim();
+  if(!name){alert('Введите имя');return;}
+  const user={id:'user_'+Date.now(), name:name, isGuest:false};
+  localStorage.setItem('mlbb_current_user',JSON.stringify(user));
+  closeAuthModal();
+  updateUserUI();
+}
+function loginAsGuest(){
+  const guestId='guest_'+Date.now();
+  const user={id:guestId, name:'Гость', isGuest:true};
+  localStorage.setItem('mlbb_current_user',JSON.stringify(user));
+  closeAuthModal();
+  updateUserUI();
+}
+function renderOrders(){
+  const user=getCurrentUser();
+  const container=document.getElementById('ordersList');
+  const noMsg=document.getElementById('noOrdersMsg');
+  if(!user){
+    container.innerHTML='<div style="text-align:center;padding:40px">Войдите или войдите как гость, чтобы видеть историю заказов.</div>';
+    noMsg.style.display='none';
+    return;
+  }
+  const orders=JSON.parse(localStorage.getItem(`orders_${user.id}`)||'[]');
+  if(orders.length===0){
+    container.innerHTML='';
+    noMsg.style.display='block';
+    return;
+  }
+  noMsg.style.display='none';
+  container.innerHTML=orders.map(o=>`
+    <div style="background:var(--card);border-radius:14px;padding:16px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px">
+        <strong>💎 ${o.diamonds} алмазов</strong>
+        <span style="color:var(--gold)">${o.price} KGS</span>
+      </div>
+      <div style="font-size:.8rem;color:var(--muted)">ID: ${o.playerId} (сервер ${o.serverId})</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:6px">${o.date} · ${o.method} · ${o.status}</div>
+    </div>
+  `).join('');
+}
+
+// Инициализация
+renderPackages();
+updateUserUI();
+document.addEventListener('click',e=>{ const m=document.getElementById('mobileMenu'); if(m.classList.contains('open')&&!m.contains(e.target)&&!e.target.closest('.hamburger')) m.classList.remove('open'); });
+</script>
+</body>
+</html>

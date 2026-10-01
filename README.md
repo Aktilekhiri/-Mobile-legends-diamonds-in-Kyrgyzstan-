@@ -1,2 +1,2 @@
 # -Mobile-legends-diamonds-in-Kyrgyzstan-
-Website Mobile legends diamonds 
+Алмазы Кыргызстан по низкой цене 🇰🇬

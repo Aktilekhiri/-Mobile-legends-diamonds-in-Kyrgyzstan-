@@ -741,6 +741,29 @@
     .packages-grid { grid-template-columns: repeat(5, 1fr); max-height: 700px; }
   }
 
+  /* --- conversion fixes --- */
+  body:not(.ad-ok) #adBanner { display: none !important; }
+  .pkg-group { grid-column: 1 / -1; font-weight: 700; color: var(--gold); font-size: .88rem; margin: 10px 2px 0; letter-spacing: .02em; }
+  .pkg-group:first-child { margin-top: 0; }
+  .quick-buy { margin: 6px auto 18px; max-width: 520px; padding: 0 4%; }
+  .qb-title { text-align: center; font-size: .78rem; color: var(--muted); margin-bottom: 8px; letter-spacing: .06em; text-transform: uppercase; }
+  .qb-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .qb-card { background: rgba(11,29,58,.78); border: 1.5px solid var(--border); border-radius: 14px; padding: 11px 8px; color: var(--white); cursor: pointer; font: inherit; text-align: center; position: relative; }
+  .qb-card:active { transform: scale(.97); }
+  .qb-card.hot { border-color: var(--gold); }
+  .qb-card .qd { font-family: 'Rajdhani', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--gold); line-height: 1.1; }
+  .qb-card .qp { font-size: .95rem; font-weight: 700; margin-top: 2px; }
+  .qb-card .qb { font-size: .7rem; color: #34d399; margin-top: 2px; }
+  .qb-all { display: block; text-align: center; margin-top: 10px; font-size: .85rem; color: var(--blue2, #6ea8ff); text-decoration: none; background: none; border: none; width: 100%; cursor: pointer; font-family: inherit; }
+  @media (max-width: 640px) { .packages-grid { max-height: none; overflow: visible; padding-right: 0; } }
+  @media (max-width: 640px) {
+    .hero { min-height: auto; padding-top: 22px; padding-bottom: 24px; }
+    .hero-gem-spin { width: min(40vw, 150px) !important; height: min(40vw, 150px) !important; }
+    .hero h1 { font-size: clamp(2rem, 9.5vw, 2.6rem) !important; line-height: 1.04 !important; }
+  }
+  #buyBtn { position: sticky; bottom: 14px; z-index: 20; box-shadow: 0 8px 24px rgba(0,0,0,.55); }
+  @media (min-width: 560px) { .qb-grid { grid-template-columns: repeat(4, 1fr); } }
+
   /* Animations */
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(30px); }
@@ -1379,7 +1402,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 </head>
-<body>
+<body data-page="home">
 <!-- IMPOSSIBLE DIAMOND: cinematic intro (skips itself after first visit via localStorage) -->
 <div id="cinematicIntro" aria-hidden="true">
   <div class="intro-stage">
@@ -1513,8 +1536,14 @@
       <button class="btn-primary glow" onclick="showPage('topup')">💎 Купить алмазы</button>
       <a class="btn-wa" href="https://wa.me/996555920204" target="_blank">📲 WhatsApp</a>
     </div>
+    <div class="quick-buy"><div class="qb-title">Популярные пакеты</div><div class="qb-grid">
+      <button type="button" class="qb-card" onclick="quickBuy(13)"><div class="qd">💎 14</div><div class="qp">35 KGS</div><div class="qb">13+1 бонус</div></button>
+      <button type="button" class="qb-card" onclick="quickBuy(38)"><div class="qd">💎 42</div><div class="qp">96 KGS</div><div class="qb">38+4 бонус</div></button>
+      <button type="button" class="qb-card hot" onclick="quickBuy(50)"><div class="qd">💎 55</div><div class="qp">112 KGS</div><div class="qb">50+5 бонус</div></button>
+      <button type="button" class="qb-card" onclick="quickBuy(150)"><div class="qd">💎 165</div><div class="qp">325 KGS</div><div class="qb">150+15 бонус</div></button>
+    </div><button type="button" class="qb-all" onclick="showPage('topup')">Все пакеты →</button></div>
     <div class="hero-timer">⏱ Среднее время зачисления: <strong>5–10 минут</strong></div>
-    <div class="hero-stats"><div class="stat-pill"><div class="val">5-10 мин</div><div class="lbl">Доставка</div></div><div class="stat-pill"><div class="val">24/7</div><div class="lbl">Поддержка</div></div><div class="stat-pill"><div class="val">4.9★</div><div class="lbl">Рейтинг</div></div></div>
+    <div class="hero-stats"><div class="stat-pill"><div class="val">5-10 мин</div><div class="lbl">Доставка</div></div><div class="stat-pill"><div class="val">24/7</div><div class="lbl">Поддержка</div></div><div class="stat-pill"><div class="val">2 банка</div><div class="lbl">Mbank и O!Деньги</div></div></div>
   </section>
   <div class="disclaimer" style="text-align:center; margin:0 5% 13px; background:rgba(255,186,8,.06); padding:10px; border-radius:10px;">⚠️ Неофициальный сервис. Не связан с Moonton.</div>
   <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-1"><div class="trust-icon">✅</div><h3>Успешные пополнения</h3><p>Игроки из Бишкека, Оша, Чолпон-Аты.</p></div><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>24/7 без выходных</h3><p>Пополняйте в любое время.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
@@ -1556,7 +1585,7 @@
     <div class="order-summary"><div class="card-title">📋 Ваш заказ</div><div class="order-row"><span>Товар</span><span>Mobile Legends — Алмазы</span></div><div class="order-row"><span>ID игрока</span><span id="payPlayerId">—</span></div><div class="order-row"><span>Сервер</span><span id="payServerId">—</span></div><div class="order-row"><span>Пакет</span><span id="payPackage" style="color:var(--gold)">—</span></div><div class="order-row"><span>Итого</span><span id="payTotal" style="color:var(--gold)">—</span></div></div>
     <div class="pay-steps"><div class="ps-title">📋 Инструкция</div><div class="ps-row"><div class="ps-n">1</div><div>Выберите способ оплаты (Mbank или O!Деньги)</div></div><div class="ps-row"><div class="ps-n">2</div><div>Переведите <strong id="instrAmt">сумму</strong> на номер <span class="paynum"></span> или по QR-коду</div></div><div class="ps-row"><div class="ps-n">3</div><div>Сделайте скриншот чека</div></div><div class="ps-row"><div class="ps-n">4</div><div>Нажмите кнопку ниже — откроется WhatsApp с готовым сообщением</div></div><div class="ps-row"><div class="ps-n">5</div><div>Прикрепите чек и отправьте</div></div></div>
     <div class="payment-methods"><div class="card-title">🏦 Выберите банк для перевода</div><div class="method-grid" id="methodsGrid"></div><div id="qrContainer" style="text-align:center; margin-top:15px;"></div></div>
-    <div class="payment-confirm"><div class="card-title">📱 Ваш телефон для связи</div><label>Номер телефона (WhatsApp)</label><input type="tel" class="input-field" id="phoneNumber" placeholder="700 123 456"><div id="methodNote" class="method-note" style="margin:8px 0; color:var(--muted);">Выберите банк, затем нажмите отправить</div>
+    <div class="payment-confirm"><div class="card-title">📱 Контакт (по желанию)</div><label>Номер телефона (необязательно)</label><input type="tel" class="input-field" id="phoneNumber" placeholder="700 123 456"><div id="methodNote" class="method-note" style="margin:8px 0; color:var(--muted);">Выберите банк, затем нажмите отправить</div>
     <button class="btn-primary btn-full" id="sendWhatsAppBtn" onclick="sendOrderToWhatsApp()" disabled style="opacity:0.5">📲 Отправить заказ в WhatsApp</button>
     <div id="successBox" class="success-box"><div class="suc-icon">✅</div><h3>Заказ отправлен!</h3><p>Алмазы придут через 5–10 минут после получения чека</p><a class="btn-wa" href="https://wa.me/996555920204" target="_blank">📲 Написать в WhatsApp</a><button class="btn-secondary" onclick="showPage('topup')" style="margin-top:10px">Новый заказ</button></div></div>
   </div>
@@ -1656,9 +1685,9 @@ function buildPackages(regionKey) {
   if (regionKey === 'global') {
     const passes = list.filter(p => p.type === 'pass');
     const diamonds = list.filter(p => p.type !== 'pass').sort((a, b) => a.totalDiamonds - b.totalDiamonds);
-    return [...passes, ...diamonds];
+    return [...diamonds, ...passes];
   }
-  return list;
+  return [...list.filter(p => p.type !== 'pass'), ...list.filter(p => p.type === 'pass')];
 }
 
 let currentRegion = 'global';
@@ -1679,7 +1708,11 @@ function changeRegion() {
 
 function renderPackages() {
   const grid = document.getElementById('packagesGrid');
-  grid.innerHTML = packages.map(p => `
+  let lastType = null;
+  grid.innerHTML = packages.map(p => {
+    const head = p.type !== lastType ? `<div class="pkg-group">${p.type === 'pass' ? '🎫 Пассы и наборы' : '💎 Алмазы'}</div>` : '';
+    lastType = p.type;
+    return head + `
     <div class="pkg-card ${p.popular ? 'popular' : ''} ${selectedPkg?.id === p.id ? 'selected' : ''}" onclick="selectPackage('${p.id}')">
       <div class="pkg-diamond">${p.type === 'pass' ? '🎫' : '💎'}</div>
       ${p.type === 'pass'
@@ -1689,9 +1722,25 @@ function renderPackages() {
       ${p.type === 'diamond' && p.bonus ? `<div class="pkg-bonus">+${p.bonus} бонус</div>` : ''}
       ${p.discount ? `<div class="pkg-bonus" style="color:var(--gold)">-${p.discount}%</div>` : ''}
       ${p.note ? `<div class="pkg-bonus" style="font-size:0.68rem">${p.note}</div>` : ''}
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
+
+function quickBuy(diam) {
+  const sel = document.getElementById('regionSelect');
+  if (sel.value !== 'global') { sel.value = 'global'; changeRegion(); }
+  const p = packages.find(x => x.type === 'diamond' && x.diam === diam);
+  if (p) selectPackage(p.id);
+  showPage('topup');
+  setTimeout(() => { const el = document.getElementById('playerId'); if (el) el.focus({ preventScroll: true }); }, 450);
+}
+
+function updateAdBanner() {
+  const closed = localStorage.getItem('adBannerClosed') === '1';
+  const show = !closed && document.body.dataset.page === 'home' && window.scrollY > 900;
+  document.body.classList.toggle('ad-ok', show);
+}
+window.addEventListener('scroll', updateAdBanner, { passive: true });
 
 function selectPackage(id) {
   selectedPkg = packages.find(p => p.id === id);
@@ -1710,6 +1759,7 @@ function updateBuyBtn() {
   const ok = pid && sid && selectedPkg;
   btn.disabled = !ok;
   btn.style.opacity = ok ? '1' : '0.5';
+  btn.textContent = (ok && selectedPkg) ? `Оплатить ${selectedPkg.price.toLocaleString()} KGS →` : 'Перейти к оплате →';
 }
 
 function proceedToPayment() {
@@ -1790,7 +1840,6 @@ function sendOrderToWhatsApp() {
   if (!currentOrder) { alert('Ошибка: нет данных заказа'); return; }
   if (!selectedMethod) { alert('Выберите способ оплаты (Mbank или O!Деньги)'); return; }
   const phone = document.getElementById('phoneNumber').value.trim();
-  if (!phone) { alert('Введите ваш номер телефона для связи'); return; }
 
   const user = getCurrentUser();
   if (user) {
@@ -1826,8 +1875,7 @@ ${EM.globe} Регион: ${noEmoji(regionLabels[currentOrder.region])}
 ${EM.gem} Пакет: ${packageText}
 ${EM.money} Сумма: ${currentOrder.price} KGS
 ${EM.card} Способ оплаты: ${selectedMethod}
-${EM.phone} Телефон клиента: ${phone}
-
+${phone ? EM.phone + ' Телефон клиента: ' + phone + '\n' : ''}
 ${EM.ok} Оплата произведена, чек прикреплён ниже.
 Пожалуйста, зачислите алмазы.`;
 
@@ -1856,6 +1904,8 @@ function showPage(name) {
   document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
   const navLink = document.getElementById(`nav-${name}`);
   if (navLink) navLink.classList.add('active');
+  document.body.dataset.page = name;
+  updateAdBanner();
   window.scrollTo(0,0);
   if (name === 'topup') renderPackages();
   if (name === 'orders') renderOrders();

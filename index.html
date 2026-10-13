@@ -764,6 +764,12 @@
   #buyBtn { position: sticky; bottom: 14px; z-index: 20; box-shadow: 0 8px 24px rgba(0,0,0,.55); }
   @media (min-width: 560px) { .qb-grid { grid-template-columns: repeat(4, 1fr); } }
 
+  .rev-row { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 5% 14px; -webkit-overflow-scrolling: touch; }
+  .rev-card { flex: 0 0 min(82vw, 380px); scroll-snap-align: center; margin: 0; background: rgba(11,29,58,.75); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; align-self: center; }
+  .rev-card img { display: block; width: 100%; height: auto; }
+  .rev-note { text-align: center; font-size: .78rem; color: var(--muted); margin: 6px 5% 0; }
+  @media (min-width: 900px) { .rev-row { justify-content: center; flex-wrap: wrap; overflow: visible; } .rev-card { flex-basis: 300px; } }
+
   /* Animations */
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(30px); }
@@ -1540,13 +1546,22 @@
       <button type="button" class="qb-card" onclick="quickBuy(13)"><div class="qd">💎 14</div><div class="qp">35 KGS</div><div class="qb">13+1 бонус</div></button>
       <button type="button" class="qb-card" onclick="quickBuy(38)"><div class="qd">💎 42</div><div class="qp">96 KGS</div><div class="qb">38+4 бонус</div></button>
       <button type="button" class="qb-card hot" onclick="quickBuy(50)"><div class="qd">💎 55</div><div class="qp">112 KGS</div><div class="qb">50+5 бонус</div></button>
-      <button type="button" class="qb-card" onclick="quickBuy(150)"><div class="qd">💎 165</div><div class="qp">325 KGS</div><div class="qb">150+15 бонус</div></button>
+      <button type="button" class="qb-card" onclick="quickBuy(156)"><div class="qd">💎 172</div><div class="qp">273 KGS</div><div class="qb">156+16 бонус</div></button>
     </div><button type="button" class="qb-all" onclick="showPage('topup')">Все пакеты →</button></div>
     <div class="hero-timer">⏱ Среднее время зачисления: <strong>5–10 минут</strong></div>
     <div class="hero-stats"><div class="stat-pill"><div class="val">5-10 мин</div><div class="lbl">Доставка</div></div><div class="stat-pill"><div class="val">24/7</div><div class="lbl">Поддержка</div></div><div class="stat-pill"><div class="val">2 банка</div><div class="lbl">Mbank и O!Деньги</div></div></div>
   </section>
   <div class="disclaimer" style="text-align:center; margin:0 5% 13px; background:rgba(255,186,8,.06); padding:10px; border-radius:10px;">⚠️ Неофициальный сервис. Не связан с Moonton.</div>
-  <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-1"><div class="trust-icon">✅</div><h3>Успешные пополнения</h3><p>Игроки из Бишкека, Оша, Чолпон-Аты.</p></div><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>24/7 без выходных</h3><p>Пополняйте в любое время.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
+  <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>24/7 без выходных</h3><p>Пополняйте в любое время.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
+  <section id="reviews"><div class="sec-label">Отзывы</div><div class="sec-divider"></div><h2 class="sec-title">Что пишут <em>клиенты</em></h2>
+    <div class="rev-row">
+      <figure class="rev-card"><img src="reviews/r2.jpg" alt="Отзыв клиента: «Буду теперь только у вас заказывать»" loading="lazy" width="640" height="473"></figure>
+      <figure class="rev-card"><img src="reviews/r4.jpg" alt="Отзыв клиента: «Все, спасибо большое»" loading="lazy" width="640" height="353"></figure>
+      <figure class="rev-card"><img src="reviews/r3.jpg" alt="Отзыв клиента: «Спасибо большое»" loading="lazy" width="640" height="466"></figure>
+      <figure class="rev-card"><img src="reviews/r1.jpg" alt="Отзыв клиента: «Спасибо»" loading="lazy" width="640" height="339"></figure>
+    </div>
+    <p class="rev-note">Скриншоты переписок в WhatsApp. Номера клиентов и чеки скрыты.</p>
+  </section>
   <section><div class="sec-label">Преимущества</div><div class="sec-divider"></div><h2 class="sec-title">Почему <em>мы</em></h2><div class="features-grid"><div class="feature-card reveal reveal-delay-1"><div class="ficon g">⚡</div><h3>5–10 минут</h3><p>Быстрое зачисление</p></div><div class="feature-card reveal reveal-delay-2"><div class="ficon b">🏦</div><h3>Локальные платежи</h3><p>Mbank, O!Деньги</p></div><div class="feature-card reveal reveal-delay-3"><div class="ficon gr">🛡️</div><h3>Безопасно</h3><p>Не запрашиваем пароль</p></div></div></section>
   <section><div class="sec-label">Процесс</div><div class="sec-divider"></div><h2 class="sec-title">Как <em>работает</em></h2><div class="steps-grid"><div class="step-card reveal reveal-delay-1"><div class="step-num">1</div><h3>Введите ID</h3><p>ID и сервер из профиля</p></div><div class="step-card reveal reveal-delay-2"><div class="step-num">2</div><h3>Выберите пакет</h3><p>Любое количество алмазов</p></div><div class="step-card reveal reveal-delay-3"><div class="step-num">3</div><h3>Оплатите</h3><p>Mbank или O!Деньги, отправьте чек в WhatsApp</p></div><div class="step-card reveal reveal-delay-4"><div class="step-num">4</div><h3>Получите алмазы</h3><p>Через 5–10 минут</p></div></div></section>
   <section style="padding-bottom:72px"><div style="background:linear-gradient(135deg,rgba(46,125,237,.14),rgba(255,186,8,.07)); border-radius:22px; padding:46px 26px; text-align:center"><h2 class="sec-title">Готов пополнить <em>алмазы</em>?</h2><button class="btn-primary" onclick="showPage('topup')">💎 Пополнить сейчас</button></div></section>
@@ -1632,34 +1647,26 @@ const packagesData = {
     {type:'pass', name:'Weekly Elite Pack', price:119, discount:17},
     {type:'pass', name:'Monthly Elite Pack', price:540, discount:17},
     {type:'diamond', diam:50, bonus:5, price:112, discount:19, popular:true},
-    {type:'diamond', diam:150, bonus:15, price:325, discount:17},
     {type:'diamond', diam:250, bonus:25, price:525, discount:17},
-    {type:'diamond', diam:500, bonus:65, price:1099, discount:19},
     {type:'diamond', diam:13, bonus:1, price:35, discount:17},
     {type:'diamond', diam:38, bonus:4, price:96, discount:18},
     {type:'diamond', diam:64, bonus:6, price:146, discount:18},
     {type:'diamond', diam:78, bonus:8, price:150, discount:11},
-    {type:'diamond', diam:127, bonus:13, price:282, discount:18},
     {type:'diamond', diam:156, bonus:16, price:273, discount:11},
     {type:'diamond', diam:234, bonus:23, price:347, discount:11},
-    {type:'diamond', diam:254, bonus:30, price:577, discount:18},
     {type:'diamond', diam:310, bonus:34, price:555, discount:11},
     {type:'diamond', diam:317, bonus:38, price:682, discount:18},
     {type:'diamond', diam:383, bonus:46, price:818, discount:18},
     {type:'diamond', diam:625, bonus:81, price:1045, discount:11},
-    {type:'diamond', diam:940, bonus:144, price:1990, /* ⚠ проверить: дороже, чем 1000+160 */ discount:17},
     {type:'diamond', diam:1000, bonus:160, price:1850, discount:8},
     {type:'diamond', diam:1160, bonus:186, price:1897, discount:6},
     {type:'diamond', diam:1252, bonus:194, price:1989, discount:18},
-    {type:'diamond', diam:1500, bonus:270, price:2825, discount:8},
     {type:'diamond', diam:1547, bonus:278, price:2749, discount:6},
     {type:'diamond', diam:1860, bonus:335, price:3065, discount:11},
     {type:'diamond', diam:2500, bonus:475, price:4594, discount:8},
-    {type:'diamond', diam:2501, bonus:475, price:5270, /* ⚠ проверить: 2500+475 стоит 4594 */ discount:18},
     {type:'diamond', diam:3099, bonus:589, price:4995, discount:11},
     {type:'diamond', diam:4649, bonus:883, price:7375, discount:11},
     {type:'diamond', diam:5000, bonus:1000, price:8959, discount:8},
-    {type:'diamond', diam:6252, bonus:1250, price:12887, discount:18},
     {type:'diamond', diam:7740, bonus:1548, price:12455, discount:11}
   ],
   russia: [

@@ -769,6 +769,8 @@
   .rev-note { text-align: center; font-size: .78rem; color: var(--muted); margin: 6px 5% 0; }
   @media (min-width: 900px) { .rev-row { justify-content: center; flex-wrap: wrap; overflow: visible; } .rev-card { flex-basis: 300px; } }
 
+  .night-note { max-width: 800px; margin: 14px auto 0; padding: 10px 14px; border-radius: 12px; background: rgba(255,186,8,.08); border: 1px solid rgba(255,186,8,.28); color: var(--white); font-size: .86rem; line-height: 1.4; width: calc(100% - 10%); text-align: center; }
+
   /* Animations */
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(30px); }
@@ -1484,7 +1486,7 @@
 
 <!-- HOME -->
 <div class="page active" id="page-home">
-  <div class="urgency-bar"><span>⚡ Пополнение за 5–10 минут</span><span>🕐 24/7</span><span>🔒 Безопасно</span></div>
+  <div class="urgency-bar"><span>⚡ Пополнение за 5–10 минут</span><span>🕐 07:00–01:00</span><span>🔒 Безопасно</span></div>
   <section class="hero">
     <canvas id="heroDiamonds" aria-hidden="true"></canvas>
     <div class="hero-gem" aria-hidden="true" id="heroGem">
@@ -1548,10 +1550,10 @@
       <button type="button" class="qb-card" onclick="quickBuy(156)"><div class="qd">💎 172</div><div class="qp">273 KGS</div><div class="qb">156+16 бонус</div></button>
     </div><button type="button" class="qb-all" onclick="showPage('topup')">Все пакеты →</button></div>
     <div class="hero-timer">⏱ Среднее время зачисления: <strong>5–10 минут</strong></div>
-    <div class="hero-stats"><div class="stat-pill"><div class="val">5-10 мин</div><div class="lbl">Доставка</div></div><div class="stat-pill"><div class="val">24/7</div><div class="lbl">Поддержка</div></div><div class="stat-pill"><div class="val">2 банка</div><div class="lbl">Mbank и O!Деньги</div></div></div>
+    <div class="hero-stats"><div class="stat-pill"><div class="val">5-10 мин</div><div class="lbl">Доставка</div></div><div class="stat-pill"><div class="val">07–01</div><div class="lbl">Часы работы</div></div><div class="stat-pill"><div class="val">2 банка</div><div class="lbl">Mbank и O!Деньги</div></div></div>
   </section>
   <div class="disclaimer" style="text-align:center; margin:0 5% 13px; background:rgba(255,186,8,.06); padding:10px; border-radius:10px;">⚠️ Неофициальный сервис. Не связан с Moonton.</div>
-  <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>24/7 без выходных</h3><p>Пополняйте в любое время.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
+  <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>Без выходных</h3><p>С 07:00 до 01:00, ночью зачисляем утром.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
   <section id="reviews"><div class="sec-label">Отзывы</div><div class="sec-divider"></div><h2 class="sec-title">Что пишут <em>клиенты</em></h2>
     <div class="rev-row">
       <figure class="rev-card"><img src="reviews/r2.jpg" alt="Отзыв клиента: «Буду теперь только у вас заказывать»" loading="lazy" width="640" height="473"></figure>
@@ -1569,6 +1571,7 @@
 <!-- TOPUP -->
 <div class="page" id="page-topup">
   <div class="page-header" style="padding:34px 5% 26px; border-bottom:1px solid var(--border);"><h1>💎 Пополнить алмазы</h1><p>Введите ID, выберите пакет. Зачисление за 5–10 минут.</p></div>
+  <div class="night-note">🌙 С 01:00 до 07:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
   <div class="topup-layout">
     <div class="form-card">
       <div class="card-title"><span class="ico">🎮</span> Данные игрока</div>
@@ -1595,6 +1598,7 @@
 <!-- PAYMENT -->
 <div class="page" id="page-payment">
   <div class="page-header" style="padding:24px 5% 12px;"><h1>💳 Оплата заказа</h1><p>Выберите банк, переведите сумму и отправьте чек в WhatsApp</p></div>
+  <div class="night-note">🌙 С 01:00 до 07:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
   <div class="payment-layout">
     <div class="order-summary"><div class="card-title">📋 Ваш заказ</div><div class="order-row"><span>Товар</span><span>Mobile Legends — Алмазы</span></div><div class="order-row"><span>ID игрока</span><span id="payPlayerId">—</span></div><div class="order-row"><span>Сервер</span><span id="payServerId">—</span></div><div class="order-row"><span>Пакет</span><span id="payPackage" style="color:var(--gold)">—</span></div><div class="order-row"><span>Итого</span><span id="payTotal" style="color:var(--gold)">—</span></div></div>
     <div class="pay-steps"><div class="ps-title">📋 Инструкция</div><div class="ps-row"><div class="ps-n">1</div><div>Выберите способ оплаты (Mbank или O!Деньги)</div></div><div class="ps-row"><div class="ps-n">2</div><div>Переведите <strong id="instrAmt">сумму</strong> на номер <span class="paynum"></span> или по QR-коду</div></div><div class="ps-row"><div class="ps-n">3</div><div>Сделайте скриншот чека</div></div><div class="ps-row"><div class="ps-n">4</div><div>Нажмите кнопку ниже — откроется WhatsApp с готовым сообщением</div></div><div class="ps-row"><div class="ps-n">5</div><div>Прикрепите чек и отправьте</div></div></div>
@@ -1607,7 +1611,7 @@
 
 <!-- SUPPORT -->
 <div class="page" id="page-support">
-  <div class="page-header"><h1>💬 Поддержка</h1><p>Отвечаем за 1–5 минут 24/7</p></div>
+  <div class="page-header"><h1>💬 Поддержка</h1><p>Отвечаем с 07:00 до 01:00 (время Бишкека)</p></div>
   <div class="support-layout" style="max-width:800px; margin:32px auto; padding:0 5%"><div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:26px"><div class="sc wa" style="background:linear-gradient(135deg,rgba(37,211,102,.13),rgba(11,29,58,.85)); border-radius:20px; padding:28px; text-align:center"><div class="si">📲</div><h3>WhatsApp</h3><a class="btn-wa" href="https://wa.me/996555920204" target="_blank">Написать</a><div style="margin-top:10px">+996 555 920 204</div></div><div class="sc tg" style="background:linear-gradient(135deg,rgba(0,136,204,.13),rgba(11,29,58,.85)); border-radius:20px; padding:28px; text-align:center"><div class="si">✈️</div><h3>Telegram</h3><a class="btn-tg" href="https://t.me/topupdiamondkg" target="_blank">@topupdiamondkg</a><div style="margin-top:10px">+996 555 920 204</div></div></div><div class="faq-list"><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Как найти ID?</span><span>▼</span></div><div class="faq-a">Профиль → ваш ID (123456789) и сервер в скобках (1234).</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Что после оплаты?</span><span>▼</span></div><div class="faq-a">Отправьте скриншот чека и ID в WhatsApp / Telegram.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Сколько ждать?</span><span>▼</span></div><div class="faq-a">5–10 минут после получения чека.</div></div></div></div>
 </div>
 

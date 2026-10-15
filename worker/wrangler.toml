@@ -1,0 +1,14 @@
+name = "diamond-kg-api"
+main = "src/index.js"
+compatibility_date = "2025-07-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "diamond-accounts-db"
+database_id = "72790b16-1c38-4ac7-94fc-bd7e5b94f4bc"
+
+[observability]
+enabled = true
+
+# Секрет (пароль админки) задаётся в Cloudflare, а не здесь:
+# Workers & Pages -> diamond-kg-api -> Settings -> Variables and Secrets -> ADMIN_PASSWORD (тип Secret)

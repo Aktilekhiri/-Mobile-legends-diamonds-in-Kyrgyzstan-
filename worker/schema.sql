@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS accounts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL, title_ky TEXT DEFAULT '',
+  price INTEGER NOT NULL DEFAULT 0,
+  rank TEXT DEFAULT '', level INTEGER DEFAULT 0, heroes INTEGER DEFAULT 0, skins INTEGER DEFAULT 0,
+  description TEXT DEFAULT '', description_ky TEXT DEFAULT '',
+  seo_ru TEXT DEFAULT '', seo_ky TEXT DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'available',
+  sort INTEGER DEFAULT 0,
+  created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS photos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  account_id INTEGER NOT NULL, pos INTEGER NOT NULL DEFAULT 0,
+  mime TEXT NOT NULL, data TEXT NOT NULL, created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_photos_acc ON photos(account_id, pos);

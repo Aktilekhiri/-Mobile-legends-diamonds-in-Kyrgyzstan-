@@ -1408,6 +1408,7 @@
   }
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
+<link rel="stylesheet" href="accounts.css?v=1">
 </head>
 <body data-page="home">
 <!-- IMPOSSIBLE DIAMOND: cinematic intro (skips itself after first visit via localStorage) -->
@@ -1455,6 +1456,7 @@
   <div class="nav-links">
     <a href="#" onclick="showPage('home')" class="active" id="nav-home">Главная</a>
     <a href="#" onclick="showPage('topup')" id="nav-topup">Пополнить</a>
+    <a href="#" onclick="showPage('accounts')" id="nav-accounts">Аккаунты</a>
     <a href="#" onclick="showPage('support')" id="nav-support">Поддержка</a>
     <a href="#" onclick="showPage('orders')" id="nav-orders">История</a>
     <span class="online-dot">Онлайн</span>
@@ -1467,10 +1469,9 @@
 <div class="mobile-menu" id="mobileMenu">
   <a href="#" onclick="showPage('home');toggleMenu()">🏠 Главная</a>
   <a href="#" onclick="showPage('topup');toggleMenu()">💎 Пополнить</a>
+  <a href="#" onclick="showPage('accounts');toggleMenu()">🎮 Аккаунты</a>
   <a href="#" onclick="showPage('support');toggleMenu()">💬 Поддержка</a>
   <a href="#" onclick="showPage('orders');toggleMenu()">📜 История</a>
-  <a href="https://wa.me/996555920204" target="_blank">📲 WhatsApp</a>
-  <a href="https://t.me/topupdiamondkg" target="_blank">✈️ Telegram</a>
 </div>
 
 <!-- Auth Modal -->
@@ -1541,7 +1542,8 @@
     <p style="text-align:center; color:var(--muted); margin:4px 0 0; font-size:15px">MLBB Diamond Top Up · Оплата через Mbank и O!Деньги</p>
     <div class="hero-cta-group">
       <button class="btn-primary glow" onclick="showPage('topup')">💎 Купить алмазы</button>
-      <a class="btn-wa" href="https://wa.me/996555920204" target="_blank">📲 WhatsApp</a>
+      <button class="btn-secondary" onclick="showPage('accounts')">🎮 Аккаунты</button>
+      <button class="btn-wa" onclick="showPage('support')">💬 Поддержка</button>
     </div>
     <div class="quick-buy"><div class="qb-title">Популярные пакеты</div><div class="qb-grid">
       <button type="button" class="qb-card" onclick="quickBuy(13)"><div class="qd">💎 14</div><div class="qp">35 KGS</div><div class="qb">13+1 бонус</div></button>
@@ -1609,10 +1611,16 @@
   </div>
 </div>
 
+<!-- ACCOUNTS -->
+<div class="page" id="page-accounts">
+  <div class="page-header" style="padding:30px 5% 14px;"><h1>🎮 Аккаунты MLBB</h1><p>Готовые аккаунты Mobile Legends · реальные скриншоты</p></div>
+  <div class="acc-wrap" id="accountsRoot"></div>
+</div>
+
 <!-- SUPPORT -->
 <div class="page" id="page-support">
-  <div class="page-header"><h1>💬 Поддержка</h1><p>Заказы 24/7 · с 01:00 до 07:00 ответим утром</p></div>
-  <div class="support-layout" style="max-width:800px; margin:32px auto; padding:0 5%"><div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:26px"><div class="sc wa" style="background:linear-gradient(135deg,rgba(37,211,102,.13),rgba(11,29,58,.85)); border-radius:20px; padding:28px; text-align:center"><div class="si">📲</div><h3>WhatsApp</h3><a class="btn-wa" href="https://wa.me/996555920204" target="_blank">Написать</a><div style="margin-top:10px">+996 555 920 204</div></div><div class="sc tg" style="background:linear-gradient(135deg,rgba(0,136,204,.13),rgba(11,29,58,.85)); border-radius:20px; padding:28px; text-align:center"><div class="si">✈️</div><h3>Telegram</h3><a class="btn-tg" href="https://t.me/topupdiamondkg" target="_blank">@topupdiamondkg</a><div style="margin-top:10px">+996 555 920 204</div></div></div><div class="faq-list"><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Как найти ID?</span><span>▼</span></div><div class="faq-a">Профиль → ваш ID (123456789) и сервер в скобках (1234).</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Что после оплаты?</span><span>▼</span></div><div class="faq-a">Отправьте скриншот чека и ID в WhatsApp / Telegram.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Сколько ждать?</span><span>▼</span></div><div class="faq-a">5–10 минут после получения чека.</div></div></div></div>
+  <div class="page-header" style="padding:30px 5% 14px;"><h1>💬 Поддержка</h1><p>Заказы 24/7 · с 01:00 до 07:00 ответим утром</p></div>
+  <div class="support-layout" style="max-width:800px; margin:32px auto; padding:0 5%"><div class="sc-unified" style="background:linear-gradient(135deg,rgba(46,125,237,.14),rgba(11,29,58,.85)); border:1px solid var(--border); border-radius:20px; padding:24px 18px; text-align:center; margin-bottom:26px"><div class="si" style="font-size:2rem">💬</div><h3 style="margin:6px 0">Свяжитесь с нами</h3><p style="color:var(--muted); margin:0 0 16px">Пишите в любой мессенджер — ответим как можно скорее</p><div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center"><a class="btn-wa" href="https://wa.me/996555920204" target="_blank" rel="noopener" style="flex:1 1 200px; justify-content:center">📲 WhatsApp</a><a class="btn-tg" href="https://t.me/topupdiamondkg" target="_blank" rel="noopener" style="flex:1 1 200px; justify-content:center; padding:15px 26px">✈️ Telegram</a></div><div style="margin-top:14px; color:var(--muted); font-size:.95rem">+996 555 920 204 · @topupdiamondkg</div></div><div class="faq-list"><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Как найти ID?</span><span>▼</span></div><div class="faq-a">Профиль → ваш ID (123456789) и сервер в скобках (1234).</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Что после оплаты?</span><span>▼</span></div><div class="faq-a">Отправьте скриншот чека и ID в WhatsApp / Telegram.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Сколько ждать?</span><span>▼</span></div><div class="faq-a">5–10 минут после получения чека.</div></div></div></div>
 </div>
 
 <!-- ORDERS HISTORY -->
@@ -1620,7 +1628,7 @@
 
 
 
-<footer><div class="footer-brand"><a href="#" class="nav-logo">MLBBDiamond.kg</a><p>Неофициальный сервис пополнения алмазов Mobile Legends в Кыргызстане</p><div><a class="btn-wa" href="https://wa.me/996555920204" style="padding:9px 16px; font-size:0.8rem">📲 WhatsApp</a><a class="btn-tg" href="https://t.me/topupdiamondkg" style="padding:9px 16px; font-size:0.8rem">✈️ Telegram</a></div><div class="social-links"><a href="https://www.tiktok.com/@yujiomlbb" target="_blank" rel="noopener" aria-label="TikTok @yujiomlbb"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M16.5 3c.3 2.4 1.7 3.9 4 4.1v3.1c-1.5 0-2.9-.5-4-1.3v6.2a6.1 6.1 0 1 1-6.1-6.1c.3 0 .7 0 1 .1v3.2a2.9 2.9 0 1 0 1.9 2.7V3h3.2z"/></svg>@yujiomlbb</a><a href="https://www.youtube.com/@YujioPlays" target="_blank" rel="noopener" aria-label="YouTube @YujioPlays"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 4.8 12 4.8 12 4.8s-6 0-7.7.5A2.7 2.7 0 0 0 2.4 7.2C2 8.9 2 12 2 12s0 3.1.4 4.8a2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.7.5 7.7.5s6 0 7.7-.5a2.7 2.7 0 0 0 1.9-1.9c.4-1.7.4-4.8.4-4.8s0-3.1-.4-4.8zM10 15.1V8.9l5.2 3.1-5.2 3.1z"/></svg>@YujioPlays</a><a href="https://www.instagram.com/yujio_mlbb/" target="_blank" rel="noopener" aria-label="Instagram @yujio_mlbb"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/></svg>@yujio_mlbb</a><a href="https://t.me/topupdiamondskg" target="_blank" rel="noopener" aria-label="Telegram канал @topupdiamondskg"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.3 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.8.7.8.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.8c.3-1.2-.5-1.8-1.3-1.4zM9 14l9.2-5.8c.4-.3.8-.1.5.2L11 15.3l-.3 3.3L9 14z"/></svg>Канал</a></div></div><div class="footer-links"><a href="#" onclick="showPage('home')">Главная</a><a href="#" onclick="showPage('topup')">Пополнить</a><a href="#" onclick="showPage('support')">Поддержка</a><a href="#" onclick="showPage('orders')">История</a></div><div class="footer-bottom">© 2026 MLBBDiamond.kg · Не связан с Moonton</div></footer>
+<footer><div class="footer-brand"><a href="#" class="nav-logo">MLBBDiamond.kg</a><p>Неофициальный сервис пополнения алмазов Mobile Legends в Кыргызстане</p><div><a class="btn-wa" href="#" onclick="showPage('support');return false" style="padding:9px 16px; font-size:0.8rem">💬 Поддержка</a></div><div class="social-links"><a href="https://www.tiktok.com/@yujiomlbb" target="_blank" rel="noopener" aria-label="TikTok @yujiomlbb"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M16.5 3c.3 2.4 1.7 3.9 4 4.1v3.1c-1.5 0-2.9-.5-4-1.3v6.2a6.1 6.1 0 1 1-6.1-6.1c.3 0 .7 0 1 .1v3.2a2.9 2.9 0 1 0 1.9 2.7V3h3.2z"/></svg>@yujiomlbb</a><a href="https://www.youtube.com/@YujioPlays" target="_blank" rel="noopener" aria-label="YouTube @YujioPlays"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 4.8 12 4.8 12 4.8s-6 0-7.7.5A2.7 2.7 0 0 0 2.4 7.2C2 8.9 2 12 2 12s0 3.1.4 4.8a2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.7.5 7.7.5s6 0 7.7-.5a2.7 2.7 0 0 0 1.9-1.9c.4-1.7.4-4.8.4-4.8s0-3.1-.4-4.8zM10 15.1V8.9l5.2 3.1-5.2 3.1z"/></svg>@YujioPlays</a><a href="https://www.instagram.com/yujio_mlbb/" target="_blank" rel="noopener" aria-label="Instagram @yujio_mlbb"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/></svg>@yujio_mlbb</a><a href="https://t.me/topupdiamondskg" target="_blank" rel="noopener" aria-label="Telegram канал @topupdiamondskg"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.3 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.8.7.8.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.8c.3-1.2-.5-1.8-1.3-1.4zM9 14l9.2-5.8c.4-.3.8-.1.5.2L11 15.3l-.3 3.3L9 14z"/></svg>Канал</a></div></div><div class="footer-links"><a href="#" onclick="showPage('home')">Главная</a><a href="#" onclick="showPage('topup')">Пополнить</a><a href="#" onclick="showPage('accounts')">Аккаунты</a><a href="#" onclick="showPage('support')">Поддержка</a><a href="#" onclick="showPage('orders')">История</a></div><div class="footer-bottom">© 2026 MLBBDiamond.kg · Не связан с Moonton</div></footer>
 
 <script>
 // Каталоги по регионам (цены в KGS)
@@ -1893,6 +1901,8 @@ function showPage(name) {
   window.scrollTo(0,0);
   if (name === 'topup') renderPackages();
   if (name === 'orders') renderOrders();
+  if (name === 'accounts' && window.DKAccounts) DKAccounts.load();
+  if (window.DKAccounts && name !== 'accounts') DKAccounts.close();
 }
 
 function toggleMenu() {
@@ -2549,6 +2559,8 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 })();
 </script>
 
+<script src="api-config.js?v=1"></script>
+<script src="accounts.js?v=1" defer></script>
 <script src="script.js" defer></script>
 </body>
 </html>

@@ -1178,58 +1178,6 @@
   }
 
   /* ===================================================================
-     CUSTOM CURSOR (desktop, fine pointer only)
-  =================================================================== */
-  #cursorDot, #cursorRing { display: none; }
-  @media (hover: hover) and (pointer: fine) {
-    body.cursor-ready, body.cursor-ready a, body.cursor-ready button,
-    body.cursor-ready .pkg-card, body.cursor-ready .method-card,
-    body.cursor-ready input, body.cursor-ready select {
-      cursor: none;
-    }
-    #cursorDot, #cursorRing {
-      display: block;
-      position: fixed;
-      top: 0; left: 0;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%,-50%);
-    }
-    #cursorDot {
-      width: 6px; height: 6px;
-      background: var(--gold);
-      box-shadow: 0 0 10px 2px rgba(255,186,8,.7);
-      transition: opacity .2s;
-    }
-    #cursorRing {
-      width: 34px; height: 34px;
-      border: 1.5px solid rgba(255,186,8,.5);
-      transition: width .2s var(--ease-soft), height .2s var(--ease-soft),
-                  border-color .2s, background .2s, opacity .2s;
-    }
-    #cursorRing.hover {
-      width: 56px; height: 56px;
-      background: rgba(255,186,8,.08);
-      border-color: var(--gold);
-    }
-    #cursorRing .cursor-label {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      font-family: 'Rajdhani', sans-serif;
-      font-size: .62rem;
-      font-weight: 700;
-      letter-spacing: .08em;
-      color: var(--gold);
-      opacity: 0;
-      transition: opacity .2s;
-      white-space: nowrap;
-    }
-    #cursorRing.hover .cursor-label { opacity: 1; }
-  }
-
-  /* ===================================================================
      MOBILE: keep it light
   =================================================================== */
   @media (max-width: 640px) {
@@ -1438,8 +1386,6 @@
   <button class="intro-skip" id="introSkipBtn" type="button">Пропустить</button>
 </div>
 <div id="pageTransitionOverlay" aria-hidden="true"></div>
-<div id="cursorDot" aria-hidden="true"></div>
-<div id="cursorRing" aria-hidden="true"><span class="cursor-label" id="cursorLabel"></span></div>
 
 <canvas id="particleCanvas"></canvas>
 <div class="bg-mesh"></div>
@@ -2204,50 +2150,6 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
         document.body.appendChild(p);
         (function(node){ setTimeout(function(){ node.remove(); }, 650); })(p);
       }
-    });
-  })();
-
-  /* ---------------- CUSTOM CURSOR (desktop, fine pointer only) ---------------- */
-  (function initCursor(){
-    if (!isFinePointer || reduceMotion) return;
-    var dot = document.getElementById('cursorDot');
-    var ring = document.getElementById('cursorRing');
-    var label = document.getElementById('cursorLabel');
-    if (!dot || !ring) return;
-    document.body.classList.add('cursor-ready');
-    var rx = 0, ry = 0, dx = 0, dy = 0;
-    document.addEventListener('mousemove', function(e){
-      rx = e.clientX; ry = e.clientY;
-      dot.style.left = rx + 'px'; dot.style.top = ry + 'px';
-    });
-    (function loop(){
-      dx += (rx - dx) * 0.18;
-      dy += (ry - dy) * 0.18;
-      ring.style.left = dx + 'px'; ring.style.top = dy + 'px';
-      requestAnimationFrame(loop);
-    })();
-    var viewSelector = '.pkg-card, .method-card';
-    var selectSelector = 'button, a, .nav-cta, input[type="submit"]';
-    document.addEventListener('mouseover', function(e){
-      var viewEl = e.target.closest ? e.target.closest(viewSelector) : null;
-      var selectEl = e.target.closest ? e.target.closest(selectSelector) : null;
-      if (viewEl) {
-        ring.classList.add('hover');
-        if (label) label.textContent = 'VIEW';
-      } else if (selectEl) {
-        ring.classList.add('hover');
-        if (label) label.textContent = 'SELECT';
-      }
-    });
-    document.addEventListener('mouseout', function(e){
-      var stillOver = e.target.closest ? e.target.closest(viewSelector + ',' + selectSelector) : null;
-      if (!stillOver) { ring.classList.remove('hover'); if (label) label.textContent = ''; }
-    });
-    document.addEventListener('mouseleave', function(){
-      dot.style.opacity = '0'; ring.style.opacity = '0';
-    });
-    document.addEventListener('mouseenter', function(){
-      dot.style.opacity = '1'; ring.style.opacity = '1';
     });
   })();
 })();

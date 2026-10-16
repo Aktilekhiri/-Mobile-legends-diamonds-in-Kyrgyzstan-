@@ -748,6 +748,9 @@
   .qb-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .qb-card { background: rgba(11,29,58,.78); border: 1.5px solid var(--border); border-radius: 14px; padding: 11px 8px; color: var(--white); cursor: pointer; font: inherit; text-align: center; position: relative; }
   .qb-card:active { transform: scale(.97); }
+  .pkg-card.out { opacity: .5; filter: grayscale(.7); cursor: not-allowed; pointer-events: none; }
+  .pkg-card.out:hover { transform: none; }
+  .pkg-out { margin-top: 4px; font-size: .72rem; font-weight: 700; color: #ff8a5c; background: rgba(255,106,40,.12); border-radius: 6px; padding: 2px 6px; display: inline-block; }
   .qb-card.hot { border-color: var(--gold); }
   .qb-card .qd { font-family: 'Rajdhani', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--gold); line-height: 1.1; }
   .qb-card .qp { font-size: .95rem; font-weight: 700; margin-top: 2px; }
@@ -1491,10 +1494,10 @@
       <button class="btn-wa" onclick="showPage('support')">💬 Поддержка</button>
     </div>
     <div class="quick-buy"><div class="qb-title">Популярные пакеты</div><div class="qb-grid">
-      <button type="button" class="qb-card" onclick="quickBuy(13)"><div class="qd">💎 14</div><div class="qp">35 KGS</div><div class="qb">13+1 бонус</div></button>
-      <button type="button" class="qb-card" onclick="quickBuy(38)"><div class="qd">💎 42</div><div class="qp">96 KGS</div><div class="qb">38+4 бонус</div></button>
-      <button type="button" class="qb-card hot" onclick="quickBuy(50)"><div class="qd">💎 55</div><div class="qp">112 KGS</div><div class="qb">50+5 бонус</div></button>
-      <button type="button" class="qb-card" onclick="quickBuy(156)"><div class="qd">💎 172</div><div class="qp">273 KGS</div><div class="qb">156+16 бонус</div></button>
+      <button type="button" class="qb-card hot" onclick="quickBuy('Weekly Elite Pack')"><div class="qd">🎫 Weekly</div><div class="qp">119 KGS</div><div class="qb">Elite Pack −17%</div></button>
+      <button type="button" class="qb-card" onclick="quickBuy('Monthly Elite Pack')"><div class="qd">🎫 Monthly</div><div class="qp">540 KGS</div><div class="qb">Elite Pack −17%</div></button>
+      <button type="button" class="qb-card" onclick="quickBuy(1160)"><div class="qd">💎 1346</div><div class="qp">1 897 KGS</div><div class="qb">1160+186 бонус</div></button>
+      <button type="button" class="qb-card" onclick="quickBuy(1547)"><div class="qd">💎 1825</div><div class="qp">2 749 KGS</div><div class="qb">1547+278 бонус</div></button>
     </div><button type="button" class="qb-all" onclick="showPage('topup')">Все пакеты →</button></div>
     <div class="hero-timer">⏱ Среднее время зачисления: <strong>5–10 минут</strong></div>
     <div class="hero-stats"><div class="stat-pill"><div class="val">5-10 мин</div><div class="lbl">Доставка</div></div><div class="stat-pill"><div class="val">24/7</div><div class="lbl">Приём заказов</div></div><div class="stat-pill"><div class="val">2 банка</div><div class="lbl">Mbank и O!Деньги</div></div></div>
@@ -1577,6 +1580,7 @@
 
 <script>
 // Каталоги по регионам (цены в KGS)
+/* out:true = пакет закончился у поставщика (показывается как «Нет в наличии», цена не меняется). Уберите out:true, когда пакет снова есть. */
 const packagesData = {
   global: [
     {type:'pass', name:'Twilight Pass', price:1240, discount:18},
@@ -1584,28 +1588,28 @@ const packagesData = {
     {type:'pass', name:'Diamond Pass Super Value', price:125},
     {type:'pass', name:'Weekly Elite Pack', price:119, discount:17},
     {type:'pass', name:'Monthly Elite Pack', price:540, discount:17},
-    {type:'diamond', diam:50, bonus:5, price:112, discount:19, popular:true},
-    {type:'diamond', diam:250, bonus:25, price:525, discount:17},
-    {type:'diamond', diam:13, bonus:1, price:35, discount:17},
-    {type:'diamond', diam:38, bonus:4, price:96, discount:18},
-    {type:'diamond', diam:64, bonus:6, price:146, discount:18},
-    {type:'diamond', diam:78, bonus:8, price:150, discount:11},
-    {type:'diamond', diam:156, bonus:16, price:273, discount:11},
-    {type:'diamond', diam:234, bonus:23, price:347, discount:11},
-    {type:'diamond', diam:310, bonus:34, price:555, discount:11},
-    {type:'diamond', diam:317, bonus:38, price:682, discount:18},
-    {type:'diamond', diam:383, bonus:46, price:818, discount:18},
-    {type:'diamond', diam:625, bonus:81, price:1045, discount:11},
+    {type:'diamond', diam:50, bonus:5, price:112, discount:19, popular:true, out:true},
+    {type:'diamond', diam:250, bonus:25, price:525, discount:17, out:true},
+    {type:'diamond', diam:13, bonus:1, price:35, discount:17, out:true},
+    {type:'diamond', diam:38, bonus:4, price:96, discount:18, out:true},
+    {type:'diamond', diam:64, bonus:6, price:146, discount:18, out:true},
+    {type:'diamond', diam:78, bonus:8, price:150, discount:11, out:true},
+    {type:'diamond', diam:156, bonus:16, price:273, discount:11, out:true},
+    {type:'diamond', diam:234, bonus:23, price:347, discount:11, out:true},
+    {type:'diamond', diam:310, bonus:34, price:555, discount:11, out:true},
+    {type:'diamond', diam:317, bonus:38, price:682, discount:18, out:true},
+    {type:'diamond', diam:383, bonus:46, price:818, discount:18, out:true},
+    {type:'diamond', diam:625, bonus:81, price:1045, discount:11, out:true},
     {type:'diamond', diam:1000, bonus:160, price:1850, discount:8},
     {type:'diamond', diam:1160, bonus:186, price:1897, discount:6},
-    {type:'diamond', diam:1252, bonus:194, price:1989, discount:18},
+    {type:'diamond', diam:1252, bonus:194, price:1989, discount:18, out:true},
     {type:'diamond', diam:1547, bonus:278, price:2749, discount:6},
-    {type:'diamond', diam:1860, bonus:335, price:3065, discount:11},
+    {type:'diamond', diam:1860, bonus:335, price:3065, discount:11, out:true},
     {type:'diamond', diam:2500, bonus:475, price:4594, discount:8},
-    {type:'diamond', diam:3099, bonus:589, price:4995, discount:11},
-    {type:'diamond', diam:4649, bonus:883, price:7375, discount:11},
+    {type:'diamond', diam:3099, bonus:589, price:4995, discount:11, out:true},
+    {type:'diamond', diam:4649, bonus:883, price:7375, discount:11, out:true},
     {type:'diamond', diam:5000, bonus:1000, price:8959, discount:8},
-    {type:'diamond', diam:7740, bonus:1548, price:12455, discount:11}
+    {type:'diamond', diam:7740, bonus:1548, price:12455, discount:11, out:true}
   ],
   russia: [
     {type:'diamond', diam:35, bonus:0, price:82},
@@ -1629,7 +1633,7 @@ function buildPackages(regionKey) {
   });
   if (regionKey === 'global') {
     const passes = list.filter(p => p.type === 'pass');
-    const diamonds = list.filter(p => p.type !== 'pass').sort((a, b) => a.totalDiamonds - b.totalDiamonds);
+    const diamonds = list.filter(p => p.type !== 'pass').sort((a, b) => ((a.out ? 1 : 0) - (b.out ? 1 : 0)) || (a.totalDiamonds - b.totalDiamonds));
     return [...diamonds, ...passes];
   }
   return [...list.filter(p => p.type !== 'pass'), ...list.filter(p => p.type === 'pass')];
@@ -1653,17 +1657,20 @@ function changeRegion() {
 
 function renderPackages() {
   const grid = document.getElementById('packagesGrid');
-  let lastType = null;
+  let lastType = null, lastOut = false;
   grid.innerHTML = packages.map(p => {
-    const head = p.type !== lastType ? `<div class="pkg-group">${p.type === 'pass' ? '🎫 Пассы и наборы' : '💎 Алмазы'}</div>` : '';
-    lastType = p.type;
+    let head = '';
+    if (p.type !== lastType) { head = `<div class="pkg-group">${p.type === 'pass' ? '🎫 Пассы и наборы' : '💎 Алмазы'}</div>`; lastOut = false; }
+    if (p.out && !lastOut) head += `<div class="pkg-group">⏳ Нет в наличии</div>`;
+    lastType = p.type; lastOut = !!p.out;
     return head + `
-    <div class="pkg-card ${p.popular ? 'popular' : ''} ${selectedPkg?.id === p.id ? 'selected' : ''}" onclick="selectPackage('${p.id}')">
+    <div class="pkg-card ${p.popular && !p.out ? 'popular' : ''} ${p.out ? 'out' : ''} ${selectedPkg?.id === p.id ? 'selected' : ''}" ${p.out ? 'aria-disabled="true"' : `onclick="selectPackage('${p.id}')"`}>
       <div class="pkg-diamond">${p.type === 'pass' ? '🎫' : '💎'}</div>
       ${p.type === 'pass'
         ? `<div class="pkg-amount" style="font-size:0.92rem; line-height:1.25">${p.name}</div>`
         : `<div class="pkg-amount"><span>${p.totalDiamonds}</span></div>`}
       <div class="pkg-price"><strong>${p.price.toLocaleString()} KGS</strong></div>
+      ${p.out ? `<div class="pkg-out">Нет в наличии</div>` : ''}
       ${p.type === 'diamond' && p.bonus ? `<div class="pkg-bonus">+${p.bonus} бонус</div>` : ''}
       ${p.discount ? `<div class="pkg-bonus" style="color:var(--gold)">-${p.discount}%</div>` : ''}
       ${p.note ? `<div class="pkg-bonus" style="font-size:0.68rem">${p.note}</div>` : ''}
@@ -1674,14 +1681,16 @@ function renderPackages() {
 function quickBuy(diam) {
   const sel = document.getElementById('regionSelect');
   if (sel.value !== 'global') { sel.value = 'global'; changeRegion(); }
-  const p = packages.find(x => x.type === 'diamond' && x.diam === diam);
-  if (p) selectPackage(p.id);
+  const p = typeof diam === 'string' ? packages.find(x => x.name === diam) : packages.find(x => x.type === 'diamond' && x.diam === diam);
+  if (p && !p.out) selectPackage(p.id);
   showPage('topup');
   setTimeout(() => { const el = document.getElementById('playerId'); if (el) el.focus({ preventScroll: true }); }, 450);
 }
 
 function selectPackage(id) {
-  selectedPkg = packages.find(p => p.id === id);
+  const cand = packages.find(p => p.id === id);
+  if (!cand || cand.out) return;
+  selectedPkg = cand;
   renderPackages();
   document.getElementById('selectedInfo').style.display = 'block';
   const label = selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.totalDiamonds} алмазов`;

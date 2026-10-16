@@ -9,10 +9,10 @@
       empty: 'Пока нет аккаунтов в этой категории.', soon: 'Каталог аккаунтов скоро откроется.',
       fail: 'Не удалось загрузить каталог. Обновите страницу или напишите в поддержку.', loading: 'Загружаем аккаунты…',
       more: 'Подробнее →', photos: 'фото', rank: 'Ранг', level: 'Уровень', heroes: 'Героев', skins: 'Скинов',
-      price: 'KGS', buy: 'Купить в WhatsApp', tg: 'Написать в Telegram', close: 'Закрыть',
+      price: 'Сом', buy: 'Купить в WhatsApp', tg: 'Написать в Telegram', close: 'Закрыть',
       note: 'Пишите — отвечаем быстро. Оплата Mbank или O!Деньги. Укажите номер аккаунта №',
       soldline: 'Этот аккаунт уже продан. Напишите нам — подберём похожий.',
-      msg: function (a) { return 'Здравствуйте! Хочу купить аккаунт MLBB №' + a.id + ': ' + a.title + ' — ' + a.price + ' KGS. (diamond.kg)'; },
+      msg: function (a) { return 'Здравствуйте! Хочу купить аккаунт MLBB №' + a.id + ': ' + a.title + ' — ' + a.price + ' Сом. (diamond.kg)'; },
       seoH: 'Купить аккаунт Mobile Legends в Кыргызстане',
       seo: ['Продажа аккаунтов MLBB (Mobile Legends: Bang Bang) в Бишкеке и по всему Кыргызстану. Реальные скриншоты, честное описание: ранг, уровень, количество героев и скинов.',
         'Как купить аккаунт млбб: выберите аккаунт, нажмите «Купить», напишите в WhatsApp или Telegram, оплатите через Mbank или O!Деньги и получите данные. Купить аккаунт Мобайл Легендс недорого, быстро и безопасно.']
@@ -22,10 +22,10 @@
       empty: 'Бул категорияда азырынча аккаунт жок.', soon: 'Аккаунттар каталогу жакында ачылат.',
       fail: 'Каталог жүктөлгөн жок. Баракчаны жаңыртыңыз же колдоого жазыңыз.', loading: 'Аккаунттар жүктөлүүдө…',
       more: 'Кененирээк →', photos: 'сүрөт', rank: 'Даража', level: 'Деңгээл', heroes: 'Баатыр', skins: 'Скин',
-      price: 'KGS', buy: 'WhatsApp аркылуу сатып алуу', tg: 'Telegram аркылуу жазуу', close: 'Жабуу',
+      price: 'сом', buy: 'WhatsApp аркылуу сатып алуу', tg: 'Telegram аркылуу жазуу', close: 'Жабуу',
       note: 'Жазыңыз — тез жооп беребиз. Mbank же O!Деңги аркылуу төлөйсүз. Аккаунттун номерин жазыңыз №',
       soldline: 'Бул аккаунт сатылып кеткен. Бизге жазыңыз — окшошун тандап беребиз.',
-      msg: function (a) { return 'Саламатсызбы! MLBB аккаунтун сатып алгым келет №' + a.id + ': ' + (a.title_ky || a.title) + ' — ' + a.price + ' KGS. (diamond.kg)'; },
+      msg: function (a) { return 'Саламатсызбы! MLBB аккаунтун сатып алгым келет №' + a.id + ': ' + (a.title_ky || a.title) + ' — ' + a.price + ' сом. (diamond.kg)'; },
       seoH: 'Кыргызстанда Mobile Legends аккаунтун сатып алуу',
       seo: ['Бишкекте жана бүт Кыргызстанда MLBB (Mobile Legends: Bang Bang) аккаунттарын сатуу. Чыныгы скриншоттор, так сүрөттөмө: даража, деңгээл, баатырлар жана скиндер саны.',
         'Млбб аккаунтун кантип сатып алуу керек: аккаунтту тандаңыз, «Сатып алуу» баскычын басыңыз, WhatsApp же Telegram аркылуу жазыңыз, Mbank же O!Деңги аркылуу төлөңүз жана маалыматты алыңыз. Мобайл Легендс аккаунтун арзан, тез жана коопсуз сатып алыңыз.']
@@ -39,7 +39,7 @@
   function title(a) { return (lang() === 'ky' && a.title_ky) || a.title; }
   function desc(a) { return (lang() === 'ky' && a.description_ky) || a.description; }
   function seo(a) { return (lang() === 'ky' ? a.seo_ky : a.seo_ru) || ''; }
-  function money(n) { return Number(n || 0).toLocaleString('ru-RU') + ' KGS'; }
+  function money(n) { return Number(n || 0).toLocaleString('ru-RU') + ' Сом'; }
   function root() { return document.getElementById('accountsRoot'); }
 
   function load() {

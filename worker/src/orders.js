@@ -1,5 +1,5 @@
 // Заказы: приём с сайта, подтверждение оплаты админом, выдача через FazerCards, возврат.
-import { GLOBAL_CATALOG, MAX_AUTO_COST_USD } from './catalog.js';
+import { CATALOGS, MAX_AUTO_COST_USD } from './catalog.js';
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { notify } from './notify.js';
 
@@ -32,7 +32,7 @@ export async function createOrder(env, ip, b) {
     const r = await env.DB.prepare('SELECT COUNT(*) AS c FROM orders WHERE ip = ? AND created_at > ?').bind(ip, Date.now() - 3600000).first();
     if (r && r.c >= 8) return { error: 'Слишком много заказов, попробуйте позже', status: 429 };
   }
-  const cat = region === 'global' ? GLOBAL_CATALOG[pkg] : null;
+  const cat = (CATALOGS[region] || {})[pkg] || null;
   const id = newCode(), now = Date.now();
   const auto = !!(cat && cat.cost <= MAX_AUTO_COST_USD);
   await env.DB.prepare(

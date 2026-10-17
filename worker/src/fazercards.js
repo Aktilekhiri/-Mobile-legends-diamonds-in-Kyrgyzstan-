@@ -5,7 +5,7 @@
 export const FZ_READY = true;
 const BASE = 'https://api.fzr.cards';
 
-const CATEGORY = { global: 'mobile_legends_global' };
+const CATEGORY = { global: 'mobile_legends_global', russia: 'mobile_legends_ru' };
 
 async function call(env, method, path, body, extraHeaders) {
   if (!env.FAZERCARDS_API_KEY) throw new Error('FAZERCARDS_API_KEY не задан в Cloudflare');

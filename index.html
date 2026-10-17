@@ -1521,7 +1521,7 @@
 <!-- TOPUP -->
 <div class="page" id="page-topup">
   <div class="page-header" style="padding:34px 5% 26px; border-bottom:1px solid var(--border);"><h1>💎 Пополнить алмазы</h1><p>Введите ID, выберите пакет. Зачисление за 5–10 минут.</p></div>
-  <div class="night-note">🌙 С 01:00 до 07:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
+  <div class="night-note">🌙 С 00:00 до 08:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
   <div class="topup-layout">
     <div class="form-card">
       <div class="card-title"><span class="ico">🎮</span> Данные игрока</div>
@@ -1548,11 +1548,10 @@
 <!-- PAYMENT -->
 <div class="page" id="page-payment">
   <div class="page-header" style="padding:24px 5% 12px;"><h1>💳 Оплата заказа</h1><p>Выберите банк, переведите сумму и отправьте чек в WhatsApp</p></div>
-  <div class="night-note">🌙 С 01:00 до 07:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
+  <div class="night-note">🌙 С 00:00 до 08:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
   <div class="payment-layout">
     <div class="order-summary"><div class="card-title">📋 Ваш заказ</div><div class="order-row"><span>Товар</span><span>Mobile Legends — Алмазы</span></div><div class="order-row"><span>ID игрока</span><span id="payPlayerId">—</span></div><div class="order-row"><span>Сервер</span><span id="payServerId">—</span></div><div class="order-row"><span>Пакет</span><span id="payPackage" style="color:var(--gold)">—</span></div><div class="order-row"><span>Итого</span><span id="payTotal" style="color:var(--gold)">—</span></div></div>
     <div class="pay-steps"><div class="ps-title">📋 Инструкция</div><div class="ps-row"><div class="ps-n">1</div><div>Выберите способ оплаты (Mbank или O!Банк)</div></div><div class="ps-row"><div class="ps-n">2</div><div>Переведите <strong id="instrAmt">сумму</strong> на номер <span class="paynum"></span> или по QR-коду</div></div><div class="ps-row"><div class="ps-n">3</div><div>Сделайте скриншот чека</div></div><div class="ps-row"><div class="ps-n">4</div><div>Нажмите кнопку ниже — откроется WhatsApp с готовым сообщением</div></div><div class="ps-row"><div class="ps-n">5</div><div>Прикрепите чек и отправьте</div></div></div>
-    <div class="night-note" style="margin:0 0 14px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:rgba(255,186,8,.07);font-size:.92rem;line-height:1.45;"><span aria-hidden="true">🌙</span> <strong>Заказы с 00:00 до 08:00 начисляются утром.</strong> Оплатить можно сейчас.</div>
     <div class="payment-methods"><div class="card-title">🏦 Выберите банк для перевода</div><div class="method-grid" id="methodsGrid"></div><div id="qrContainer" style="text-align:center; margin-top:15px;"></div></div>
     <div class="payment-confirm"><div class="card-title">📱 Контакт (по желанию)</div><label>Номер телефона (необязательно)</label><input type="tel" class="input-field" id="phoneNumber" placeholder="700 123 456"><div id="methodNote" class="method-note" style="margin:8px 0; color:var(--muted);">Выберите банк, затем нажмите отправить</div>
     <button class="btn-primary btn-full" id="sendWhatsAppBtn" onclick="sendOrderToWhatsApp()" disabled style="opacity:0.5">📲 Отправить заказ в WhatsApp</button>
@@ -1568,7 +1567,7 @@
 
 <!-- SUPPORT -->
 <div class="page" id="page-support">
-  <div class="page-header" style="padding:30px 5% 14px;"><h1>💬 Поддержка</h1><p>Заказы 24/7 · с 01:00 до 07:00 ответим утром</p></div>
+  <div class="page-header" style="padding:30px 5% 14px;"><h1>💬 Поддержка</h1><p>Заказы 24/7 · с 00:00 до 08:00 ответим утром</p></div>
   <div class="support-layout" style="max-width:800px; margin:32px auto; padding:0 5%"><div class="sc-unified" style="background:linear-gradient(135deg,rgba(46,125,237,.14),rgba(11,29,58,.85)); border:1px solid var(--border); border-radius:20px; padding:24px 18px; text-align:center; margin-bottom:26px"><div class="si" style="font-size:2rem">💬</div><h3 style="margin:6px 0">Свяжитесь с нами</h3><p style="color:var(--muted); margin:0 0 16px">Пишите в любой мессенджер — ответим как можно скорее</p><div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center"><a class="btn-wa" href="https://wa.me/996555920204" target="_blank" rel="noopener" style="flex:1 1 200px; justify-content:center">📲 WhatsApp</a><a class="btn-tg" href="https://t.me/topupdiamondkg" target="_blank" rel="noopener" style="flex:1 1 200px; justify-content:center; padding:15px 26px">✈️ Telegram</a></div><div style="margin-top:14px; color:var(--muted); font-size:.95rem">+996 555 920 204 · @topupdiamondkg</div></div><div class="faq-list"><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Как найти ID?</span><span>▼</span></div><div class="faq-a">Профиль → ваш ID (123456789) и сервер в скобках (1234).</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Что после оплаты?</span><span>▼</span></div><div class="faq-a">Отправьте скриншот чека и ID в WhatsApp / Telegram.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Сколько ждать?</span><span>▼</span></div><div class="faq-a">5–10 минут после получения чека.</div></div></div></div>
 </div>
 

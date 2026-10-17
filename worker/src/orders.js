@@ -106,6 +106,10 @@ export async function syncFromFz(env, o, fz) {
   if (st === 'completed') {
     await setStatus(env, o.id, { status: 'delivered', fz_status: st, fz_order_id: fz.id || o.fz_order_id, finished_at: Date.now(), fail_reason: '' });
     await notify(env, `✅ Заказ ${o.id} выдан (${o.pkg_label}, ${o.price_kgs} сом).`);
+  } else if (st === 'partial') {
+    // составной пакет: часть выдана, часть возвращена — разбирать вручную
+    await setStatus(env, o.id, { status: 'manual', fz_status: st, fz_order_id: fz.id || o.fz_order_id, fail_reason: 'Частично выдан: ' + String(fz.fail_reason || '').slice(0, 200), finished_at: Date.now() });
+    await notify(env, `⚠️ Заказ ${o.id}: составной пакет выдан частично (FazerCards ${fz.id}). Проверьте вручную, что получил клиент.`);
   } else if (st === 'refund' || st === 'failed') {
     // failed: деньги гарантированно вернутся только при refund, поэтому клиенту возвращаем деньги только после refund
     if (st === 'refund') {

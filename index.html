@@ -1828,21 +1828,25 @@ async function sendOrderToWhatsApp() {
   const sendBtn0 = document.getElementById('sendWhatsAppBtn');
   if (sendBtn0) { sendBtn0.disabled = true; sendBtn0.style.opacity = '0.5'; }
   if (!currentOrder.code && window.DK_API) {
-    try {
-      const ctrl = new AbortController();
-      const tm = setTimeout(() => ctrl.abort(), 4000);
-      const resp = await fetch(String(window.DK_API).replace(/\/+$/, '') + '/api/orders', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
-        body: JSON.stringify({
-          playerId: currentOrder.playerId, serverId: currentOrder.serverId, region: currentOrder.region,
-          pkg: currentOrder.packageName,
-          pkgLabel: currentOrder.label,
-          price: currentOrder.price, method: selectedMethod, phone: phone
-        })
-      });
-      clearTimeout(tm);
-      if (resp.ok) { const d = await resp.json(); if (d && d.id) currentOrder.code = d.id; }
-    } catch (e) { /* без кода заказа */ }
+    // До 2 попыток по 9 секунд: в части сетей (например, мобильные операторы в РФ) Cloudflare отвечает медленно.
+    for (let attempt = 0; attempt < 2 && !currentOrder.code; attempt++) {
+      try {
+        const ctrl = new AbortController();
+        const tm = setTimeout(() => ctrl.abort(), 9000);
+        const resp = await fetch(String(window.DK_API).replace(/\/+$/, '') + '/api/orders', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
+          body: JSON.stringify({
+            playerId: currentOrder.playerId, serverId: currentOrder.serverId, region: currentOrder.region,
+            pkg: currentOrder.packageName,
+            pkgLabel: currentOrder.label,
+            price: currentOrder.price, method: selectedMethod, phone: phone
+          })
+        });
+        clearTimeout(tm);
+        if (resp.ok) { const d = await resp.json(); if (d && d.id) currentOrder.code = d.id; }
+        else if (resp.status >= 400 && resp.status < 500) break; // ошибка данных, повтор не поможет
+      } catch (e) { /* повторим */ }
+    }
   }
 
   const user = getCurrentUser();
@@ -1881,7 +1885,7 @@ ${EM.gem} Пакет: ${packageText}
 ${EM.money} Сумма: ${currentOrder.price} Сом
 ${EM.card} Способ оплаты: ${selectedMethod}
 ${phone ? EM.phone + ' Телефон клиента: ' + phone + '\n' : ''}
-${currentOrder.code ? 'Код заказа: ' + currentOrder.code + '\n' : ''}${EM.ok} Оплата произведена, чек прикреплён ниже.
+${currentOrder.code ? 'Код заказа: ' + currentOrder.code + '\n' : 'Код заказа: не создан (сбой сети), проверьте вручную\n'}${EM.ok} Оплата произведена, чек прикреплён ниже.
 Пожалуйста, зачислите ${gdMsg ? gdMsg.unit : 'алмазы'}.`;
 
   const encodedMsg = encodeURIComponent(message);

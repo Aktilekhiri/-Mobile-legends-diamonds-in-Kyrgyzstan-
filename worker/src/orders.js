@@ -76,13 +76,19 @@ export async function confirmOrder(env, id) {
   if (!lock.meta.changes) return { error: 'Заказ уже обработан', status: 409 };
   try {
     const fz = await fzCreateOrder(env, {
-      offerId: o.offer_id, playerId: o.player_id, serverId: o.server_id, idempotencyKey: o.id,
+      region: o.region, offerId: o.offer_id, playerId: o.player_id, serverId: o.server_id, idempotencyKey: o.id,
     });
     await setStatus(env, id, { fz_order_id: fz.id || '', fz_status: fz.status || '' });
     await syncFromFz(env, { ...o, fz_order_id: fz.id }, fz);
     return { ok: true, fz_status: fz.status };
   } catch (e) {
-    // неизвестно, дошёл ли запрос: оставляем processing, cron проверит; ключ защищает от дубля
+    // чёткий отказ FazerCards (4xx: нет денег на балансе, подписка, неверный пакет): заказ не создан, можно повторить
+    if (e && e.status >= 400 && e.status < 500) {
+      await setStatus(env, id, { status: 'new', fail_reason: String(e.message || e).slice(0, 250) });
+      await notify(env, `⚠️ Заказ ${id}: FazerCards отказал (${String(e.message || e).slice(0, 150)}). Заказ остался в «Ждёт оплаты».`);
+      return { error: 'FazerCards отказал: ' + (e.message || e), status: 502 };
+    }
+    // неизвестно, дошёл ли запрос (сеть/5xx): оставляем processing, cron повторит с тем же ключом (двойного списания не будет)
     await setStatus(env, id, { fail_reason: 'Ошибка связи с FazerCards: ' + String(e.message || e).slice(0, 200) });
     await notify(env, `⚠️ Заказ ${id}: не удалось связаться с FazerCards (${String(e.message || e).slice(0, 120)}). Проверьте статус в админке.`);
     return { error: 'Не удалось связаться с FazerCards: ' + (e.message || e), status: 502 };
@@ -119,7 +125,12 @@ export async function pollProcessing(env) {
     try {
       let fz;
       if (o.fz_order_id) fz = await fzGetOrder(env, o.fz_order_id);
-      else continue; // номер ещё не получен — вручную через «Обновить»
+      else {
+        // запрос на создание мог оборваться: повтор с тем же ключом безопасен (вернёт тот же заказ, без второго списания)
+        fz = await fzCreateOrder(env, { region: o.region, offerId: o.offer_id, playerId: o.player_id, serverId: o.server_id, idempotencyKey: o.id });
+        await setStatus(env, o.id, { fz_order_id: fz.id });
+        o.fz_order_id = fz.id;
+      }
       await syncFromFz(env, o, fz); n++;
     } catch (e) { /* повторим на следующей минуте */ }
   }

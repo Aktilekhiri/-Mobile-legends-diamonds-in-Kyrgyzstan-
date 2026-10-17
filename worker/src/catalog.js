@@ -36,5 +36,59 @@ export const RU_CATALOG = {
   '6000+0': { offer: '6000_diamonds', cost: 94.45 },
   'Diamond Pass (weekly)': { offer: 'weekly_pass', cost: 1.89 },
 };
-export const CATALOGS = { global: GLOBAL_CATALOG, russia: RU_CATALOG };
+// Игры (не MLBB): категория FazerCards, поле сервера, каталог офферов (ключ = offer_id).
+export const GAMES = {
+  pubg: { category: 'pubg_mobile_auto', serverField: null, servers: null, catalog: {
+    '60_uc': { offer: '60_uc', cost: 0.8798 },
+    '325_uc': { offer: '325_uc', cost: 4.38 },
+    '660_uc': { offer: '660_uc', cost: 8.76 },
+    '1800_uc': { offer: '1800_uc', cost: 21.9 },
+    '3850_uc': { offer: '3850_uc', cost: 43.9439 },
+    '8100_uc': { offer: '8100_uc', cost: 87.5 },
+    'prime_1_month': { offer: 'prime_1_month', cost: 0.88 },
+    'elite_pass_lv1_50': { offer: 'elite_pass_lv1_50', cost: 5.3 },
+    'elite_pass_lv1_100': { offer: 'elite_pass_lv1_100', cost: 10.692 },
+  } },
+  freefire: { category: 'free_fire_cis', serverField: null, servers: null, catalog: {
+    '110_diamonds': { offer: '110_diamonds', cost: 0.7809 },
+    '341_diamonds': { offer: '341_diamonds', cost: 2.3781 },
+    '572_diamonds': { offer: '572_diamonds', cost: 3.867 },
+    '1166_diamonds': { offer: '1166_diamonds', cost: 7.7547 },
+    '2398_diamonds': { offer: '2398_diamonds', cost: 15.5094 },
+    '6160_diamonds': { offer: '6160_diamonds', cost: 39.2904 },
+    'weekly_lite': { offer: 'weekly_lite', cost: 0.3723 },
+    'weekly_membership': { offer: 'weekly_membership', cost: 1.5509 },
+    'monthly_membership': { offer: 'monthly_membership', cost: 5.5834 },
+  } },
+  hok: { category: 'honor_of_kings', serverField: null, servers: null, catalog: {
+    '80_tokens': { offer: '80_tokens', cost: 0.84 },
+    '240_tokens': { offer: '240_tokens', cost: 2.51 },
+    '400_tokens': { offer: '400_tokens', cost: 4.19 },
+    '830_tokens': { offer: '830_tokens', cost: 8.38 },
+    '2508_tokens': { offer: '2508_tokens', cost: 25.15 },
+    '8360_tokens': { offer: '8360_tokens', cost: 83.84 },
+    'weekly_card': { offer: 'weekly_card', cost: 0.95 },
+  } },
+  genshin: { category: 'genshin_impact_global', serverField: "server", servers: ["america", "asia", "europe", "tw_hk_mo"], catalog: {
+    '60_genesis_crystals': { offer: '60_genesis_crystals', cost: 1.01 },
+    '300_30_genesis_crystals': { offer: '300_30_genesis_crystals', cost: 5.0298 },
+    '980_110_genesis_crystals': { offer: '980_110_genesis_crystals', cost: 15.0692 },
+    '1980_260_genesis_crystals': { offer: '1980_260_genesis_crystals', cost: 30.1384 },
+    '3280_600_genesis_crystals': { offer: '3280_600_genesis_crystals', cost: 50.2273 },
+    '6480_1600_genesis_crystals': { offer: '6480_1600_genesis_crystals', cost: 100.4445 },
+    'blessing_of_the_welkin_moon': { offer: 'blessing_of_the_welkin_moon', cost: 5.0298 },
+  } },
+  wuwa: { category: 'wuthering_waves', serverField: "server", servers: ["os_asia", "os_usa", "os_euro", "os_sea", "os_cht"], catalog: {
+    '60_lunite': { offer: '60_lunite', cost: 0.816 },
+    '330_lunite': { offer: '330_lunite', cost: 4.141 },
+    '1090_lunite': { offer: '1090_lunite', cost: 12.475 },
+    '2240_lunite': { offer: '2240_lunite', cost: 24.949 },
+    '3880_lunite': { offer: '3880_lunite', cost: 41.361 },
+    '8080_lunite': { offer: '8080_lunite', cost: 81.355 },
+    'lunite_subscription': { offer: 'lunite_subscription', cost: 4.141 },
+  } },
+};
+
+// Все каталоги по ключу региона/игры, которые шлёт сайт
+export const CATALOGS = { global: GLOBAL_CATALOG, russia: RU_CATALOG, ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.catalog])) };
 export const MAX_AUTO_COST_USD = 60; // дороже — только вручную

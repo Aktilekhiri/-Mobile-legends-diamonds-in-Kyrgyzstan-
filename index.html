@@ -1520,21 +1520,35 @@
 
 <!-- TOPUP -->
 <div class="page" id="page-topup">
-  <div class="page-header" style="padding:34px 5% 26px; border-bottom:1px solid var(--border);"><h1>💎 Пополнить алмазы</h1><p>Введите ID, выберите пакет. Зачисление за 5–10 минут.</p></div>
+  <div class="page-header" style="padding:34px 5% 26px; border-bottom:1px solid var(--border);"><h1 id="topupTitle">💎 Пополнить алмазы</h1><p>Введите ID, выберите пакет. Зачисление за 5–10 минут.</p></div>
   <div class="night-note">🌙 С 00:00 до 08:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
   <div class="topup-layout">
     <div class="form-card">
       <div class="card-title"><span class="ico">🎮</span> Данные игрока</div>
+      <label>ИГРА</label>
+      <select class="input-field" id="gameSelect" onchange="changeGame()">
+        <option value="mlbb">Mobile Legends: Bang Bang</option>
+        <option value="pubg">PUBG Mobile (UC)</option>
+        <option value="freefire">Free Fire</option>
+        <option value="hok">Honor of Kings</option>
+        <option value="genshin">Genshin Impact</option>
+        <option value="wuwa">Wuthering Waves</option>
+      </select>
       <label>ID ИГРОКА</label>
       <input type="text" class="input-field" id="playerId" placeholder="123456789" oninput="updateBuyBtn()">
-      <label>СЕРВЕР (ЗОНА)</label>
+      <div id="serverRow">
+      <label id="serverLabel">СЕРВЕР (ЗОНА)</label>
       <input type="text" class="input-field" id="serverId" placeholder="1234" oninput="updateBuyBtn()">
+      <select class="input-field" id="serverSelect" style="display:none" onchange="updateBuyBtn()"></select>
+      </div>
+      <div id="regionRow">
       <label>РЕГИОН</label>
       <select class="input-field" id="regionSelect" onchange="changeRegion()">
         <option value="global">🌍 Глобальный</option>
         <option value="russia">🇷🇺 Россия</option>
       </select>
-      <div class="id-guide" style="background:rgba(255,186,8,.06); padding:13px; border-radius:12px;"><strong>📖 Как найти ID?</strong><br>Профиль → ваш ID (123456789) и сервер в скобках (1234)</div>
+      </div>
+      <div class="id-guide" id="idGuide" style="background:rgba(255,186,8,.06); padding:13px; border-radius:12px;"><strong>📖 Как найти ID?</strong><br>Профиль → ваш ID (123456789) и сервер в скобках (1234)</div>
     </div>
     <div class="packages-card">
       <div class="card-title"><span class="ico">💎</span> Выберите пакет </div>
@@ -1550,7 +1564,7 @@
   <div class="page-header" style="padding:24px 5% 12px;"><h1>💳 Оплата заказа</h1><p>Выберите банк, переведите сумму и отправьте чек в WhatsApp</p></div>
   <div class="night-note">🌙 С 00:00 до 08:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
   <div class="payment-layout">
-    <div class="order-summary"><div class="card-title">📋 Ваш заказ</div><div class="order-row"><span>Товар</span><span>Mobile Legends — Алмазы</span></div><div class="order-row"><span>ID игрока</span><span id="payPlayerId">—</span></div><div class="order-row"><span>Сервер</span><span id="payServerId">—</span></div><div class="order-row"><span>Пакет</span><span id="payPackage" style="color:var(--gold)">—</span></div><div class="order-row"><span>Итого</span><span id="payTotal" style="color:var(--gold)">—</span></div></div>
+    <div class="order-summary"><div class="card-title">📋 Ваш заказ</div><div class="order-row"><span>Товар</span><span id="payProduct">Mobile Legends — Алмазы</span></div><div class="order-row"><span>ID игрока</span><span id="payPlayerId">—</span></div><div class="order-row" id="payServerRow"><span>Сервер</span><span id="payServerId">—</span></div><div class="order-row"><span>Пакет</span><span id="payPackage" style="color:var(--gold)">—</span></div><div class="order-row"><span>Итого</span><span id="payTotal" style="color:var(--gold)">—</span></div></div>
     <div class="pay-steps"><div class="ps-title">📋 Инструкция</div><div class="ps-row"><div class="ps-n">1</div><div>Выберите способ оплаты (Mbank или O!Банк)</div></div><div class="ps-row"><div class="ps-n">2</div><div>Переведите <strong id="instrAmt">сумму</strong> на номер <span class="paynum"></span> или по QR-коду</div></div><div class="ps-row"><div class="ps-n">3</div><div>Сделайте скриншот чека</div></div><div class="ps-row"><div class="ps-n">4</div><div>Нажмите кнопку ниже — откроется WhatsApp с готовым сообщением</div></div><div class="ps-row"><div class="ps-n">5</div><div>Прикрепите чек и отправьте</div></div></div>
     <div class="payment-methods"><div class="card-title">🏦 Выберите банк для перевода</div><div class="method-grid" id="methodsGrid"></div><div id="qrContainer" style="text-align:center; margin-top:15px;"></div></div>
     <div class="payment-confirm"><div class="card-title">📱 Контакт (по желанию)</div><label>Номер телефона (необязательно)</label><input type="tel" class="input-field" id="phoneNumber" placeholder="700 123 456"><div id="methodNote" class="method-note" style="margin:8px 0; color:var(--muted);">Выберите банк, затем нажмите отправить</div>
@@ -1629,8 +1643,27 @@ const packagesData = {
   ]
 };
 const regionLabels = { global: '🌍 Глобальный', russia: '🇷🇺 Россия' };
+// Другие игры (цены в Сом). k = offer_id у поставщика. amt+bonus = сколько получает игрок; name = пасс/подписка.
+const gamesData = {"pubg":{"name":"PUBG Mobile","unit":"UC","servers":null,"packs":[{"k":"60_uc","price":115,"amt":60},{"k":"325_uc","price":570,"amt":325},{"k":"660_uc","price":1135,"amt":660},{"k":"1800_uc","price":2535,"amt":1800},{"k":"3850_uc","price":5085,"amt":3850},{"k":"8100_uc","price":10125,"amt":8100},{"k":"prime_1_month","price":115,"name":"Prime (1 мес)"},{"k":"elite_pass_lv1_50","price":685,"name":"Elite Pass LV1-50"},{"k":"elite_pass_lv1_100","price":1240,"name":"Elite Pass LV1-100"}],"icon":"🔫"},"freefire":{"name":"Free Fire","unit":"алмазов","servers":null,"packs":[{"k":"110_diamonds","price":105,"amt":110},{"k":"341_diamonds","price":310,"amt":341},{"k":"572_diamonds","price":500,"amt":572},{"k":"1166_diamonds","price":1005,"amt":1166},{"k":"2398_diamonds","price":1795,"amt":2398},{"k":"6160_diamonds","price":4550,"amt":6160},{"k":"weekly_lite","price":49,"name":"Weekly Lite"},{"k":"weekly_membership","price":205,"name":"Weekly Membership"},{"k":"monthly_membership","price":725,"name":"Monthly Membership"}],"icon":"🔥"},"hok":{"name":"Honor of Kings","unit":"токенов","servers":null,"packs":[{"k":"80_tokens","price":110,"amt":80},{"k":"240_tokens","price":325,"amt":240},{"k":"400_tokens","price":545,"amt":400},{"k":"830_tokens","price":1085,"amt":830},{"k":"2508_tokens","price":2910,"amt":2508},{"k":"8360_tokens","price":9705,"amt":8360},{"k":"weekly_card","price":125,"name":"Weekly Card"}],"icon":"👑"},"genshin":{"name":"Genshin Impact","unit":"кристаллов","servers":[{"v":"america","l":"America"},{"v":"asia","l":"Asia"},{"v":"europe","l":"Europe"},{"v":"tw_hk_mo","l":"TW, HK, MO"}],"packs":[{"k":"60_genesis_crystals","price":135,"amt":60},{"k":"300_30_genesis_crystals","price":650,"amt":300,"bonus":30},{"k":"980_110_genesis_crystals","price":1745,"amt":980,"bonus":110},{"k":"1980_260_genesis_crystals","price":3490,"amt":1980,"bonus":260},{"k":"3280_600_genesis_crystals","price":5815,"amt":3280,"bonus":600},{"k":"6480_1600_genesis_crystals","price":11625,"amt":6480,"bonus":1600},{"k":"blessing_of_the_welkin_moon","price":650,"name":"Blessing of the Welkin Moon"}],"icon":"✨"},"wuwa":{"name":"Wuthering Waves","unit":"Lunite","servers":[{"v":"os_asia","l":"Asia"},{"v":"os_usa","l":"America"},{"v":"os_euro","l":"Europe"},{"v":"os_sea","l":"SEA"},{"v":"os_cht","l":"TW, HK, MO"}],"packs":[{"k":"60_lunite","price":110,"amt":60},{"k":"330_lunite","price":535,"amt":330},{"k":"1090_lunite","price":1445,"amt":1090},{"k":"2240_lunite","price":2890,"amt":2240},{"k":"3880_lunite","price":4790,"amt":3880},{"k":"8080_lunite","price":9415,"amt":8080},{"k":"lunite_subscription","price":535,"name":"Lunite Subscription"}],"icon":"🌊"}};
+const gameIds = {
+  mlbb: 'Введите ID игрока и Zone ID из профиля Mobile Legends',
+  pubg: 'PUBG Mobile → профиль (аватар) → ID персонажа. Только цифры, пароль не нужен.',
+  freefire: 'Free Fire → профиль (аватар) → ID игрока. Только цифры, пароль не нужен.',
+  hok: 'Honor of Kings → профиль → ID игрока. Только цифры, пароль не нужен.',
+  genshin: 'Genshin Impact → Паймон → внизу справа UID (9 цифр) и выберите свой сервер.',
+  wuwa: 'Wuthering Waves → меню → вкладка «Профиль» → UID (9 цифр) и выберите свой сервер.'
+};
+Object.keys(gamesData).forEach(k => { regionLabels[k] = gamesData[k].icon + ' ' + gamesData[k].name; });
+function unitOf(regionKey) { return gamesData[regionKey] ? gamesData[regionKey].unit : 'алмазов'; }
 
 function buildPackages(regionKey) {
+  const gd = gamesData[regionKey];
+  if (gd) {
+    const items = gd.packs.map((p, i) => p.name
+      ? { type:'pass', name:p.name, price:p.price, key:p.k, region:regionKey, id:regionKey + '-' + i, totalDiamonds:0 }
+      : { type:'diamond', diam:p.amt, bonus:p.bonus || 0, price:p.price, key:p.k, unit:gd.unit, region:regionKey, id:regionKey + '-' + i, totalDiamonds:p.amt + (p.bonus || 0) });
+    return [...items.filter(p => p.type !== 'pass'), ...items.filter(p => p.type === 'pass')];
+  }
   const list = packagesData[regionKey].map((p, i) => {
     const totalDiamonds = p.type === 'diamond' ? p.diam + (p.bonus || 0) : 0;
     return { ...p, region: regionKey, id: regionKey + '-' + i, totalDiamonds };
@@ -1650,6 +1683,36 @@ let selectedPkg = null;
 let selectedMethod = null;
 let currentOrder = null; // для хранения данных перед отправкой
 
+let currentGame = 'mlbb';
+function changeGame(g) {
+  const sel = document.getElementById('gameSelect');
+  if (typeof g === 'string') sel.value = g;
+  currentGame = sel.value;
+  const gd = gamesData[currentGame];
+  document.getElementById('regionRow').style.display = gd ? 'none' : '';
+  const srvRow = document.getElementById('serverRow'), srvIn = document.getElementById('serverId'), srvSel = document.getElementById('serverSelect');
+  if (!gd) { srvRow.style.display = ''; srvIn.style.display = ''; srvSel.style.display = 'none'; document.getElementById('serverLabel').textContent = 'СЕРВЕР (ЗОНА)'; }
+  else if (gd.servers) {
+    srvRow.style.display = ''; srvIn.style.display = 'none'; srvSel.style.display = '';
+    document.getElementById('serverLabel').textContent = 'СЕРВЕР';
+    srvSel.innerHTML = '<option value="">Выберите сервер</option>' + gd.servers.map(x => `<option value="${x.v}">${x.l}</option>`).join('');
+  } else { srvRow.style.display = 'none'; }
+  document.getElementById('idGuide').innerHTML = '<strong>📖 Как найти ID?</strong><br>' + gameIds[gd ? currentGame : 'mlbb'];
+  document.getElementById('topupTitle').textContent = gd ? gd.icon + ' Пополнить ' + gd.name : '💎 Пополнить алмазы';
+  document.getElementById('playerId').placeholder = gd ? '123456789' : '123456789';
+  currentRegion = gd ? currentGame : document.getElementById('regionSelect').value;
+  packages = buildPackages(currentRegion);
+  selectedPkg = null;
+  document.getElementById('selectedInfo').style.display = 'none';
+  renderPackages();
+  updateBuyBtn();
+}
+function getServerValue() {
+  const gd = gamesData[currentGame];
+  if (!gd) return document.getElementById('serverId').value.trim();
+  if (gd.servers) return document.getElementById('serverSelect').value;
+  return '-';
+}
 function changeRegion() {
   currentRegion = document.getElementById('regionSelect').value;
   packages = buildPackages(currentRegion);
@@ -1664,7 +1727,7 @@ function renderPackages() {
   let lastType = null, lastOut = false;
   grid.innerHTML = packages.map(p => {
     let head = '';
-    if (p.type !== lastType) { head = `<div class="pkg-group">${p.type === 'pass' ? '🎫 Пассы и наборы' : '💎 Алмазы'}</div>`; lastOut = false; }
+    if (p.type !== lastType) { head = `<div class="pkg-group">${p.type === 'pass' ? '🎫 Пассы и наборы' : '💎 ' + (p.unit ? p.unit.charAt(0).toUpperCase() + p.unit.slice(1) : 'Алмазы')}</div>`; lastOut = false; }
     if (p.out && !lastOut) head += `<div class="pkg-group">⏳ Нет в наличии</div>`;
     lastType = p.type; lastOut = !!p.out;
     return head + `
@@ -1672,7 +1735,7 @@ function renderPackages() {
       <div class="pkg-diamond">${p.type === 'pass' ? '🎫' : '💎'}</div>
       ${p.type === 'pass'
         ? `<div class="pkg-amount" style="font-size:0.92rem; line-height:1.25">${p.name}</div>`
-        : `<div class="pkg-amount"><span>${p.totalDiamonds}</span></div>`}
+        : `<div class="pkg-amount"><span>${p.totalDiamonds}</span></div>${p.unit ? `<div class="pkg-bonus" style="color:var(--muted)">${p.unit}</div>` : ''}`}
       <div class="pkg-price"><strong>${p.price.toLocaleString()} Сом</strong></div>
       ${p.out ? `<div class="pkg-out">Нет в наличии</div>` : ''}
       ${p.type === 'diamond' && p.bonus ? `<div class="pkg-bonus">+${p.bonus} бонус</div>` : ''}
@@ -1684,6 +1747,7 @@ function renderPackages() {
 
 function quickBuy(diam) {
   const sel = document.getElementById('regionSelect');
+  if (currentGame !== 'mlbb') changeGame('mlbb');
   if (sel.value !== 'global') { sel.value = 'global'; changeRegion(); }
   const p = typeof diam === 'string' ? packages.find(x => x.name === diam) : packages.find(x => x.type === 'diamond' && x.diam === diam);
   if (p && !p.out) selectPackage(p.id);
@@ -1697,7 +1761,7 @@ function selectPackage(id) {
   selectedPkg = cand;
   renderPackages();
   document.getElementById('selectedInfo').style.display = 'block';
-  const label = selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.totalDiamonds} алмазов`;
+  const label = selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.totalDiamonds} ${unitOf(currentRegion)}`;
   document.getElementById('selDiamonds').innerHTML = `${selectedPkg.type === 'pass' ? '🎫' : '💎'} ${label}`;
   document.getElementById('selPrice').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;
   updateBuyBtn();
@@ -1705,7 +1769,7 @@ function selectPackage(id) {
 
 function updateBuyBtn() {
   const pid = document.getElementById('playerId').value.trim();
-  const sid = document.getElementById('serverId').value.trim();
+  const sid = getServerValue();
   const btn = document.getElementById('buyBtn');
   const ok = pid && sid && selectedPkg;
   btn.disabled = !ok;
@@ -1715,7 +1779,7 @@ function updateBuyBtn() {
 
 function proceedToPayment() {
   const pid = document.getElementById('playerId').value.trim();
-  const sid = document.getElementById('serverId').value.trim();
+  const sid = getServerValue();
   if (!pid || !sid || !selectedPkg) return;
   currentOrder = {
     playerId: pid,
@@ -1723,16 +1787,21 @@ function proceedToPayment() {
     region: currentRegion,
     diamonds: selectedPkg.totalDiamonds,
     price: selectedPkg.price,
-    packageName: selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.diam}+${selectedPkg.bonus || 0}`,
+    packageName: gamesData[currentRegion] ? selectedPkg.key : (selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.diam}+${selectedPkg.bonus || 0}`),
+    game: currentGame,
+    label: selectedPkg.type === 'pass' ? selectedPkg.name : (gamesData[currentRegion] ? `${selectedPkg.totalDiamonds} ${unitOf(currentRegion)}` : `${selectedPkg.totalDiamonds} алмазов (${selectedPkg.diam}+${selectedPkg.bonus || 0})`),
     rawDiamonds: selectedPkg.diam || 0,
     bonus: selectedPkg.bonus || 0,
     isPass: selectedPkg.type === 'pass'
   };
   document.getElementById('payPlayerId').innerText = pid;
-  document.getElementById('payServerId').innerText = sid;
-  document.getElementById('payPackage').innerHTML = selectedPkg.type === 'pass'
-    ? `🎫 ${selectedPkg.name}`
-    : `💎 ${selectedPkg.totalDiamonds} алмазов (${selectedPkg.diam}+${selectedPkg.bonus || 0})`;
+  const gdPay = gamesData[currentGame];
+  const srvShown = gdPay && gdPay.servers ? ((gdPay.servers.find(x => x.v === sid) || {}).l || sid) : sid;
+  currentOrder.serverLabel = srvShown;
+  document.getElementById('payServerId').innerText = srvShown;
+  document.getElementById('payServerRow').style.display = (gdPay && !gdPay.servers) ? 'none' : '';
+  document.getElementById('payProduct').textContent = gdPay ? gdPay.name + ' — ' + gdPay.unit : 'Mobile Legends — Алмазы';
+  document.getElementById('payPackage').innerHTML = (selectedPkg.type === 'pass' ? '🎫 ' : '💎 ') + currentOrder.label;
   document.getElementById('payTotal').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;
   document.getElementById('instrAmt').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;
   showPage('payment');
@@ -1804,7 +1873,7 @@ async function sendOrderToWhatsApp() {
         body: JSON.stringify({
           playerId: currentOrder.playerId, serverId: currentOrder.serverId, region: currentOrder.region,
           pkg: currentOrder.packageName,
-          pkgLabel: currentOrder.isPass ? currentOrder.packageName : currentOrder.diamonds + ' алмазов (' + currentOrder.rawDiamonds + '+' + currentOrder.bonus + ')',
+          pkgLabel: currentOrder.label,
           price: currentOrder.price, method: selectedMethod, phone: phone
         })
       });
@@ -1837,20 +1906,20 @@ async function sendOrderToWhatsApp() {
   // Эмодзи заданы кодами (\u{...}), чтобы их не испортила кодировка файла
   const EM = { gem: '\u{1F48E}', game: '\u{1F3AE}', srv: '\u{1F5A5}\uFE0F', globe: '\u{1F30D}', money: '\u{1F4B0}', card: '\u{1F4B3}', phone: '\u{1F4F1}', ok: '\u2705' };
   const noEmoji = s => String(s).replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\uFE0F\u200D]/gu, '').replace(/\s+/g, ' ').trim();
-  const packageText = currentOrder.isPass
-    ? noEmoji(currentOrder.packageName)
-    : currentOrder.diamonds + ' алмазов (' + currentOrder.rawDiamonds + '+' + currentOrder.bonus + ')';
-  const message = `${EM.gem} *НОВЫЙ ЗАКАЗ MLBB* ${EM.gem}
+  const packageText = noEmoji(currentOrder.label);
+  const gdMsg = gamesData[currentOrder.region];
+  const gameTitle = gdMsg ? gdMsg.name.toUpperCase() : 'MLBB';
+  const srvLine = gdMsg && !gdMsg.servers ? '' : `${EM.srv} Сервер: ${currentOrder.serverLabel || currentOrder.serverId}\n`;
+  const message = `${EM.gem} *НОВЫЙ ЗАКАЗ ${gameTitle}* ${EM.gem}
 
 ${EM.game} ID игрока: ${currentOrder.playerId}
-${EM.srv} Сервер: ${currentOrder.serverId}
-${EM.globe} Регион: ${noEmoji(regionLabels[currentOrder.region])}
+${srvLine}${EM.globe} ${gdMsg ? 'Игра' : 'Регион'}: ${noEmoji(regionLabels[currentOrder.region])}
 ${EM.gem} Пакет: ${packageText}
 ${EM.money} Сумма: ${currentOrder.price} Сом
 ${EM.card} Способ оплаты: ${selectedMethod}
 ${phone ? EM.phone + ' Телефон клиента: ' + phone + '\n' : ''}
 ${currentOrder.code ? 'Код заказа: ' + currentOrder.code + '\n' : ''}${EM.ok} Оплата произведена, чек прикреплён ниже.
-Пожалуйста, зачислите алмазы.`;
+Пожалуйста, зачислите ${gdMsg ? gdMsg.unit : 'алмазы'}.`;
 
   const encodedMsg = encodeURIComponent(message);
   const waLink = `https://api.whatsapp.com/send?phone=996555920204&text=${encodedMsg}`;
@@ -1955,6 +2024,10 @@ function renderOrders() {
 renderMethods();
 renderPackages();
 updateUserUI();
+(function(){ try {
+  const g = new URLSearchParams(location.search).get('game');
+  if (g && (g === 'mlbb' || gamesData[g])) { changeGame(g); showPage('topup'); }
+} catch (e) {} })();
 
 // Закрытие мобильного меню при клике вне
 document.addEventListener('click', e => {

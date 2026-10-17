@@ -1,5 +1,5 @@
 // Заказы: приём с сайта, подтверждение оплаты админом, выдача через FazerCards, возврат.
-import { CATALOGS, MAX_AUTO_COST_USD } from './catalog.js';
+import { CATALOGS, GAMES, MAX_AUTO_COST_USD } from './catalog.js';
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { notify } from './notify.js';
 
@@ -20,12 +20,17 @@ const publicView = o => ({
 
 // POST /api/orders — публично (с сайта)
 export async function createOrder(env, ip, b) {
-  const player = digits(b.playerId, 14), server = digits(b.serverId, 8);
-  if (player.length < 5 || !server) return { error: 'Проверьте ID и Zone ID' };
+  const region = clean(b.region, 20) || 'global';
+  const game = GAMES[region]; // undefined = Mobile Legends
+  const player = digits(b.playerId, 14);
+  let server;
+  if (!game) server = digits(b.serverId, 8);
+  else if (game.servers) server = game.servers.includes(String(b.serverId)) ? String(b.serverId) : '';
+  else server = '-';
+  if (player.length < 5 || !server) return { error: game ? 'Проверьте ID и сервер' : 'Проверьте ID и Zone ID' };
   const pkg = clean(b.pkg, 60);
   const price = Math.max(0, Math.min(10000000, Math.floor(Number(b.price) || 0)));
   if (!pkg || !price) return { error: 'Не указан пакет или сумма' };
-  const region = clean(b.region, 20) || 'global';
 
   // защита от спама: не более 8 заказов с одного IP за час
   if (ip) {
@@ -40,7 +45,7 @@ export async function createOrder(env, ip, b) {
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
   ).bind(id, now, now, player, server, region, pkg, clean(b.pkgLabel || pkg, 100), price, clean(b.method, 30), clean(b.phone, 30),
     auto ? cat.offer : '', auto ? cat.cost : 0, auto ? 'new' : 'manual', ip || '').run();
-  await notify(env, `🆕 Новый заказ ${id}\n${clean(b.pkgLabel || pkg, 100)} · ${price} сом · ${clean(b.method, 30)}\nID ${player} (${server})${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}\nПроверьте оплату и подтвердите в админке.`);
+  await notify(env, `🆕 Новый заказ ${id}\n${clean(b.pkgLabel || pkg, 100)} · ${price} сом · ${clean(b.method, 30)}\nID ${player}${server === '-' ? '' : ' (' + server + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}\nПроверьте оплату и подтвердите в админке.`);
   return { id, status: auto ? 'new' : 'manual' };
 }
 

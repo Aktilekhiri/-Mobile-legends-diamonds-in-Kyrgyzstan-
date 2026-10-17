@@ -56,3 +56,12 @@ export async function fzGetOrder(env, fzOrderId) {
   if (!o.id) o.id = fzOrderId;
   return o;
 }
+
+// Баланс аккаунта в USD (GET /api/v2/balance). Возвращает число или null, если формат неожиданный.
+export async function fzGetBalance(env) {
+  const d = await call(env, 'GET', '/api/v2/balance');
+  const raw = d.balance ?? (d.data && d.data.balance) ?? d.available ?? d.balance_usd;
+  const v = typeof raw === 'object' && raw ? (raw.available ?? raw.usd ?? raw.amount) : raw;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}

@@ -7,6 +7,7 @@ const MAX_PHOTOS = 6;
 const MAX_PHOTO_BYTES = 450 * 1024;
 const TOKEN_DAYS = 30;
 const enc = new TextEncoder();
+import { checkBalance } from './balance.js';
 import { createOrder, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook } from './orders.js';
 
 function cors(req) {
@@ -244,5 +245,6 @@ export default {
   // раз в минуту опрашиваем FazerCards по заказам, которые ещё в обработке
   async scheduled(event, env, ctx) {
     ctx.waitUntil(pollProcessing(env).catch(() => {}));
+    ctx.waitUntil(checkBalance(env).catch(() => {}));
   },
 };

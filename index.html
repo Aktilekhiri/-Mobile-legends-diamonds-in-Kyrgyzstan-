@@ -1783,15 +1783,37 @@ function selectMethod(m, el) {
   sendBtn.style.opacity = '1';
 }
 
-function sendOrderToWhatsApp() {
+async function sendOrderToWhatsApp() {
   if (!currentOrder) { alert('Ошибка: нет данных заказа'); return; }
   if (!selectedMethod) { alert('Выберите способ оплаты (Mbank или O!Банк)'); return; }
   const phone = document.getElementById('phoneNumber').value.trim();
+
+  // Регистрируем заказ на сервере (код заказа). Если сервер недоступен, всё работает как раньше через WhatsApp.
+  const sendBtn0 = document.getElementById('sendWhatsAppBtn');
+  if (sendBtn0) { sendBtn0.disabled = true; sendBtn0.style.opacity = '0.5'; }
+  if (!currentOrder.code && window.DK_API) {
+    try {
+      const ctrl = new AbortController();
+      const tm = setTimeout(() => ctrl.abort(), 4000);
+      const resp = await fetch(String(window.DK_API).replace(/\/+$/, '') + '/api/orders', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
+        body: JSON.stringify({
+          playerId: currentOrder.playerId, serverId: currentOrder.serverId, region: currentOrder.region,
+          pkg: currentOrder.packageName,
+          pkgLabel: currentOrder.isPass ? currentOrder.packageName : currentOrder.diamonds + ' алмазов (' + currentOrder.rawDiamonds + '+' + currentOrder.bonus + ')',
+          price: currentOrder.price, method: selectedMethod, phone: phone
+        })
+      });
+      clearTimeout(tm);
+      if (resp.ok) { const d = await resp.json(); if (d && d.id) currentOrder.code = d.id; }
+    } catch (e) { /* без кода заказа */ }
+  }
 
   const user = getCurrentUser();
   if (user) {
     const orderRecord = {
       id: Date.now(),
+      code: currentOrder.code || '',
       playerId: currentOrder.playerId,
       serverId: currentOrder.serverId,
       region: currentOrder.region,
@@ -1823,7 +1845,7 @@ ${EM.gem} Пакет: ${packageText}
 ${EM.money} Сумма: ${currentOrder.price} Сом
 ${EM.card} Способ оплаты: ${selectedMethod}
 ${phone ? EM.phone + ' Телефон клиента: ' + phone + '\n' : ''}
-${EM.ok} Оплата произведена, чек прикреплён ниже.
+${currentOrder.code ? 'Код заказа: ' + currentOrder.code + '\n' : ''}${EM.ok} Оплата произведена, чек прикреплён ниже.
 Пожалуйста, зачислите алмазы.`;
 
   const encodedMsg = encodeURIComponent(message);

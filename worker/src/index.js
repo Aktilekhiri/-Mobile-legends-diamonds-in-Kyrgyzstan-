@@ -7,6 +7,7 @@ const MAX_PHOTOS = 6;
 const MAX_PHOTO_BYTES = 450 * 1024;
 const TOKEN_DAYS = 30;
 const enc = new TextEncoder();
+import { createOrder, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook } from './orders.js';
 
 function cors(req) {
   const o = req.headers.get('Origin') || '';
@@ -126,6 +127,24 @@ export default {
         return json(req, { token: await makeToken(env) });
       }
 
+      // ----- заказы (публично) -----
+      if (path === '/api/orders' && m === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const r = await createOrder(env, req.headers.get('CF-Connecting-IP') || '', b);
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})$/);
+      if (mm && m === 'GET') {
+        const o = await getOrderPublic(env, mm[1]);
+        return o ? json(req, o) : err(req, 'Заказ не найден', 404);
+      }
+      // вебхук FazerCards (подпись проверяется внутри)
+      if (path === '/api/fz/webhook' && m === 'POST') {
+        const raw = await req.text();
+        const r = await handleWebhook(env, raw, req.headers.get('X-Webhook-Signature'));
+        return r.error ? err(req, r.error, r.status || 400) : json(req, { ok: true });
+      }
+
       // публичный список
       if (path === '/api/accounts' && m === 'GET') {
         const { results } = await env.DB.prepare(
@@ -137,6 +156,17 @@ export default {
       // ----- админ -----
       if (path.startsWith('/api/admin')) {
         if (!(await isAdmin(req, env))) return err(req, 'Нужен вход', 401);
+
+        // заказы
+        if (path === '/api/admin/orders' && m === 'GET') {
+          return json(req, { orders: await listOrders(env, url.searchParams.get('status') || 'all') });
+        }
+        mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9]{4,20})\/(confirm|refresh|refunded|manual-done|cancel)$/);
+        if (mm && m === 'POST') {
+          const fn = { confirm: confirmOrder, refresh: refreshOrder, refunded: markRefunded, 'manual-done': markManualDone, cancel: cancelOrder }[mm[2]];
+          const r = await fn(env, mm[1]);
+          return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+        }
 
         if (path === '/api/admin/accounts' && m === 'GET') {
           const { results } = await env.DB.prepare('SELECT * FROM accounts ORDER BY sort DESC, id DESC').all();
@@ -210,5 +240,9 @@ export default {
     } catch (e) {
       return err(req, 'Ошибка сервера: ' + (e && e.message ? e.message : e), 500);
     }
+  },
+  // раз в минуту опрашиваем FazerCards по заказам, которые ещё в обработке
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(pollProcessing(env).catch(() => {}));
   },
 };

@@ -1,0 +1,188 @@
+// Заказы: приём с сайта, подтверждение оплаты админом, выдача через FazerCards, возврат.
+import { GLOBAL_CATALOG, MAX_AUTO_COST_USD } from './catalog.js';
+import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
+import { notify } from './notify.js';
+
+const clean = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
+const digits = (v, n) => String(v == null ? '' : v).replace(/\D+/g, '').slice(0, n);
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function newCode() {
+  const b = crypto.getRandomValues(new Uint8Array(8));
+  let s = 'DK';
+  for (const x of b) s += CODE_CHARS[x % CODE_CHARS.length];
+  return s;
+}
+const publicView = o => ({
+  id: o.id, status: o.status, pkg_label: o.pkg_label, price_kgs: o.price_kgs,
+  created_at: o.created_at, finished_at: o.finished_at,
+});
+
+// POST /api/orders — публично (с сайта)
+export async function createOrder(env, ip, b) {
+  const player = digits(b.playerId, 14), server = digits(b.serverId, 8);
+  if (player.length < 5 || !server) return { error: 'Проверьте ID и Zone ID' };
+  const pkg = clean(b.pkg, 60);
+  const price = Math.max(0, Math.min(10000000, Math.floor(Number(b.price) || 0)));
+  if (!pkg || !price) return { error: 'Не указан пакет или сумма' };
+  const region = clean(b.region, 20) || 'global';
+
+  // защита от спама: не более 8 заказов с одного IP за час
+  if (ip) {
+    const r = await env.DB.prepare('SELECT COUNT(*) AS c FROM orders WHERE ip = ? AND created_at > ?').bind(ip, Date.now() - 3600000).first();
+    if (r && r.c >= 8) return { error: 'Слишком много заказов, попробуйте позже', status: 429 };
+  }
+  const cat = region === 'global' ? GLOBAL_CATALOG[pkg] : null;
+  const id = newCode(), now = Date.now();
+  const auto = !!(cat && cat.cost <= MAX_AUTO_COST_USD);
+  await env.DB.prepare(
+    `INSERT INTO orders (id,created_at,updated_at,player_id,server_id,region,pkg,pkg_label,price_kgs,method,phone,offer_id,cost_usd,status,ip)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+  ).bind(id, now, now, player, server, region, pkg, clean(b.pkgLabel || pkg, 100), price, clean(b.method, 30), clean(b.phone, 30),
+    auto ? cat.offer : '', auto ? cat.cost : 0, auto ? 'new' : 'manual', ip || '').run();
+  await notify(env, `🆕 Новый заказ ${id}\n${clean(b.pkgLabel || pkg, 100)} · ${price} сом · ${clean(b.method, 30)}\nID ${player} (${server})${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}\nПроверьте оплату и подтвердите в админке.`);
+  return { id, status: auto ? 'new' : 'manual' };
+}
+
+export async function getOrderPublic(env, id) {
+  const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(clean(id, 20)).first();
+  return o ? publicView(o) : null;
+}
+
+export async function listOrders(env, status) {
+  const q = status && status !== 'all'
+    ? env.DB.prepare('SELECT * FROM orders WHERE status = ? ORDER BY created_at DESC LIMIT 200').bind(status)
+    : env.DB.prepare('SELECT * FROM orders ORDER BY created_at DESC LIMIT 200');
+  const { results } = await q.all();
+  return results.map(({ ip, ...o }) => o);
+}
+
+async function setStatus(env, id, patch) {
+  const keys = Object.keys(patch);
+  const sets = keys.map(k => k + ' = ?').join(', ');
+  await env.DB.prepare(`UPDATE orders SET ${sets}, updated_at = ? WHERE id = ?`).bind(...keys.map(k => patch[k]), Date.now(), id).run();
+}
+
+// Подтверждение оплаты: отправляем заказ на FazerCards (один раз, ключ идемпотентности = код заказа)
+export async function confirmOrder(env, id) {
+  const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(id).first();
+  if (!o) return { error: 'Заказ не найден', status: 404 };
+  if (o.status !== 'new') return { error: 'Заказ уже обработан (статус: ' + o.status + ')', status: 409 };
+  if (!o.offer_id) return { error: 'Для этого пакета нет авто-выдачи, выдайте вручную', status: 409 };
+  if (!FZ_READY) return { error: 'Авто-выдача ещё не включена. Выдайте заказ вручную и нажмите «Выдал вручную».', status: 503 };
+  // сразу блокируем повторное нажатие
+  const lock = await env.DB.prepare("UPDATE orders SET status='processing', confirmed_at=?, updated_at=? WHERE id=? AND status='new'")
+    .bind(Date.now(), Date.now(), id).run();
+  if (!lock.meta.changes) return { error: 'Заказ уже обработан', status: 409 };
+  try {
+    const fz = await fzCreateOrder(env, {
+      offerId: o.offer_id, playerId: o.player_id, serverId: o.server_id, idempotencyKey: o.id,
+    });
+    await setStatus(env, id, { fz_order_id: fz.id || '', fz_status: fz.status || '' });
+    await syncFromFz(env, { ...o, fz_order_id: fz.id }, fz);
+    return { ok: true, fz_status: fz.status };
+  } catch (e) {
+    // неизвестно, дошёл ли запрос: оставляем processing, cron проверит; ключ защищает от дубля
+    await setStatus(env, id, { fail_reason: 'Ошибка связи с FazerCards: ' + String(e.message || e).slice(0, 200) });
+    await notify(env, `⚠️ Заказ ${id}: не удалось связаться с FazerCards (${String(e.message || e).slice(0, 120)}). Проверьте статус в админке.`);
+    return { error: 'Не удалось связаться с FazerCards: ' + (e.message || e), status: 502 };
+  }
+}
+
+// Приводим наш статус к статусу FazerCards
+export async function syncFromFz(env, o, fz) {
+  const st = fz.status;
+  if (st === 'completed') {
+    await setStatus(env, o.id, { status: 'delivered', fz_status: st, fz_order_id: fz.id || o.fz_order_id, finished_at: Date.now(), fail_reason: '' });
+    await notify(env, `✅ Заказ ${o.id} выдан (${o.pkg_label}, ${o.price_kgs} сом).`);
+  } else if (st === 'refund' || st === 'failed') {
+    // failed: деньги гарантированно вернутся только при refund, поэтому клиенту возвращаем деньги только после refund
+    if (st === 'refund') {
+      await setStatus(env, o.id, { status: 'refund_due', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
+      await notify(env, `↩️ Заказ ${o.id} не выполнен (FazerCards вернул деньги на баланс).\nВерните клиенту ${o.price_kgs} сом (${o.method}, тел. ${o.phone || '—'}) и нажмите «Деньги возвращены» в админке.\nПричина: ${String(fz.fail_reason || '—').slice(0, 150)}`);
+    } else {
+      await setStatus(env, o.id, { fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300) });
+      await notify(env, `⚠️ Заказ ${o.id}: FazerCards вернул failed. Ждём финальный статус (refund/completed), клиенту пока ничего не возвращайте.`);
+    }
+  } else if (st) {
+    await setStatus(env, o.id, { fz_status: st });
+  }
+}
+
+// Опрос FazerCards по зависшим заказам (cron раз в минуту + кнопка «Обновить»)
+export async function pollProcessing(env) {
+  const { results } = await env.DB.prepare(
+    "SELECT * FROM orders WHERE status='processing' AND confirmed_at > ? ORDER BY confirmed_at LIMIT 25"
+  ).bind(Date.now() - 7 * 86400000).all();
+  let n = 0;
+  for (const o of results) {
+    try {
+      let fz;
+      if (o.fz_order_id) fz = await fzGetOrder(env, o.fz_order_id);
+      else continue; // номер ещё не получен — вручную через «Обновить»
+      await syncFromFz(env, o, fz); n++;
+    } catch (e) { /* повторим на следующей минуте */ }
+  }
+  // долгие заказы (>10 мин) — сообщаем один раз
+  const stale = await env.DB.prepare(
+    "SELECT id, pkg_label FROM orders WHERE status='processing' AND confirmed_at < ? AND confirmed_at > ? AND fail_reason NOT LIKE '%[stale]%'"
+  ).bind(Date.now() - 10 * 60000, Date.now() - 86400000).all();
+  for (const s of stale.results) {
+    await env.DB.prepare("UPDATE orders SET fail_reason = fail_reason || ' [stale]' WHERE id = ?").bind(s.id).run();
+    await notify(env, `⏳ Заказ ${s.id} (${s.pkg_label}) обрабатывается дольше 10 минут. Проверьте в админке.`);
+  }
+  return n;
+}
+
+export async function refreshOrder(env, id) {
+  const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(id).first();
+  if (!o) return { error: 'Заказ не найден', status: 404 };
+  if (!o.fz_order_id) return { error: 'У заказа нет номера FazerCards', status: 409 };
+  const fz = await fzGetOrder(env, o.fz_order_id);
+  await syncFromFz(env, o, fz);
+  return { ok: true, fz_status: fz.status };
+}
+
+export async function markRefunded(env, id) {
+  const o = await env.DB.prepare('SELECT status FROM orders WHERE id = ?').bind(id).first();
+  if (!o) return { error: 'Заказ не найден', status: 404 };
+  if (o.status !== 'refund_due') return { error: 'Возврат не требуется (статус: ' + o.status + ')', status: 409 };
+  await setStatus(env, id, { status: 'refunded' });
+  return { ok: true };
+}
+export async function markManualDone(env, id) {
+  const o = await env.DB.prepare('SELECT status FROM orders WHERE id = ?').bind(id).first();
+  if (!o) return { error: 'Заказ не найден', status: 404 };
+  if (!['manual', 'new'].includes(o.status)) return { error: 'Нельзя (статус: ' + o.status + ')', status: 409 };
+  await setStatus(env, id, { status: 'delivered', finished_at: Date.now() });
+  return { ok: true };
+}
+export async function cancelOrder(env, id) {
+  const o = await env.DB.prepare('SELECT status FROM orders WHERE id = ?').bind(id).first();
+  if (!o) return { error: 'Заказ не найден', status: 404 };
+  if (!['new', 'manual'].includes(o.status)) return { error: 'Нельзя отменить (статус: ' + o.status + ')', status: 409 };
+  await setStatus(env, id, { status: 'cancelled', finished_at: Date.now() });
+  return { ok: true };
+}
+
+// Вебхук FazerCards: подпись X-Webhook-Signature: sha256=<hex HMAC-SHA256 тела>
+export async function handleWebhook(env, rawBody, sigHeader) {
+  if (!env.FAZERCARDS_WEBHOOK_SECRET) return { error: 'webhook secret не задан', status: 503 };
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.FAZERCARDS_WEBHOOK_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(rawBody)));
+  const hex = [...mac].map(x => x.toString(16).padStart(2, '0')).join('');
+  const got = String(sigHeader || '').replace(/^sha256=/, '');
+  if (got.length !== hex.length) return { error: 'bad signature', status: 401 };
+  let r = 0; for (let i = 0; i < hex.length; i++) r |= hex.charCodeAt(i) ^ got.charCodeAt(i);
+  if (r) return { error: 'bad signature', status: 401 };
+  let ev; try { ev = JSON.parse(rawBody); } catch (e) { return { error: 'bad json', status: 400 }; }
+  const ord = ev.order || ev.data || ev;
+  const fzId = ord && (ord.id || ord.order_id);
+  if (!fzId) return { ok: true };
+  const o = await env.DB.prepare('SELECT * FROM orders WHERE fz_order_id = ?').bind(String(fzId)).first();
+  if (!o) return { ok: true };
+  // источник истины — сам заказ, перечитываем
+  const fz = await fzGetOrder(env, String(fzId));
+  await syncFromFz(env, o, fz);
+  return { ok: true };
+}

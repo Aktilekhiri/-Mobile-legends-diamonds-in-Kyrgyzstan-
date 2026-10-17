@@ -15,3 +15,22 @@ CREATE TABLE IF NOT EXISTS photos (
   mime TEXT NOT NULL, data TEXT NOT NULL, created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_photos_acc ON photos(account_id, pos);
+
+-- Заказы на алмазы (оплата вручную, выдача через FazerCards)
+CREATE TABLE IF NOT EXISTS orders (
+  id TEXT PRIMARY KEY,                 -- публичный код заказа, например DK7K2M9Q
+  created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,
+  player_id TEXT NOT NULL, server_id TEXT NOT NULL,
+  region TEXT NOT NULL DEFAULT 'global',
+  pkg TEXT NOT NULL,                   -- ключ пакета, например 234+23 или Weekly Diamond Pass
+  pkg_label TEXT NOT NULL DEFAULT '',
+  price_kgs INTEGER NOT NULL DEFAULT 0,
+  method TEXT DEFAULT '', phone TEXT DEFAULT '',
+  offer_id TEXT DEFAULT '',            -- offer на FazerCards (пусто = выдача вручную)
+  cost_usd REAL DEFAULT 0,             -- ожидаемая себестоимость
+  status TEXT NOT NULL DEFAULT 'new',  -- new | processing | delivered | refund_due | refunded | manual | cancelled
+  fz_order_id TEXT DEFAULT '', fz_status TEXT DEFAULT '', fail_reason TEXT DEFAULT '',
+  ip TEXT DEFAULT '', confirmed_at INTEGER DEFAULT 0, finished_at INTEGER DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_fz ON orders(fz_order_id);

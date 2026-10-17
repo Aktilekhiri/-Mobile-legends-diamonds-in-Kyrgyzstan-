@@ -9,7 +9,7 @@
      затем Widget Content → Language / Edit Content и впишите тексты на кыргызском.
      Пока ky пустой, на KY-версии загружается обычный (русский) виджет. */
   /* Чат Tawk.to: true — включён, false — выключен. */
-  var TAWK_ENABLED = true;
+  var TAWK_ENABLED = false;
   var TAWK = {
     ru: "6ab8154687c1a3344351dece/1k3fh67ko",
     ky: ""

@@ -1517,6 +1517,7 @@
         <option value="global">🌍 Глобальный</option>
         <option value="russia">🇷🇺 Россия</option>
       </select>
+      <div class="field-hint" id="regionHint" style="color:var(--gold)">⚠️ Играете из России или у вас российский аккаунт? Выберите «🇷🇺 Россия». «Глобальный» — для Кыргызстана, Казахстана и других стран. Не уверены? Напишите нам в WhatsApp до оплаты.</div>
       </div>
       <div class="id-guide" id="idGuide" style="background:rgba(255,186,8,.06); padding:13px; border-radius:12px;"><strong>📖 Как найти ID?</strong><br>Профиль → ваш ID (123456789) и сервер в скобках (1234)</div>
     </div>
@@ -1669,6 +1670,7 @@ function changeGame(g) {
   document.getElementById('idHint').textContent = gd ? 'Только цифры, без пробелов и букв.' : 'User ID: только цифры, без скобок. Пример: 598505997';
   document.getElementById('serverHint').textContent = !gd ? 'Zone ID: цифры в скобках рядом с ID в профиле. Пример: (8403) → введите 8403' : (gd.servers ? 'Выберите сервер, как указано в игре рядом с UID.' : '');
   currentRegion = gd ? currentGame : document.getElementById('regionSelect').value;
+  updateRegionHint();
   packages = buildPackages(currentRegion);
   selectedPkg = null;
   document.getElementById('selectedInfo').style.display = 'none';
@@ -1681,8 +1683,14 @@ function getServerValue() {
   if (gd.servers) return document.getElementById('serverSelect').value;
   return '-';
 }
+const regionHints = {
+  global: '⚠️ Играете из России или у вас российский аккаунт? Выберите «🇷🇺 Россия». «Глобальный» — для Кыргызстана, Казахстана и других стран. Не уверены? Напишите нам в WhatsApp до оплаты.',
+  russia: '✅ Для аккаунтов из России. Если вы в Кыргызстане или другой стране, выберите «🌍 Глобальный».'
+};
+function updateRegionHint() { const h = document.getElementById('regionHint'); if (h) h.textContent = regionHints[document.getElementById('regionSelect').value] || ''; }
 function changeRegion() {
   currentRegion = document.getElementById('regionSelect').value;
+  updateRegionHint();
   packages = buildPackages(currentRegion);
   selectedPkg = null;
   document.getElementById('selectedInfo').style.display = 'none';

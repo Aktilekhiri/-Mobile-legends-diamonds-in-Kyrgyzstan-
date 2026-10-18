@@ -556,6 +556,7 @@
   .pkg-amount span { color: var(--gold); }
   .pkg-price { font-size: 0.75rem; color: var(--muted); }
   .pkg-price strong { color: var(--white); }
+  .field-hint { font-size:.8rem; color:var(--muted); margin:-4px 0 12px; line-height:1.4; }
   .pkg-bonus {
     font-size: 0.65rem;
     color: #34d399;
@@ -1502,11 +1503,13 @@
         <option value="wuwa">Wuthering Waves</option>
       </select>
       <label>ID ИГРОКА</label>
-      <input type="text" class="input-field" id="playerId" placeholder="123456789" oninput="updateBuyBtn()">
+      <input type="text" class="input-field" id="playerId" placeholder="123456789" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
+      <div class="field-hint" id="idHint"></div>
       <div id="serverRow">
       <label id="serverLabel">СЕРВЕР (ЗОНА)</label>
-      <input type="text" class="input-field" id="serverId" placeholder="1234" oninput="updateBuyBtn()">
+      <input type="text" class="input-field" id="serverId" placeholder="1234" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
       <select class="input-field" id="serverSelect" style="display:none" onchange="updateBuyBtn()"></select>
+      <div class="field-hint" id="serverHint"></div>
       </div>
       <div id="regionRow">
       <label>РЕГИОН</label>
@@ -1654,7 +1657,7 @@ function changeGame(g) {
   const gd = gamesData[currentGame];
   document.getElementById('regionRow').style.display = gd ? 'none' : '';
   const srvRow = document.getElementById('serverRow'), srvIn = document.getElementById('serverId'), srvSel = document.getElementById('serverSelect');
-  if (!gd) { srvRow.style.display = ''; srvIn.style.display = ''; srvSel.style.display = 'none'; document.getElementById('serverLabel').textContent = 'СЕРВЕР (ЗОНА)'; }
+  if (!gd) { srvRow.style.display = ''; srvIn.style.display = ''; srvSel.style.display = 'none'; document.getElementById('serverLabel').textContent = 'ZONE ID (СЕРВЕР)'; document.getElementById('serverId').placeholder = '8403'; }
   else if (gd.servers) {
     srvRow.style.display = ''; srvIn.style.display = 'none'; srvSel.style.display = '';
     document.getElementById('serverLabel').textContent = 'СЕРВЕР';
@@ -1662,7 +1665,9 @@ function changeGame(g) {
   } else { srvRow.style.display = 'none'; }
   document.getElementById('idGuide').innerHTML = '<strong>📖 Как найти ID?</strong><br>' + gameIds[gd ? currentGame : 'mlbb'];
   document.getElementById('topupTitle').textContent = gd ? gd.icon + ' Пополнить ' + gd.name : '💎 Пополнить алмазы';
-  document.getElementById('playerId').placeholder = gd ? '123456789' : '123456789';
+  document.getElementById('playerId').placeholder = gd ? '123456789' : '598505997';
+  document.getElementById('idHint').textContent = gd ? 'Только цифры, без пробелов и букв.' : 'User ID: только цифры, без скобок. Пример: 598505997';
+  document.getElementById('serverHint').textContent = !gd ? 'Zone ID: цифры в скобках рядом с ID в профиле. Пример: (8403) → введите 8403' : (gd.servers ? 'Выберите сервер, как указано в игре рядом с UID.' : '');
   currentRegion = gd ? currentGame : document.getElementById('regionSelect').value;
   packages = buildPackages(currentRegion);
   selectedPkg = null;

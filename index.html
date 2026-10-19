@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=1">
-<link rel="stylesheet" href="theme.css?v=1">
+<link rel="stylesheet" href="theme.css?v=2">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1443,8 +1443,12 @@
     <div class="packages-card">
       <div class="card-title"><span class="ico">💎</span> Выберите пакет </div>
       <div class="packages-grid" id="packagesGrid"></div>
+      <div class="buy-bar">
+      <div class="buy-bar">
       <div class="sel-info" id="selectedInfo" style="display:none; margin-top:12px; background:rgba(255,186,8,.07); padding:12px; border-radius:11px;"><div>ВЫБРАННЫЙ ПАКЕТ</div><div class="sir" style="display:flex; justify-content:space-between;"><span id="selDiamonds"></span><span id="selPrice" style="color:var(--gold)"></span></div></div>
       <button class="btn-primary btn-full" onclick="proceedToPayment()" id="buyBtn" disabled style="margin-top:12px; opacity:0.5">Перейти к оплате →</button>
+      </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1704,6 +1708,7 @@ function proceedToPayment() {
   document.getElementById('successBox').classList.remove('show');
   document.getElementById('confirmForm')?.classList?.remove('hide');
   const sendBtn = document.getElementById('sendWhatsAppBtn');
+  sendBtn.style.display = '';
   sendBtn.disabled = true;
   sendBtn.style.opacity = '0.5';
   document.getElementById('methodNote').innerHTML = 'Выберите банк';
@@ -2256,6 +2261,18 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 (function(){var n=document.querySelector('nav');if(!n)return;var t=false;
 function f(){n.classList.toggle('nav-scrolled',(window.scrollY||0)>8);t=false}
 window.addEventListener('scroll',function(){if(!t){t=true;requestAnimationFrame(f)}},{passive:true});f();})();
+</script>
+<script>
+(function(){var g=document.getElementById('packagesGrid');if(!g)return;
+function fix(){g.querySelectorAll('.pkg-card:not([aria-disabled])').forEach(function(c){if(c.tabIndex>=0&&c.getAttribute('role'))return;c.setAttribute('role','button');c.tabIndex=0;});}
+new MutationObserver(fix).observe(g,{childList:true});fix();
+g.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('pkg-card')){e.preventDefault();e.target.click();}});})();
+</script>
+<script>
+(function(){var g=document.getElementById('packagesGrid');if(!g)return;
+function fix(){g.querySelectorAll('.pkg-card:not([aria-disabled])').forEach(function(c){if(c.tabIndex>=0&&c.getAttribute('role'))return;c.setAttribute('role','button');c.tabIndex=0;});}
+new MutationObserver(fix).observe(g,{childList:true});fix();
+g.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('pkg-card')){e.preventDefault();e.target.click();}});})();
 </script>
 </body>
 </html>

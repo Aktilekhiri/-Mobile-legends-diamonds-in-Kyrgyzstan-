@@ -12,6 +12,8 @@ export const GLOBAL_CATALOG = {
   '253+23': { offer: '234_23_diamonds|19_diamonds', cost: 3.754 }, // 276 = 257 + 19
   '312+31': { offer: '234_23_diamonds|78_8_diamonds', cost: 4.606 },
   '310+34': { offer: '234_23_diamonds|78_8_diamonds', cost: 4.606 }, // старый ключ (заказы, созданные до замены)
+  '1294+81':  { offer: '625_81_diamonds|429_diamonds|240_diamonds', cost: 19.133 }, // 1375 = 706 + 429 + 240
+  '1679+162': { offer: '625_81_diamonds|625_81_diamonds|429_diamonds', cost: 24.351 }, // 1841 = 706 + 706 + 429
   '317+38': { offer: '355_diamonds', cost: 5.75 },
   '383+46': { offer: '429_diamonds', cost: 5.804 },
   '625+81': { offer: '625_81_diamonds', cost: 9.273 },

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds /new/index.html (noindex redesign preview) from the live index.html.
+"""Builds /index.html (noindex redesign preview) from the live index.html.
 Prices, packages, payment code, order logic are copied byte-for-byte; only
 decorative layers (intro, overlay, canvases, particles, tilt/magnetic) are
 dropped and new/theme.css is added."""

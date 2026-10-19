@@ -1318,46 +1318,9 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=1">
+<link rel="stylesheet" href="theme.css?v=1">
 </head>
-<body data-page="home">
-<!-- IMPOSSIBLE DIAMOND: cinematic intro (skips itself after first visit via localStorage) -->
-<div id="cinematicIntro" aria-hidden="true">
-  <div class="intro-stage">
-    <span class="intro-spark"></span>
-    <svg class="intro-gem" viewBox="0 0 320 320" width="130" height="130">
-      <defs>
-        <linearGradient id="introGemTop" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#FFE9A8"/>
-          <stop offset="55%" stop-color="#FFBA08"/>
-          <stop offset="100%" stop-color="#d49a00"/>
-        </linearGradient>
-        <linearGradient id="introGemSide" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#4d93f5"/>
-          <stop offset="100%" stop-color="#153a73"/>
-        </linearGradient>
-      </defs>
-      <g transform="translate(160,168)">
-        <polygon points="0,-92 62,-18 0,110 -62,-18" fill="url(#introGemSide)" stroke="#050810" stroke-width="4" stroke-linejoin="round"/>
-        <polygon points="0,-92 62,-18 0,14 -62,-18" fill="url(#introGemTop)" stroke="#050810" stroke-width="4" stroke-linejoin="round"/>
-        <polygon points="0,-92 30,-18 0,14 -30,-18" fill="#fff3cf" opacity="0.6"/>
-      </g>
-    </svg>
-    <div class="intro-logo" aria-hidden="true"></div>
-  </div>
-  <button class="intro-skip" id="introSkipBtn" type="button">Пропустить</button>
-</div>
-<div id="pageTransitionOverlay" aria-hidden="true"></div>
-
-<canvas id="particleCanvas"></canvas>
-<div class="bg-mesh"></div>
-<div class="bg-grid"></div>
-<div class="bg-aurora" aria-hidden="true"></div>
-<div class="bg-gridfx" id="bgGridFx" aria-hidden="true"></div>
-<div class="bg-scan" aria-hidden="true"></div>
-<div class="bg-noise" aria-hidden="true"></div>
-
-
-
+<body data-page="home" class="v2">
 <nav>
   <a href="#" class="nav-logo" onclick="showPage('home')"><span class="di">💎</span><span class="hl">Diamond</span>.kg</a>
   <div class="nav-links">
@@ -1396,61 +1359,15 @@
 <div class="page active" id="page-home">
   <div class="urgency-bar"><span>⚡ Пополнение за 5–10 минут</span><span>🕐 24/7</span><span>🔒 Безопасно</span></div>
   <section class="hero">
-    <canvas id="heroDiamonds" aria-hidden="true"></canvas>
-    <div class="hero-gem" aria-hidden="true" id="heroGem">
-      <div class="hero-gem-spin"><div class="hero-gem-inner">
-      <svg viewBox="0 0 320 320" width="200" height="200">
-        <defs>
-          <radialGradient id="glow" cx="50%" cy="45%" r="55%">
-            <stop offset="0%" stop-color="#FFBA08" stop-opacity="0.55"/>
-            <stop offset="45%" stop-color="#2E7DED" stop-opacity="0.25"/>
-            <stop offset="100%" stop-color="#2E7DED" stop-opacity="0"/>
-          </radialGradient>
-          <linearGradient id="gemMainTop" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#FFE9A8"/>
-            <stop offset="55%" stop-color="#FFBA08"/>
-            <stop offset="100%" stop-color="#d49a00"/>
-          </linearGradient>
-          <linearGradient id="gemMainSide" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#d49a00"/>
-            <stop offset="100%" stop-color="#8a5f00"/>
-          </linearGradient>
-          <linearGradient id="gemSideBlue" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#4d93f5"/>
-            <stop offset="100%" stop-color="#153a73"/>
-          </linearGradient>
-        </defs>
-        <circle cx="160" cy="165" r="130" fill="url(#glow)"/>
-        <g transform="translate(78,150) rotate(-18)">
-          <polygon points="0,-46 26,-8 0,60 -26,-8" fill="url(#gemSideBlue)" stroke="#0B1D3A" stroke-width="3" stroke-linejoin="round"/>
-          <polygon points="0,-46 26,-8 0,4 -26,-8" fill="#7fb2ff" opacity="0.65"/>
-        </g>
-        <g transform="translate(240,148) rotate(20)">
-          <polygon points="0,-40 22,-6 0,52 -22,-6" fill="url(#gemSideBlue)" stroke="#0B1D3A" stroke-width="3" stroke-linejoin="round"/>
-          <polygon points="0,-40 22,-6 0,4 -22,-6" fill="#7fb2ff" opacity="0.6"/>
-        </g>
-        <g transform="translate(160,168)">
-          <polygon points="0,-92 62,-18 0,110 -62,-18" fill="url(#gemMainSide)" stroke="#0B1D3A" stroke-width="4" stroke-linejoin="round"/>
-          <polygon points="0,-92 62,-18 0,14 -62,-18" fill="url(#gemMainTop)" stroke="#0B1D3A" stroke-width="4" stroke-linejoin="round"/>
-          <polygon points="0,-92 30,-18 0,14 -30,-18" fill="#fff3cf" opacity="0.55"/>
-          <line x1="0" y1="-92" x2="0" y2="14" stroke="#0B1D3A" stroke-width="2" opacity="0.4"/>
-        </g>
-        <g fill="#FFE9A8">
-          <circle cx="70" cy="70" r="4"><animate attributeName="opacity" values="0.2;1;0.2" dur="2.4s" repeatCount="indefinite"/></circle>
-          <circle cx="255" cy="90" r="3"><animate attributeName="opacity" values="1;0.2;1" dur="2s" repeatCount="indefinite"/></circle>
-          <circle cx="245" cy="245" r="3.5"><animate attributeName="opacity" values="0.3;1;0.3" dur="2.8s" repeatCount="indefinite"/></circle>
-          <circle cx="55" cy="235" r="3"><animate attributeName="opacity" values="1;0.3;1" dur="2.2s" repeatCount="indefinite"/></circle>
-        </g>
-      </svg>
-      </div></div>
-    </div>
-    <div class="hero-badge">🇰🇬 Кыргызстан</div>
-    <h1>Пополнение <em>игр</em><br>в Кыргызстане<br><span class="bl">MLBB, PUBG, Free Fire и другие</span></h1>
-    <p style="text-align:center; color:var(--muted); margin:4px 0 0; font-size:15px">Алмазы, UC и кристаллы за сомы · Оплата через Mbank и O!Банк</p>
-    <div class="hero-cta-group">
+    <div class="hero-copy">
+      <div class="hero-badge">🇰🇬 Кыргызстан</div>
+      <h1>Пополнение <em>игр</em><br>в Кыргызстане<br><span class="bl">MLBB, PUBG, Free Fire и другие</span></h1>
+      <p class="hero-lead">Алмазы, UC и кристаллы за сомы · Оплата через Mbank и O!Банк</p>
+      <div class="hero-cta-group">
       <button class="btn-primary glow" onclick="showPage('topup')">💎 Пополнить игру</button>
       <button class="btn-secondary" onclick="showPage('accounts')">🎮 Аккаунты</button>
       <button class="btn-wa" onclick="showPage('support')">💬 Поддержка</button>
+    </div>
     </div>
     <div class="quick-buy"><div class="qb-title">Популярные пакеты</div><div class="qb-grid">
       <button type="button" class="qb-card hot" onclick="quickBuy('Weekly Elite Pack')"><div class="qd">🎫 Weekly</div><div class="qp">119 Сом</div><div class="qb">Elite Pack −17%</div></button>
@@ -1470,7 +1387,7 @@
       <a class="game-card" href="/genshin-impact-kristally/"><div class="gc-i">✨</div><h3>Genshin Impact</h3><p>Genesis Crystals, Welkin Moon</p></a>
       <a class="game-card" href="/wuthering-waves-lunite/"><div class="gc-i">🌊</div><h3>Wuthering Waves</h3><p>Lunite и подписка</p></a>
     </div></section>
-  <div class="disclaimer" style="text-align:center; margin:0 5% 13px; background:rgba(255,186,8,.06); padding:10px; border-radius:10px;">⚠️ Неофициальный сервис. Не связан с разработчиками игр, все названия принадлежат их владельцам.</div>
+  <div class="disclaimer">⚠️ Неофициальный сервис. Не связан с разработчиками игр, все названия принадлежат их владельцам.</div>
   <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>24/7 без выходных</h3><p>Заказы принимаем всегда, ночью зачисляем утром.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
   <section id="reviews"><div class="sec-label">Отзывы</div><div class="sec-divider"></div><h2 class="sec-title">Что пишут <em>клиенты</em></h2>
     <div class="rev-row">
@@ -1485,7 +1402,7 @@
   </section>
   <section><div class="sec-label">Преимущества</div><div class="sec-divider"></div><h2 class="sec-title">Почему <em>мы</em></h2><div class="features-grid"><div class="feature-card reveal reveal-delay-1"><div class="ficon g">⚡</div><h3>5–10 минут</h3><p>Быстрое зачисление</p></div><div class="feature-card reveal reveal-delay-2"><div class="ficon b">🏦</div><h3>Локальные платежи</h3><p>Mbank, O!Банк</p></div><div class="feature-card reveal reveal-delay-3"><div class="ficon gr">🛡️</div><h3>Безопасно</h3><p>Не запрашиваем пароль</p></div></div></section>
   <section><div class="sec-label">Процесс</div><div class="sec-divider"></div><h2 class="sec-title">Как <em>работает</em></h2><div class="steps-grid"><div class="step-card reveal reveal-delay-1"><div class="step-num">1</div><h3>Введите ID</h3><p>ID и сервер из профиля</p></div><div class="step-card reveal reveal-delay-2"><div class="step-num">2</div><h3>Выберите пакет</h3><p>Любое количество алмазов</p></div><div class="step-card reveal reveal-delay-3"><div class="step-num">3</div><h3>Оплатите</h3><p>Mbank или O!Банк, отправьте чек в WhatsApp</p></div><div class="step-card reveal reveal-delay-4"><div class="step-num">4</div><h3>Получите алмазы</h3><p>Через 5–10 минут</p></div></div></section>
-  <section style="padding-bottom:72px"><div style="background:linear-gradient(135deg,rgba(46,125,237,.14),rgba(255,186,8,.07)); border-radius:22px; padding:46px 26px; text-align:center"><h2 class="sec-title">Готов пополнить <em>алмазы</em>?</h2><button class="btn-primary" onclick="showPage('topup')">💎 Пополнить сейчас</button></div></section>
+  <section class="final-cta"><div class="final-cta-box"><h2 class="sec-title">Готов пополнить <em>алмазы</em>?</h2><button class="btn-primary" onclick="showPage('topup')">💎 Пополнить сейчас</button></div></section>
 </div>
 
 <!-- TOPUP -->
@@ -2023,226 +1940,8 @@ const revealObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-// Частицы
-(function() {
-  const canvas = document.getElementById('particleCanvas');
-  const ctx = canvas.getContext('2d');
-  let W, H, particles = [];
-  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-  resize();
-  window.addEventListener('resize', resize);
-  function rand(a,b) { return Math.random()*(b-a)+a; }
-  function Particle() {
-    this.reset = function() {
-      this.x = rand(0,W); this.y = rand(0,H); this.r = rand(1,2.8);
-      this.speedY = rand(0.25,0.7); this.speedX = rand(-0.2,0.2);
-      this.alpha = rand(0.3,0.8);
-      this.color = Math.random()>0.5 ? `rgba(46,125,237,${this.alpha})` : `rgba(255,186,8,${this.alpha})`;
-      this.twinkle = rand(0.008,0.02); this.phase = rand(0,Math.PI*2);
-    };
-    this.reset();
-  }
-  for(let i=0;i<55;i++) particles.push(new Particle());
-  function draw() {
-    ctx.clearRect(0,0,W,H);
-    particles.forEach(p => {
-      p.phase += p.twinkle;
-      const alpha = (Math.sin(p.phase)*0.3+0.5)*0.7;
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle = p.color.replace(/[\d.]+\)$/, alpha+')');
-      ctx.fill();
-      p.y -= p.speedY; p.x += p.speedX;
-      if(p.y < -10) p.reset();
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-})();
 </script>
 
-<script>
-/* ===================================================================
-   IMPOSSIBLE DIAMOND — presentation/animation layer only.
-   Does not read/alter prices, packages, phone numbers, text content,
-   business logic, storage keys used by the core app, or API calls.
-   Wraps/observes existing functions instead of editing them in place.
-=================================================================== */
-(function(){
-  'use strict';
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var isFinePointer = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  var isLowPower = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) ||
-                    (navigator.deviceMemory && navigator.deviceMemory <= 2);
-  if (isLowPower) document.body.classList.add('low-power');
-
-  /* ---------------- CINEMATIC INTRO ---------------- */
-  (function initIntro(){
-    var intro = document.getElementById('cinematicIntro');
-    if (!intro) return;
-    var seenKey = 'impossibleDiamondIntroSeen';
-    var alreadySeen = false;
-    try { alreadySeen = localStorage.getItem(seenKey) === '1'; } catch(e){}
-
-    function markSeen(){ try { localStorage.setItem(seenKey, '1'); } catch(e){} }
-    function hideIntro(){
-      intro.classList.add('hide');
-      markSeen();
-      setTimeout(function(){ if (intro && intro.parentNode) intro.remove(); }, 650);
-    }
-
-    if (alreadySeen) { intro.remove(); return; }
-
-    var logo = intro.querySelector('.intro-logo');
-    if (logo) {
-      var text = 'DIAMOND.KG';
-      var frag = document.createDocumentFragment();
-      text.split('').forEach(function(ch, i){
-        var span = document.createElement('span');
-        span.className = 'ch';
-        if (ch === '.') span.classList.add('hl');
-        span.textContent = ch;
-        span.style.animationDelay = (0.55 + i * 0.045) + 's';
-        frag.appendChild(span);
-      });
-      logo.appendChild(frag);
-    }
-
-    var skipBtn = document.getElementById('introSkipBtn');
-    if (skipBtn) skipBtn.addEventListener('click', hideIntro);
-
-    if (reduceMotion) {
-      setTimeout(hideIntro, 350);
-    } else {
-      setTimeout(hideIntro, 2600);
-    }
-  })();
-
-  /* ---------------- BACKGROUND AURORA (pause when tab hidden) ---------------- */
-  document.addEventListener('visibilitychange', function(){
-    var aurora = document.querySelector('.bg-aurora');
-    if (!aurora) return;
-    aurora.style.animationPlayState = document.hidden ? 'paused' : 'running';
-  });
-
-  /* ---------------- NAV: compact on scroll down, expand on scroll up ---------------- */
-  (function initNavScroll(){
-    var nav = document.querySelector('nav');
-    if (!nav) return;
-    var lastY = window.scrollY || 0;
-    var ticking = false;
-    function onScroll(){
-      var y = window.scrollY || 0;
-      if (y > 80 && y > lastY) {
-        nav.classList.add('nav-scrolled');
-      } else if (y < lastY || y <= 80) {
-        nav.classList.remove('nav-scrolled');
-      }
-      lastY = y;
-      ticking = false;
-    }
-    window.addEventListener('scroll', function(){
-      if (!ticking) { requestAnimationFrame(onScroll); ticking = true; }
-    }, { passive: true });
-  })();
-
-  /* ---------------- PAGE TRANSITIONS (wraps showPage, does not edit it) ---------------- */
-  (function initPageTransitions(){
-    var overlay = document.getElementById('pageTransitionOverlay');
-    if (!overlay || typeof window.showPage !== 'function') return;
-    var original = window.showPage;
-    window.showPage = function(name){
-      if (reduceMotion) { original(name); return; }
-      overlay.classList.add('show');
-      setTimeout(function(){
-        original(name);
-        setTimeout(function(){ overlay.classList.remove('show'); }, 60);
-      }, 230);
-    };
-  })();
-
-  /* ---------------- HERO GEM: mouse-reactive tilt ---------------- */
-  (function initHeroTilt(){
-    if (!isFinePointer || reduceMotion) return;
-    var hero = document.querySelector('.hero');
-    var inner = document.querySelector('.hero-gem-inner');
-    if (!hero || !inner) return;
-    hero.addEventListener('mousemove', function(e){
-      var r = hero.getBoundingClientRect();
-      var px = (e.clientX - r.left) / r.width - 0.5;
-      var py = (e.clientY - r.top) / r.height - 0.5;
-      inner.style.setProperty('--rx', (px * 22).toFixed(2));
-      inner.style.setProperty('--ry', (py * -22).toFixed(2));
-    });
-    hero.addEventListener('mouseleave', function(){
-      inner.style.setProperty('--rx', 0);
-      inner.style.setProperty('--ry', 0);
-    });
-  })();
-
-  /* ---------------- CARD TILT (event delegation; survives innerHTML re-renders) ---------------- */
-  (function initCardTilt(){
-    if (!isFinePointer || reduceMotion) return;
-    var tiltSelector = '.pkg-card, .trust-card, .feature-card, .step-card, .method-card';
-    document.addEventListener('mousemove', function(e){
-      var card = e.target.closest ? e.target.closest(tiltSelector) : null;
-      if (!card) return;
-      var r = card.getBoundingClientRect();
-      var px = (e.clientX - r.left) / r.width - 0.5;
-      var py = (e.clientY - r.top) / r.height - 0.5;
-      card.style.setProperty('--tx', (px * 7).toFixed(2) + 'deg');
-      card.style.setProperty('--ty', (py * -7).toFixed(2) + 'deg');
-    });
-    document.addEventListener('mouseout', function(e){
-      var card = e.target.closest ? e.target.closest(tiltSelector) : null;
-      if (!card) return;
-      card.style.setProperty('--tx', '0deg');
-      card.style.setProperty('--ty', '0deg');
-    });
-  })();
-
-  /* ---------------- MAGNETIC BUTTONS ---------------- */
-  (function initMagnetic(){
-    if (!isFinePointer || reduceMotion) return;
-    var magSelector = '.btn-primary, .nav-cta';
-    document.addEventListener('mousemove', function(e){
-      var btn = e.target.closest ? e.target.closest(magSelector) : null;
-      if (btn) {
-        var r = btn.getBoundingClientRect();
-        var dx = (e.clientX - (r.left + r.width/2)) * 0.12;
-        var dy = (e.clientY - (r.top + r.height/2)) * 0.12;
-        btn.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px)';
-      }
-    });
-    document.addEventListener('mouseout', function(e){
-      var btn = e.target.closest ? e.target.closest(magSelector) : null;
-      if (btn) btn.style.transform = '';
-    });
-  })();
-
-  /* ---------------- CLICK: small diamond particle burst ---------------- */
-  (function initClickParticles(){
-    if (reduceMotion) return;
-    var burstSelector = '.btn-primary, .btn-wa, .nav-cta, .pkg-card .btn-primary, #buyBtn, #sendWhatsAppBtn';
-    document.addEventListener('click', function(e){
-      var el = e.target.closest ? e.target.closest(burstSelector) : null;
-      if (!el) return;
-      var n = isLowPower ? 3 : 6;
-      for (var i = 0; i < n; i++) {
-        var p = document.createElement('span');
-        p.className = 'dmd-particle';
-        var angle = (Math.PI * 2 * i) / n;
-        var dist = 24 + Math.random() * 18;
-        p.style.left = e.clientX + 'px';
-        p.style.top = e.clientY + 'px';
-        p.style.setProperty('--dy', (Math.sin(angle) * dist) + 'px');
-        p.style.transform = 'translate(-50%,-50%) translateX(' + (Math.cos(angle) * dist) + 'px) rotate(45deg)';
-        document.body.appendChild(p);
-        (function(node){ setTimeout(function(){ node.remove(); }, 650); })(p);
-      }
-    });
-  })();
-})();
-</script>
 
 <script>
 /* ===================================================================
@@ -2553,5 +2252,10 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 <script src="api-config.js?v=1"></script>
 <script src="accounts.js?v=1" defer></script>
 <script src="script.js" defer></script>
+<script>
+(function(){var n=document.querySelector('nav');if(!n)return;var t=false;
+function f(){n.classList.toggle('nav-scrolled',(window.scrollY||0)>8);t=false}
+window.addEventListener('scroll',function(){if(!t){t=true;requestAnimationFrame(f)}},{passive:true});f();})();
+</script>
 </body>
 </html>

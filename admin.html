@@ -4,271 +4,75 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Админка аккаунтов — diamond.kg</title>
+<title>Админка — diamond.kg</title>
 <style>
-:root{--bg:#0B1D3A;--card:#112548;--line:rgba(46,125,237,.28);--tx:#f0f4ff;--mu:#8ba3cc;--gold:#FFBA08;--blue:#2E7DED;--red:#ff5d5d;--green:#25D366}
+:root{--bg:#0B1020;--surface:#10182B;--card:#151D33;--line:rgba(170,184,208,.2);--tx:#F5F7FF;--mu:#AAB8D0;--cy:#32D9F5;--red:#ff5d5d}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-.wrap{max-width:760px;margin:0 auto;padding:16px 16px 80px}
-h1{font-size:1.4rem;margin:8px 0 16px}
-h2{font-size:1.1rem;margin:0 0 12px}
-label{display:block;font-size:.85rem;color:var(--mu);margin:12px 0 4px}
-input,select,textarea{width:100%;background:#0a1630;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;min-height:46px}
-textarea{min-height:100px;resize:vertical}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:1px}
-button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 16px;cursor:pointer;min-height:46px;color:var(--tx);background:#1d3a6e}
-button.pri{background:var(--gold);color:#0B1D3A}
-button.dng{background:#5a1f2a;color:#ffd6d6}
-button.sm{min-height:38px;padding:8px 12px;font-size:.9rem}
-button:disabled{opacity:.5;cursor:default}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.row>*{flex:1 1 140px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.top button{flex:0 0 auto}
-.item{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
-.item:first-child{border-top:0}
-.item img,.item .ph{width:72px;height:54px;object-fit:cover;border-radius:8px;background:#0a1630;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
-.item .meta{flex:1;min-width:0}
-.item .meta b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.item .meta span{color:var(--mu);font-size:.85rem}
-.st{font-size:.75rem;padding:2px 8px;border-radius:999px;background:#1d3a6e;margin-left:6px}
-.st.available{background:#12633a}.st.sold{background:#555d6e}.st.hidden{background:#6b4a12}
-.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
-.ph-box{position:relative;background:#0a1630;border-radius:10px;overflow:hidden;aspect-ratio:4/3;border:1px solid var(--line)}
-.ph-box img{width:100%;height:100%;object-fit:cover;display:block}
-.ph-box .bar{position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(5,8,16,.8)}
-.ph-box .bar button{flex:1;min-height:34px;padding:4px;border-radius:0;background:transparent;font-size:1rem}
-.ph-box .n{position:absolute;top:4px;left:6px;font-size:.75rem;background:rgba(5,8,16,.8);padding:1px 6px;border-radius:6px}
-.msg{padding:10px 12px;border-radius:10px;margin:10px 0;font-size:.92rem}
-.msg.err{background:#4a1a22;color:#ffd6d6}.msg.ok{background:#124a2c;color:#c9f5db}
-.hint{color:var(--mu);font-size:.82rem;margin-top:4px}
-.hidden{display:none!important}
+header{position:sticky;top:0;z-index:10;background:rgba(11,16,32,.96);border-bottom:1px solid var(--line)}
+.bar{max-width:760px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:8px}
+.brand{font-weight:800;margin-right:auto;white-space:nowrap}
+.brand b{color:var(--cy)}
+.tab{font:inherit;font-weight:700;min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--mu);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.tab[aria-selected="true"]{background:var(--cy);color:#0B1020;border-color:var(--cy)}
+.tab:focus-visible{outline:3px solid var(--cy);outline-offset:2px}
+.badge{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--red);color:#fff;font-size:.78rem;display:none;align-items:center;justify-content:center}
+.badge.on{display:inline-flex}
+iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
+.frame{max-width:760px;margin:0 auto}
+.hidden{display:none}
+@media (max-width:420px){.brand{display:none}.bar{justify-content:center}.tab{flex:1;justify-content:center}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>🎮 Админка аккаунтов</h1>
-  <div id="msg"></div>
-
-  <!-- адрес API (если не задан в api-config.js) -->
-  <div class="card hidden" id="apiBox">
-    <h2>Адрес API</h2>
-    <label for="apiUrl">Адрес Worker (например https://diamond-kg-api.xxx.workers.dev)</label>
-    <input id="apiUrl" inputmode="url" placeholder="https://...">
-    <div style="margin-top:10px"><button class="pri" id="apiSave">Сохранить адрес</button></div>
-  </div>
-
-  <!-- вход -->
-  <div class="card hidden" id="loginBox">
-    <h2>Вход</h2>
-    <label for="pw">Пароль</label>
-    <input id="pw" type="password" autocomplete="current-password">
-    <div style="margin-top:10px"><button class="pri" id="loginBtn">Войти</button></div>
-  </div>
-
-  <!-- список -->
-  <div id="listBox" class="hidden">
-    <div class="top" style="margin-bottom:12px">
-      <button class="pri" id="newBtn">+ Добавить аккаунт</button>
-      <button class="sm" id="logoutBtn">Выйти</button>
-    </div>
-    <div class="card" id="list"></div>
-  </div>
-
-  <!-- форма -->
-  <div id="formBox" class="hidden">
-    <div class="card">
-      <div class="top"><h2 id="formTitle">Новый аккаунт</h2><button class="sm" id="backBtn">← К списку</button></div>
-
-      <label for="f_title">Название (RU) *</label>
-      <input id="f_title" maxlength="120" placeholder="Mythic аккаунт, 120 героев">
-      <label for="f_title_ky">Название (KY), можно пусто</label>
-      <input id="f_title_ky" maxlength="120">
-
-      <div class="row">
-        <div><label for="f_price">Цена, KGS *</label><input id="f_price" type="number" inputmode="numeric" min="0"></div>
-        <div><label for="f_status">Статус</label>
-          <select id="f_status"><option value="available">В наличии</option><option value="sold">Продан</option><option value="hidden">Скрыт</option></select></div>
-      </div>
-      <div class="row">
-        <div><label for="f_rank">Ранг</label>
-          <input id="f_rank" list="ranks" placeholder="Mythic"><datalist id="ranks"><option>Warrior</option><option>Elite</option><option>Master</option><option>Grandmaster</option><option>Epic</option><option>Legend</option><option>Mythic</option><option>Mythical Honor</option><option>Mythical Glory</option><option>Mythical Immortal</option></datalist></div>
-        <div><label for="f_level">Уровень</label><input id="f_level" type="number" inputmode="numeric" min="0"></div>
-      </div>
-      <div class="row">
-        <div><label for="f_heroes">Героев</label><input id="f_heroes" type="number" inputmode="numeric" min="0"></div>
-        <div><label for="f_skins">Скинов</label><input id="f_skins" type="number" inputmode="numeric" min="0"></div>
-      </div>
-
-      <label for="f_description">Описание (RU): что внутри аккаунта</label>
-      <textarea id="f_description" maxlength="4000"></textarea>
-      <label for="f_description_ky">Описание (KY), можно пусто</label>
-      <textarea id="f_description_ky" maxlength="4000"></textarea>
-
-      <div class="top" style="margin-top:14px"><label style="margin:0">SEO-текст</label><button class="sm" id="seoBtn" type="button">Создать SEO-текст</button></div>
-      <label for="f_seo_ru">SEO (RU)</label>
-      <textarea id="f_seo_ru" maxlength="2000"></textarea>
-      <label for="f_seo_ky">SEO (KY)</label>
-      <textarea id="f_seo_ky" maxlength="2000"></textarea>
-      <div class="hint">Сначала заполните поля выше, потом нажмите «Создать SEO-текст». Текст можно править.</div>
-
-      <label>Фото (до 6)</label>
-      <input id="fileIn" type="file" accept="image/*" multiple>
-      <div class="hint">Фото сжимаются автоматически. Порядок: первое фото будет обложкой.</div>
-      <div class="photos" id="photos"></div>
-
-      <div class="row" style="margin-top:18px">
-        <button class="pri" id="saveBtn">Сохранить</button>
-        <button id="cancelBtn" type="button">Отмена</button>
-      </div>
-    </div>
-  </div>
+<header><div class="bar" role="tablist" aria-label="Разделы админки">
+  <span class="brand"><b>Diamond</b>.kg · админка</span>
+  <button class="tab" role="tab" id="t-orders" aria-selected="true" data-t="orders">Заказы <span class="badge" id="badge" title="Требуют действия"></span></button>
+  <button class="tab" role="tab" id="t-accounts" aria-selected="false" data-t="accounts">Аккаунты</button>
+</div></header>
+<div class="frame">
+  <iframe id="f-orders" src="admin-orders.html" title="Заказы"></iframe>
+  <iframe id="f-accounts" class="hidden" src="admin-accounts.html" title="Аккаунты"></iframe>
 </div>
 <script src="api-config.js"></script>
 <script>
 (function(){
-  var $=function(i){return document.getElementById(i)};
-  var TK='dk_admin_token', AK='dk_admin_api';
-  var token='', accounts=[], editing=null, photos=[]; // photos: {id?, blob?, url}
+  var cur='orders';
   function sget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
-  function sset(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}
-  function api(){return (window.DK_API||sget(AK)||'').replace(/\/+$/,'')}
-  function msg(t,k){var m=$('msg');m.innerHTML=t?'<div class="msg '+(k||'ok')+'">'+esc(t)+'</div>':''; if(t)window.scrollTo(0,0)}
-  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  function show(id){['apiBox','loginBox','listBox','formBox'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)})}
-
-  async function call(method,path,body,raw){
-    var h={}; if(token)h.Authorization='Bearer '+token;
-    var o={method:method,headers:h};
-    if(raw){h['Content-Type']=raw.type;o.body=raw}
-    else if(body!==undefined){h['Content-Type']='application/json';o.body=JSON.stringify(body)}
-    var r=await fetch(api()+path,o); var d={}; try{d=await r.json()}catch(e){}
-    if(r.status===401&&path!=='/api/login'){token='';sset(TK,'');show('loginBox');throw new Error('Войдите заново')}
-    if(!r.ok)throw new Error(d.error||('Ошибка '+r.status));
-    return d;
+  function show(t){
+    cur=t;
+    ['orders','accounts'].forEach(function(x){
+      document.getElementById('f-'+x).classList.toggle('hidden',x!==t);
+      document.getElementById('t-'+x).setAttribute('aria-selected',x===t?'true':'false');
+    });
+    try{history.replaceState(null,'','#'+t)}catch(e){}
+    window.scrollTo(0,0);
+    // вошли в одной вкладке — во второй сразу подхватываем вход
+    try{var f=document.getElementById('f-'+t),d=f.contentDocument,lb=d&&d.getElementById('loginBox');
+      if(lb&&!lb.classList.contains('hidden')&&sget('dk_admin_token'))f.contentWindow.location.reload();}catch(e){}
+    fit();
   }
-
-  function start(){
-    token=sget(TK); msg('');
-    if(!api()){show('apiBox');return}
-    if(!token){show('loginBox');return}
-    loadList();
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(b){b.onclick=function(){show(b.dataset.t)}});
+  function fit(){
+    var f=document.getElementById('f-'+cur);
+    try{var d=f.contentDocument;if(d&&d.documentElement){var h=Math.max(d.documentElement.scrollHeight,d.body?d.body.scrollHeight:0);if(h&&Math.abs(f.offsetHeight-h)>2)f.style.height=h+'px'}}catch(e){}
   }
-  $('apiSave').onclick=function(){var v=$('apiUrl').value.trim();if(!/^https:\/\//.test(v)){msg('Адрес должен начинаться с https://','err');return}sset(AK,v);start()};
-  $('loginBtn').onclick=async function(){
-    var b=this;b.disabled=true;
-    try{var d=await call('POST','/api/login',{password:$('pw').value});token=d.token;sset(TK,token);$('pw').value='';start()}
-    catch(e){msg(e.message,'err')} b.disabled=false;
-  };
-  $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')$('loginBtn').click()});
-  $('logoutBtn').onclick=function(){token='';sset(TK,'');show('loginBox')};
-
-  var LBL={available:'В наличии',sold:'Продан',hidden:'Скрыт'};
-  async function loadList(){
-    show('listBox');$('list').innerHTML='<div class="hint">Загрузка…</div>';
-    try{accounts=(await call('GET','/api/admin/accounts')).accounts}catch(e){msg(e.message,'err');return}
-    if(!accounts.length){$('list').innerHTML='<div class="hint">Аккаунтов пока нет. Нажмите «Добавить аккаунт».</div>';return}
-    $('list').innerHTML=accounts.map(function(a){
-      return '<div class="item" data-id="'+a.id+'">'+
-        (a.photos.length?'<img src="'+api()+'/img/'+a.photos[0]+'" alt="">':'<div class="ph">🎮</div>')+
-        '<div class="meta"><b>№'+a.id+' '+esc(a.title)+'</b><span>'+Number(a.price).toLocaleString('ru-RU')+' KGS<span class="st '+a.status+'">'+LBL[a.status]+'</span></span></div>'+
-        '<div class="acts"><button class="sm" data-act="edit">Изменить</button><button class="sm dng" data-act="del">Удалить</button></div></div>';
-    }).join('');
-  }
-  $('list').onclick=async function(e){
-    var b=e.target.closest('button');if(!b)return;
-    var id=Number(b.closest('.item').getAttribute('data-id')),a=accounts.filter(function(x){return x.id===id})[0];
-    if(b.dataset.act==='edit')openForm(a);
-    if(b.dataset.act==='del'){
-      if(!confirm('Удалить аккаунт «'+a.title+'» и все его фото? Это нельзя отменить.'))return;
-      try{await call('DELETE','/api/admin/accounts/'+id);msg('Аккаунт удалён');loadList()}catch(er){msg(er.message,'err')}
-    }
-  };
-  $('newBtn').onclick=function(){openForm(null)};
-  $('backBtn').onclick=$('cancelBtn').onclick=function(){msg('');show('listBox')};
-
-  var F=['title','title_ky','price','rank','level','heroes','skins','description','description_ky','seo_ru','seo_ky','status'];
-  function openForm(a){
-    editing=a;msg('');
-    $('formTitle').textContent=a?('Аккаунт №'+a.id):'Новый аккаунт';
-    F.forEach(function(k){$('f_'+k).value=a?(a[k]==null?'':a[k]):(k==='status'?'available':'')});
-    photos=a?a.photos.map(function(id){return{id:id,url:api()+'/img/'+id}}):[];
-    drawPhotos();show('formBox');window.scrollTo(0,0);
-  }
-  function drawPhotos(){
-    $('photos').innerHTML=photos.map(function(p,i){
-      return '<div class="ph-box" data-i="'+i+'"><span class="n">'+(i+1)+'</span><img src="'+p.url+'" alt="">'+
-        '<div class="bar"><button data-m="-1" aria-label="Влево">◀</button><button data-m="del" aria-label="Удалить фото">✕</button><button data-m="1" aria-label="Вправо">▶</button></div></div>';
-    }).join('');
-  }
-  $('photos').onclick=function(e){
-    var b=e.target.closest('button');if(!b)return;var i=Number(b.closest('.ph-box').getAttribute('data-i')),m=b.dataset.m;
-    if(m==='del'){var p=photos.splice(i,1)[0];if(p.blob)URL.revokeObjectURL(p.url)}
-    else{var j=i+Number(m);if(j<0||j>=photos.length)return;var t=photos[i];photos[i]=photos[j];photos[j]=t}
-    drawPhotos();
-  };
-
-  // сжатие: макс. 1280px, WebP (или JPEG), до ~380 КБ
-  async function shrink(file){
-    var bmp=await createImageBitmap(file);var s=Math.min(1,1280/Math.max(bmp.width,bmp.height));
-    var c=document.createElement('canvas');c.width=Math.round(bmp.width*s);c.height=Math.round(bmp.height*s);
-    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
-    var type='image/webp';
-    var test=await new Promise(function(r){c.toBlob(r,type,.8)});
-    if(!test||test.type!=='image/webp')type='image/jpeg';
-    var q=.85,b;
-    for(var k=0;k<7;k++){b=await new Promise(function(r){c.toBlob(r,type,q)});if(b.size<=380*1024)break;q-=.1}
-    if(b.size>440*1024)throw new Error('Фото слишком тяжёлое даже после сжатия');
-    return b;
-  }
-  $('fileIn').onchange=async function(){
-    var files=Array.prototype.slice.call(this.files);this.value='';
-    for(var i=0;i<files.length;i++){
-      if(photos.length>=6){msg('Максимум 6 фото','err');break}
-      try{var b=await shrink(files[i]);photos.push({blob:b,url:URL.createObjectURL(b)})}
-      catch(e){msg('Не удалось обработать фото: '+e.message,'err')}
-    }
-    drawPhotos();
-  };
-
-  // SEO-текст по полям (как ищут в Кыргызстане)
-  $('seoBtn').onclick=function(){
-    var v=function(k){return $('f_'+k).value.trim()};
-    var tr=v('title'),tk=v('title_ky')||tr,rank=v('rank'),lvl=v('level'),h=v('heroes'),sk=v('skins'),pr=v('price');
-    if(!tr){msg('Сначала заполните название','err');return}
-    var ru='Продаётся аккаунт Mobile Legends: '+tr+'.'+(rank?' Ранг: '+rank+'.':'')+(lvl&&lvl!=='0'?' Уровень '+lvl+'.':'')+(h&&h!=='0'?' Героев: '+h+'.':'')+(sk&&sk!=='0'?' Скинов: '+sk+'.':'')+(pr?' Цена '+Number(pr).toLocaleString('ru-RU')+' сом.':'')+
-      ' Купить аккаунт MLBB в Кыргызстане: быстрая передача, оплата через Mbank и O!Банк, поддержка в WhatsApp и Telegram. Аккаунт Мобайл Легендс в Бишкеке, купить аккаунт млбб недорого.';
-    var ky='Mobile Legends аккаунту сатылат: '+tk+'.'+(rank?' Даража: '+rank+'.':'')+(lvl&&lvl!=='0'?' Деңгээл '+lvl+'.':'')+(h&&h!=='0'?' Баатырлар: '+h+'.':'')+(sk&&sk!=='0'?' Скиндер: '+sk+'.':'')+(pr?' Баасы '+Number(pr).toLocaleString('ru-RU')+' сом.':'')+
-      ' Кыргызстанда MLBB аккаунтун сатып алуу: тез өткөрүп берүү, Mbank жана O!Деңги аркылуу төлөө, WhatsApp жана Telegram аркылуу колдоо. Мобайл Легендс аккаунту Бишкекте, млбб аккаунтун арзан сатып алуу.';
-    $('f_seo_ru').value=ru;$('f_seo_ky').value=ky;
-  };
-
-  $('saveBtn').onclick=async function(){
-    var btn=this;msg('');
-    var body={};F.forEach(function(k){body[k]=$('f_'+k).value});
-    if(!body.title.trim()){msg('Укажите название','err');return}
-    if(body.price===''||Number(body.price)<0){msg('Укажите цену','err');return}
-    btn.disabled=true;btn.textContent='Сохраняем…';
+  setInterval(fit,400);
+  // badge: сколько заказов требует действия
+  async function badge(){
+    var tk=sget('dk_admin_token'),api=(window.DK_API||sget('dk_admin_api')||'').replace(/\/+$/,'');
+    var el=document.getElementById('badge');
+    if(!tk||!api||document.hidden)return;
     try{
-      var id;
-      if(editing){id=editing.id;await call('PUT','/api/admin/accounts/'+id,body)}
-      else{id=(await call('POST','/api/admin/accounts',body)).id}
-      // удалить убранные старые фото
-      var keep={};photos.forEach(function(p){if(p.id)keep[p.id]=1});
-      if(editing)for(var i=0;i<editing.photos.length;i++){if(!keep[editing.photos[i]])await call('DELETE','/api/admin/photos/'+editing.photos[i])}
-      // загрузить новые
-      for(var j=0;j<photos.length;j++){
-        if(photos[j].blob){btn.textContent='Фото '+(j+1)+' из '+photos.length+'…';photos[j].id=(await call('POST','/api/admin/accounts/'+id+'/photos',undefined,photos[j].blob)).id}
-      }
-      await call('PUT','/api/admin/accounts/'+id+'/photo-order',{order:photos.map(function(p){return p.id})});
-      photos.forEach(function(p){if(p.blob)URL.revokeObjectURL(p.url)});
-      msg('Сохранено');await loadList();
-    }catch(e){msg(e.message,'err')}
-    btn.disabled=false;btn.textContent='Сохранить';
-  };
-  start();
+      var r=await fetch(api+'/api/admin/orders',{headers:{Authorization:'Bearer '+tk}});
+      if(!r.ok){el.classList.remove('on');return}
+      var d=await r.json(),n=(d.orders||[]).filter(function(o){return ['new','refund_due','manual'].indexOf(o.status)>-1}).length;
+      el.textContent=n;el.classList.toggle('on',n>0);
+    }catch(e){}
+  }
+  badge();setInterval(badge,20000);
+  window.addEventListener('storage',badge);
+  show(location.hash==='#accounts'?'accounts':'orders');
 })();
 </script>
 </body>

@@ -11,4 +11,4 @@ Cloudflare Worker + D1 для каталога аккаунтов на diamond.k
    Root directory: `worker`, имя Worker должно совпадать с `name` в wrangler.toml, Deploy command: `npx wrangler deploy`.
 2. Settings → Variables and Secrets → добавить секрет `ADMIN_PASSWORD` (пароль админки).
 3. Адрес Worker (`https://diamond-kg-api.<поддомен>.workers.dev`) вписать в `api-config.js` в корне сайта.
-4. Админка: https://diamond.kg/admin.html
+4. Админка (заказы и аккаунты во вкладках): https://diamond.kg/admin.html

@@ -17,6 +17,7 @@ export const GLOBAL_CATALOG = {
   '317+38': { offer: '355_diamonds', cost: 5.75 },
   '383+46': { offer: '429_diamonds', cost: 5.804 },
   '625+81': { offer: '625_81_diamonds', cost: 9.273 },
+  '500+500': { offer: '500_65_diamonds_first_top_up_bonus', cost: 7.5225 }, // бонус x2 только на первое пополнение этого номинала
   '1000+160': { offer: '1007_156_diamonds', cost: 18.76 },
   '1252+194': { offer: '1446_diamonds', cost: 22.93 },
   '1860+335': { offer: '1860_335_diamonds', cost: 28.069 },

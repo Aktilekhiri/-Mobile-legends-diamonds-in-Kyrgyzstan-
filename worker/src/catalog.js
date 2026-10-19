@@ -9,6 +9,7 @@ export const GLOBAL_CATALOG = {
   '156+16': { offer: '156_16_diamonds', cost: 2.3582 },
   '234+23': { offer: '234_23_diamonds', cost: 3.417 },
   // составной пакет: два оффера подряд (234+23 и 78+8 = 343), 'a|b' = несколько заказов FazerCards
+  '253+23': { offer: '234_23_diamonds|19_diamonds', cost: 3.754 }, // 276 = 257 + 19
   '312+31': { offer: '234_23_diamonds|78_8_diamonds', cost: 4.606 },
   '310+34': { offer: '234_23_diamonds|78_8_diamonds', cost: 4.606 }, // старый ключ (заказы, созданные до замены)
   '317+38': { offer: '355_diamonds', cost: 5.75 },

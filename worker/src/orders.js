@@ -1,5 +1,5 @@
 // Заказы: приём с сайта, подтверждение оплаты админом, выдача через FazerCards, возврат.
-import { CATALOGS, GAMES, MAX_AUTO_COST_USD } from './catalog.js';
+import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS } from './catalog.js';
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { notify } from './notify.js';
 
@@ -17,6 +17,13 @@ const publicView = o => ({
   id: o.id, status: o.status, pkg_label: o.pkg_label, price_kgs: o.price_kgs,
   created_at: o.created_at, finished_at: o.finished_at,
 });
+
+// Прибыль в скобках: цена − себестоимость по каталогу (USD × курс). Нет себестоимости в каталоге — ничего не пишем.
+function profitText(price, cat) {
+  if (!cat || !(cat.cost > 0)) return '';
+  const p = Math.round(price - cat.cost * USD_KGS);
+  return ` (${p >= 0 ? '+' : '−'}${Math.abs(p)} сом прибыль)`;
+}
 
 // POST /api/orders — публично (с сайта)
 export async function createOrder(env, ip, b) {
@@ -45,7 +52,7 @@ export async function createOrder(env, ip, b) {
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
   ).bind(id, now, now, player, server, region, pkg, clean(b.pkgLabel || pkg, 100), price, clean(b.method, 30), clean(b.phone, 30),
     auto ? cat.offer : '', auto ? cat.cost : 0, auto ? 'new' : 'manual', ip || '').run();
-  await notify(env, `🆕 Новый заказ ${id}\n${clean(b.pkgLabel || pkg, 100)} · ${price} сом · ${clean(b.method, 30)}\nID ${player}${server === '-' ? '' : ' (' + server + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}\nПроверьте оплату и подтвердите в админке.`);
+  await notify(env, `🆕 Новый заказ ${id}\n${clean(b.pkgLabel || pkg, 100)} · ${price} сом${profitText(price, cat)} · ${clean(b.method, 30)}\nID ${player}${server === '-' ? '' : ' (' + server + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}\nПроверьте оплату и подтвердите в админке.`);
   return { id, status: auto ? 'new' : 'manual' };
 }
 

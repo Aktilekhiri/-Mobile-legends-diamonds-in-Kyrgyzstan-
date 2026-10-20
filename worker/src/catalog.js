@@ -94,4 +94,5 @@ export const GAMES = {
 
 // Все каталоги по ключу региона/игры, которые шлёт сайт
 export const CATALOGS = { global: GLOBAL_CATALOG, russia: RU_CATALOG, ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.catalog])) };
+export const USD_KGS = 89.05; // курс для расчёта прибыли в уведомлениях (обновляйте вручную)
 export const MAX_AUTO_COST_USD = 60; // дороже — только вручную

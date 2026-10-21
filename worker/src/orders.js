@@ -25,6 +25,9 @@ function profitText(price, cat) {
   return ` (${p >= 0 ? '+' : '−'}${Math.abs(p)} сом прибыль)`;
 }
 
+const GAME_TITLE = { pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', global: 'Mobile Legends' };
+const gameTitle = region => GAME_TITLE[region] || 'Mobile Legends';
+
 // POST /api/orders — публично (с сайта)
 export async function createOrder(env, ip, b) {
   const region = clean(b.region, 20) || 'global';
@@ -52,7 +55,7 @@ export async function createOrder(env, ip, b) {
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
   ).bind(id, now, now, player, server, region, pkg, clean(b.pkgLabel || pkg, 100), price, clean(b.method, 30), clean(b.phone, 30),
     auto ? cat.offer : '', auto ? cat.cost : 0, auto ? 'new' : 'manual', ip || '').run();
-  await notify(env, `🆕 Новый заказ ${id}\n${clean(b.pkgLabel || pkg, 100)} · ${price} сом${profitText(price, cat)} · ${clean(b.method, 30)}\nID ${player}${server === '-' ? '' : ' (' + server + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}\nПроверьте оплату и подтвердите в админке.`);
+  await notify(env, `🆕 Новый заказ ${id}\n🎮 ${gameTitle(region)}\n${clean(b.pkgLabel || pkg, 100)} · ${price} сом${profitText(price, cat)} · ${clean(b.method, 30)}\nID ${player}${server === '-' ? '' : ' (' + server + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}\nПроверьте оплату и подтвердите в админке.`);
   return { id, status: auto ? 'new' : 'manual' };
 }
 

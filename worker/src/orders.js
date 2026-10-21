@@ -1,7 +1,7 @@
 // Заказы: приём с сайта, подтверждение оплаты админом, выдача через FazerCards, возврат.
 import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS } from './catalog.js';
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
-import { notify } from './notify.js';
+import { notify, notifyPhoto } from './notify.js';
 
 const clean = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
 const digits = (v, n) => String(v == null ? '' : v).replace(/\D+/g, '').slice(0, n);
@@ -27,6 +27,10 @@ function profitText(price, cat) {
 
 const GAME_TITLE = { pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', global: 'Mobile Legends' };
 const gameTitle = region => GAME_TITLE[region] || 'Mobile Legends';
+
+function alertText(o, cat, auto, withReceipt) {
+  return `🆕 Новый заказ ${o.id}\n🎮 ${gameTitle(o.region)}\n${o.pkg_label} · ${o.price_kgs} сом${profitText(o.price_kgs, cat)} · ${o.method}\nID ${o.player_id}${o.server_id === '-' ? '' : ' (' + o.server_id + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}${withReceipt ? '\n📎 Чек приложен' : ''}\nПроверьте оплату и подтвердите в админке.`;
+}
 
 // POST /api/orders — публично (с сайта)
 export async function createOrder(env, ip, b) {
@@ -55,7 +59,8 @@ export async function createOrder(env, ip, b) {
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
   ).bind(id, now, now, player, server, region, pkg, clean(b.pkgLabel || pkg, 100), price, clean(b.method, 30), clean(b.phone, 30),
     auto ? cat.offer : '', auto ? cat.cost : 0, auto ? 'new' : 'manual', ip || '').run();
-  await notify(env, `🆕 Новый заказ ${id}\n🎮 ${gameTitle(region)}\n${clean(b.pkgLabel || pkg, 100)} · ${price} сом${profitText(price, cat)} · ${clean(b.method, 30)}\nID ${player}${server === '-' ? '' : ' (' + server + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}\nПроверьте оплату и подтвердите в админке.`);
+  // Заказ «с чеком на сайте» (deferNotify): уведомляем позже, когда придёт чек, одним сообщением с фото.
+  if (!b.deferNotify) await notify(env, alertText({ id, region, pkg, pkg_label: clean(b.pkgLabel || pkg, 100), price_kgs: price, method: clean(b.method, 30), player_id: player, server_id: server }, cat, auto));
   return { id, status: auto ? 'new' : 'manual' };
 }
 
@@ -214,5 +219,60 @@ export async function handleWebhook(env, rawBody, sigHeader) {
   // источник истины — сам заказ, перечитываем
   const fz = await fzGetOrder(env, String(fzId));
   await syncFromFz(env, o, fz);
+  return { ok: true };
+}
+
+// ---------- чек клиента ----------
+const MAX_RECEIPT_BYTES = 1500 * 1024;
+function sniffImage(u8) {
+  if (u8.length > 3 && u8[0] === 0xFF && u8[1] === 0xD8 && u8[2] === 0xFF) return 'image/jpeg';
+  if (u8.length > 8 && u8[0] === 0x89 && u8[1] === 0x50 && u8[2] === 0x4E && u8[3] === 0x47) return 'image/png';
+  if (u8.length > 12 && u8[8] === 0x57 && u8[9] === 0x45 && u8[10] === 0x42 && u8[11] === 0x50) return 'image/webp';
+  return '';
+}
+function b64(u8) { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+function unb64(str) { const s = atob(str); const out = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i); return out; }
+
+// POST /api/orders/:id/receipt — публично, тело = картинка (jpeg/png/webp)
+export async function saveReceipt(env, id, buf) {
+  const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(clean(id, 20)).first();
+  if (!o) return { error: 'Заказ не найден', status: 404 };
+  if (!['new', 'manual'].includes(o.status)) return { error: 'Заказ уже обработан', status: 409 };
+  const u8 = new Uint8Array(buf);
+  if (!u8.length) return { error: 'Пустой файл' };
+  if (u8.length > MAX_RECEIPT_BYTES) return { error: 'Файл слишком большой (макс. 1,5 МБ)', status: 413 };
+  const mime = sniffImage(u8);
+  if (!mime) return { error: 'Нужна картинка: JPG, PNG или WebP' };
+  const now = Date.now();
+  const first = !o.receipt_at;
+  await env.DB.batch([
+    env.DB.prepare('INSERT OR REPLACE INTO receipts (order_id,mime,data,bytes,created_at) VALUES (?,?,?,?,?)').bind(o.id, mime, b64(u8), u8.length, now),
+    env.DB.prepare('UPDATE orders SET receipt_at = ?, updated_at = ? WHERE id = ?').bind(now, now, o.id),
+  ]);
+  const cat = (CATALOGS[o.region] || {})[o.pkg] || null;
+  const auto = !!(cat && cat.cost <= MAX_AUTO_COST_USD) && o.status === 'new';
+  const text = alertText(o, cat, auto, true);
+  if (first) { // повторная загрузка чека не плодит уведомления
+    const sent = await notifyPhoto(env, u8, mime, text);
+    if (!sent) await notify(env, text + '\n(фото не ушло в Telegram — смотрите чек в админке)');
+  }
+  return { ok: true };
+}
+
+// GET /api/admin/orders/:id/receipt
+export async function getReceipt(env, id) {
+  const r = await env.DB.prepare('SELECT mime, data FROM receipts WHERE order_id = ?').bind(clean(id, 20)).first();
+  return r ? { mime: r.mime, bytes: unb64(r.data) } : null;
+}
+
+// POST /api/orders/:id/notify — запасной путь: клиент не смог приложить чек и отправляет заказ через WhatsApp.
+// Шлёт обычное уведомление один раз (receipt_at = -1 — «уведомлено без чека»).
+export async function notifyWithoutReceipt(env, id) {
+  const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(clean(id, 20)).first();
+  if (!o) return { error: 'Заказ не найден', status: 404 };
+  if (!['new', 'manual'].includes(o.status) || o.receipt_at) return { ok: true };
+  await env.DB.prepare('UPDATE orders SET receipt_at = -1, updated_at = ? WHERE id = ?').bind(Date.now(), o.id).run();
+  const cat = (CATALOGS[o.region] || {})[o.pkg] || null;
+  await notify(env, alertText(o, cat, !!(cat && cat.cost <= MAX_AUTO_COST_USD) && o.status === 'new', false));
   return { ok: true };
 }

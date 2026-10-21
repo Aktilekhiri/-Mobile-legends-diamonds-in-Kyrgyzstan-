@@ -8,3 +8,16 @@ export async function notify(env, text) {
     });
   } catch (e) { /* уведомление не критично */ }
 }
+
+// Фото в Telegram (чек клиента). true — отправлено.
+export async function notifyPhoto(env, bytes, mime, caption) {
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return false;
+  try {
+    const fd = new FormData();
+    fd.append('chat_id', String(env.TELEGRAM_CHAT_ID));
+    fd.append('caption', String(caption).slice(0, 1000));
+    fd.append('photo', new Blob([bytes], { type: mime }), mime === 'image/png' ? 'receipt.png' : 'receipt.jpg');
+    const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd });
+    return r.ok;
+  } catch (e) { return false; }
+}

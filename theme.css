@@ -230,3 +230,21 @@ body.v2 .buy-bar .sel-info .sir{display:flex;justify-content:flex-start!importan
 body.v2 .pkg-card.popular::before{top:6px;left:6px;right:auto;transform:none;font-size:.62rem;padding:2px 7px;border-radius:999px}
 body.v2 .pkg-card.popular{padding-top:26px}
 body.v2 #buyBtn{white-space:nowrap}@media (min-width:600px){body.v2 #buyBtn{flex-basis:300px}}
+
+/* ---------- payment: receipt upload ---------- */
+body.v2 .pay-comment{background:rgba(50,217,245,.08);border:1px solid rgba(50,217,245,.3);border-radius:12px;padding:12px 14px;margin:0 0 14px;color:var(--text);font-size:.95rem}
+body.v2 .pay-comment strong{color:var(--cyan);font-size:1.05rem;letter-spacing:.02em;user-select:all}
+body.v2 .payment-confirm label{text-transform:none;font-size:.85rem;color:var(--text);letter-spacing:0}
+body.v2 #receiptFile{padding:10px;cursor:pointer}
+body.v2 #receiptFile::file-selector-button{min-height:36px;margin-right:12px;padding:0 14px;border:0;border-radius:10px;background:var(--card-2);color:var(--text);font-weight:700;cursor:pointer}
+body.v2 .receipt-preview:empty{display:none}
+body.v2 .receipt-preview{margin:0 0 14px}
+body.v2 .receipt-preview img{display:block;max-width:100%;max-height:220px;border-radius:12px;border:1px solid var(--line);object-fit:contain;background:var(--bg)}
+body.v2 .receipt-msg{min-height:0;margin-top:10px;font-size:.92rem;color:var(--muted)}
+body.v2 .receipt-msg:empty{display:none}
+body.v2 .receipt-msg.err{color:#ffb4b4;background:rgba(255,93,93,.1);border:1px solid rgba(255,93,93,.3);border-radius:10px;padding:10px 12px}
+body.v2 .alt-send{margin-top:14px;color:var(--muted);font-size:.88rem;text-align:center}
+body.v2 .link-btn{background:none;border:0;padding:0 2px;min-height:44px;color:var(--cyan);font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+body.v2 .link-btn:disabled{color:var(--muted);text-decoration:none;cursor:not-allowed}
+body.v2 .suc-code{margin:8px 0 2px;font-weight:800;color:var(--cyan);user-select:all}
+body.v2 .suc-status{margin:2px 0 10px;color:var(--text);font-size:.95rem}

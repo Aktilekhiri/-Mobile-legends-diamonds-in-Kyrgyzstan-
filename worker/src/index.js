@@ -8,7 +8,7 @@ const MAX_PHOTO_BYTES = 450 * 1024;
 const TOKEN_DAYS = 30;
 const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
-import { createOrder, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook } from './orders.js';
+import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook } from './orders.js';
 
 function cors(req) {
   const o = req.headers.get('Origin') || '';
@@ -134,6 +134,18 @@ export default {
         const r = await createOrder(env, req.headers.get('CF-Connecting-IP') || '', b);
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
       }
+      mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/receipt$/);
+      if (mm && m === 'POST') {
+        const len = Number(req.headers.get('Content-Length') || 0);
+        if (len > 1600 * 1024) return err(req, 'Файл слишком большой (макс. 1,5 МБ)', 413);
+        const r = await saveReceipt(env, mm[1], await req.arrayBuffer());
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+      }
+      mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/notify$/);
+      if (mm && m === 'POST') {
+        const r = await notifyWithoutReceipt(env, mm[1]);
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+      }
       mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})$/);
       if (mm && m === 'GET') {
         const o = await getOrderPublic(env, mm[1]);
@@ -161,6 +173,12 @@ export default {
         // заказы
         if (path === '/api/admin/orders' && m === 'GET') {
           return json(req, { orders: await listOrders(env, url.searchParams.get('status') || 'all') });
+        }
+        mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9]{4,20})\/receipt$/);
+        if (mm && m === 'GET') {
+          const rc = await getReceipt(env, mm[1]);
+          if (!rc) return err(req, 'Чека нет', 404);
+          return new Response(rc.bytes, { headers: { 'Content-Type': rc.mime, 'Cache-Control': 'private, max-age=3600', ...cors(req) } });
         }
         mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9]{4,20})\/(confirm|refresh|refunded|manual-done|cancel)$/);
         if (mm && m === 'POST') {

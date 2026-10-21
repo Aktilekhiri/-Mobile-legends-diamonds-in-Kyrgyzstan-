@@ -30,7 +30,12 @@ CREATE TABLE IF NOT EXISTS orders (
   cost_usd REAL DEFAULT 0,             -- ожидаемая себестоимость
   status TEXT NOT NULL DEFAULT 'new',  -- new | processing | delivered | refund_due | refunded | manual | cancelled
   fz_order_id TEXT DEFAULT '', fz_status TEXT DEFAULT '', fail_reason TEXT DEFAULT '',
-  ip TEXT DEFAULT '', confirmed_at INTEGER DEFAULT 0, finished_at INTEGER DEFAULT 0
+  ip TEXT DEFAULT '', confirmed_at INTEGER DEFAULT 0, finished_at INTEGER DEFAULT 0,
+  receipt_at INTEGER DEFAULT 0         -- когда клиент приложил чек на сайте
+);
+-- Чеки клиентов (картинка в base64, как и фото аккаунтов)
+CREATE TABLE IF NOT EXISTS receipts (
+  order_id TEXT PRIMARY KEY, mime TEXT NOT NULL, data TEXT NOT NULL, bytes INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status, created_at);
 CREATE INDEX IF NOT EXISTS idx_orders_fz ON orders(fz_order_id);

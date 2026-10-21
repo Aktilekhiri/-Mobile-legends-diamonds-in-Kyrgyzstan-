@@ -40,6 +40,8 @@ button:disabled{opacity:.5;cursor:default}
 .good{color:#06210f;background:var(--green);padding:10px 12px;border-radius:10px;margin-bottom:12px}
 .hint{color:var(--mu);padding:8px 0}
 .warn{color:#ffd28a;font-size:.85rem;margin-top:6px}
+.rcpt img{display:block;max-width:100%;max-height:420px;border-radius:10px;border:1px solid var(--line);margin-top:10px;background:#0B1020}
+.rcpt-hint{color:var(--mu);font-size:.85rem;margin-top:6px}
 </style>
 </head>
 <body>
@@ -100,14 +102,38 @@ button:disabled{opacity:.5;cursor:default}
       else if(o.status==='manual')acts='<button class="ok" data-a="manual-done" data-id="'+o.id+'">Выдал вручную</button><button class="dng" data-a="cancel" data-id="'+o.id+'">Отменить</button>';
       else if(o.status==='processing')acts='<button data-a="refresh" data-id="'+o.id+'">Проверить статус</button>';
       else if(o.status==='refund_due')acts='<button class="ok" data-a="refunded" data-id="'+o.id+'">Деньги клиенту возвращены</button>';
+      var hasR=o.receipt_at>0, canR=(o.status==='new'||o.status==='manual');
+      if(hasR)acts='<button data-a="receipt" data-id="'+o.id+'">📎 '+(rcOpen[o.id]?'Скрыть чек':'Показать чек')+'</button>'+acts;
+      var rnote=(!hasR&&canR)?'<div class="rcpt-hint">Чека на сайте нет — проверьте оплату по банку (возможно, клиент отправил через WhatsApp)</div>':'';
       var warn=o.status==='refund_due'?'<div class="warn">Заказ не выполнен. Верните клиенту '+o.price_kgs+' сом на '+esc(o.method||'карту')+(o.phone?' ('+esc(o.phone)+')':'')+'. '+esc(o.fail_reason||'')+'</div>':(o.status==='processing'&&o.fail_reason?'<div class="warn">'+esc(o.fail_reason)+'</div>':'');
       return '<div class="card"><div class="o-head"><div><b>'+esc(o.id)+'</b><span class="st '+o.status+'">'+(LBL[o.status]||o.status)+'</span></div><div class="o-sum">'+o.price_kgs+' сом</div></div>'
         +'<div class="o-meta">'+esc(o.pkg_label)+' · ID '+esc(o.player_id)+' ('+esc(o.server_id)+') · '+esc(o.method||'—')+(o.phone?' · '+esc(o.phone):'')+' · '+ago(o.created_at)+'</div>'
-        +warn+(acts?'<div class="acts" style="margin-top:8px">'+acts+'</div>':'')+'</div>';
+        +warn+rnote+(acts?'<div class="acts" style="margin-top:8px">'+acts+'</div>':'')+'<div class="rcpt" id="rc-'+o.id+'"></div></div>';
     }).join('');
-    Array.prototype.forEach.call($('list').querySelectorAll('button[data-a]'),function(b){b.onclick=function(){act(b)}});
+    Array.prototype.forEach.call($('list').querySelectorAll('button[data-a]'),function(b){b.onclick=function(){b.dataset.a==='receipt'?toggleReceipt(b):act(b)}});
+    Object.keys(rcOpen).forEach(function(id){if(rcOpen[id])paintReceipt(id)});
   }
 
+  var rcCache={}, rcOpen={};
+  function paintReceipt(id){
+    var box=$('rc-'+id); if(!box||!rcCache[id])return;
+    box.innerHTML='<a href="'+rcCache[id]+'" target="_blank" rel="noopener"><img alt="Чек клиента" src="'+rcCache[id]+'"></a>';
+  }
+  async function toggleReceipt(b){
+    var id=b.dataset.id;
+    if(rcOpen[id]){rcOpen[id]=false;var bx=$('rc-'+id);if(bx)bx.innerHTML='';b.textContent='📎 Показать чек';return}
+    b.disabled=true;
+    try{
+      if(!rcCache[id]){
+        var r=await fetch(api()+'/api/admin/orders/'+id+'/receipt',{headers:{Authorization:'Bearer '+token}});
+        if(r.status===401){token='';sset(TK,'');show('loginBox');throw new Error('Войдите заново')}
+        if(!r.ok)throw new Error('Чек не найден');
+        rcCache[id]=URL.createObjectURL(await r.blob());
+      }
+      rcOpen[id]=true;paintReceipt(id);b.textContent='📎 Скрыть чек';
+    }catch(e){msg(e.message,'err')}
+    b.disabled=false;
+  }
   async function act(b){
     var a=b.dataset.a,id=b.dataset.id,o=orders.filter(function(x){return x.id===id})[0]||{};
     if(a==='confirm'&&!confirm('Заказ '+id+': '+o.pkg_label+'\nID '+o.player_id+' ('+o.server_id+')\nСумма '+o.price_kgs+' сом\n\nДеньги на счёт точно поступили? Алмазы будут выданы сразу.'))return;

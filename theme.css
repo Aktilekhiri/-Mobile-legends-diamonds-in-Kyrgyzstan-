@@ -248,3 +248,6 @@ body.v2 .link-btn{background:none;border:0;padding:0 2px;min-height:44px;color:v
 body.v2 .link-btn:disabled{color:var(--muted);text-decoration:none;cursor:not-allowed}
 body.v2 .suc-code{margin:8px 0 2px;font-weight:800;color:var(--cyan);user-select:all}
 body.v2 .suc-status{margin:2px 0 10px;color:var(--text);font-size:.95rem}
+
+body.v2 .zone-warn{margin:-4px 0 14px;padding:10px 12px;border-radius:10px;background:rgba(255,93,93,.1);border:1px solid rgba(255,93,93,.35);color:#ffb4b4;font-size:.88rem}
+body.v2 .zone-warn[hidden]{display:none}

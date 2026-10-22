@@ -41,6 +41,7 @@ export async function createOrder(env, ip, b) {
   if (!game) server = digits(b.serverId, 8);
   else if (game.servers) server = game.servers.includes(String(b.serverId)) ? String(b.serverId) : '';
   else server = '-';
+  if (!game && region === 'global' && /^6\d{3}$/.test(server)) return { error: 'Сервер 6xxx — российский. Выберите регион «Россия»' };
   if (player.length < 5 || !server) return { error: game ? 'Проверьте ID и сервер' : 'Проверьте ID и Zone ID' };
   const pkg = clean(b.pkg, 60);
   const price = Math.max(0, Math.min(10000000, Math.floor(Number(b.price) || 0)));

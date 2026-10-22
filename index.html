@@ -1429,6 +1429,7 @@
       <input type="text" class="input-field" id="serverId" placeholder="8403" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
       <select class="input-field" id="serverSelect" style="display:none" onchange="updateBuyBtn()"></select>
       <div class="field-hint" id="serverHint">Zone ID: цифры в скобках рядом с ID в профиле. Пример: (8403) → введите 8403</div>
+      <div class="zone-warn" id="zoneWarn" role="alert" hidden>🚫 Сервер 6xxx — российский. Для него выберите регион «🇷🇺 Россия» выше. В глобальном регионе такой сервер не принимается.</div>
       </div>
       <div id="regionRow">
       <label>РЕГИОН</label>
@@ -1674,11 +1675,17 @@ function selectPackage(id) {
   updateBuyBtn();
 }
 
+// Zone ID 6xxx — российские серверы MLBB: в «Глобальном» регионе их принимать нельзя (заказ всё равно отменяется).
+function isRuZoneOnGlobal(sid) {
+  return currentGame === 'mlbb' && currentRegion === 'global' && /^6\d{3}$/.test(String(sid || '').trim());
+}
 function updateBuyBtn() {
   const pid = document.getElementById('playerId').value.trim();
   const sid = getServerValue();
   const btn = document.getElementById('buyBtn');
-  const ok = pid && sid && selectedPkg;
+  const zoneBad = isRuZoneOnGlobal(sid);
+  const zw = document.getElementById('zoneWarn'); if (zw) zw.hidden = !zoneBad;
+  const ok = pid && sid && selectedPkg && !zoneBad;
   btn.disabled = !ok;
   btn.style.opacity = ok ? '1' : '0.5';
   btn.textContent = (ok && selectedPkg) ? `Оплатить ${selectedPkg.price.toLocaleString()} Сом →` : 'Перейти к оплате →';
@@ -1687,7 +1694,7 @@ function updateBuyBtn() {
 function proceedToPayment() {
   const pid = document.getElementById('playerId').value.trim();
   const sid = getServerValue();
-  if (!pid || !sid || !selectedPkg) return;
+  if (!pid || !sid || !selectedPkg || isRuZoneOnGlobal(sid)) return;
   currentOrder = {
     playerId: pid,
     serverId: sid,

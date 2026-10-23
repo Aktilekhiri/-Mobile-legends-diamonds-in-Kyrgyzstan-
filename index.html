@@ -1648,7 +1648,7 @@ function renderPackages() {
         : `<div class="pkg-amount"><span>${p.totalDiamonds}</span></div>${p.unit ? `<div class="pkg-bonus" style="color:var(--muted)">${p.unit}</div>` : ''}`}
       <div class="pkg-price"><strong>${p.price.toLocaleString()} Сом</strong></div>
       ${p.out ? `<div class="pkg-out">Нет в наличии</div>` : ''}
-      ${p.type === 'diamond' && p.bonus ? `<div class="pkg-bonus">+${p.bonus} бонус</div>` : ''}
+      ${p.type === 'diamond' && p.bonus ? `<div class="pkg-bonus pkg-sum">= ${p.diam} + ${p.bonus} бонус</div>` : ''}
       ${p.discount ? `<div class="pkg-bonus" style="color:var(--gold)">-${p.discount}%</div>` : ''}
       ${p.note ? `<div class="pkg-bonus" style="font-size:0.68rem">${p.note}</div>` : ''}
     </div>`;
@@ -1671,7 +1671,7 @@ function selectPackage(id) {
   selectedPkg = cand;
   renderPackages();
   document.getElementById('selectedInfo').style.display = 'block';
-  const label = selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.totalDiamonds} ${unitOf(currentRegion)}`;
+  const label = selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.totalDiamonds} ${unitOf(currentRegion)}` + (selectedPkg.bonus && selectedPkg.diam ? ` (${selectedPkg.diam} + ${selectedPkg.bonus} бонус)` : '');
   document.getElementById('selDiamonds').innerHTML = `${selectedPkg.type === 'pass' ? '🎫' : '💎'} ${label}`;
   document.getElementById('selPrice').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;
   updateBuyBtn();

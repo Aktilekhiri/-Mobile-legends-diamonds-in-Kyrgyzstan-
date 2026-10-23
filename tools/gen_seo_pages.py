@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Генерирует SEO-страницы игр (/<slug>/index.html), sitemap.xml. Цены берутся из index.html.
 Запуск после изменения цен:  python3 tools/gen_seo_pages.py"""
-import re, json, os, html
+import re, json, os, html, datetime
+TODAY = datetime.date.today().isoformat()
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 src = open(os.path.join(ROOT, 'index.html'), encoding='utf-8').read()
 games_data = json.loads(re.search(r'const gamesData = (\{.*?\});\n', src, re.S).group(1))
@@ -17,7 +18,7 @@ SLUG = {'mlbb': 'mobile-legends-almazy', 'pubg': 'pubg-mobile-uc', 'freefire': '
 G = {
  'mlbb': dict(name='Mobile Legends: Bang Bang', short='MLBB', unit='алмазов', cur='алмазы', icon='💎',
    h1='Пополнение алмазов Mobile Legends (MLBB) в Кыргызстане',
-   title='Алмазы Mobile Legends (MLBB) в Кыргызстане — купить через Mbank и O!Банк',
+   title='Купить алмазы Mobile Legends (MLBB) в Кыргызстане от {min} сом | Mbank, O!Банк',
    desc='Пополнение алмазов Mobile Legends: Bang Bang в Кыргызстане. Оплата через Mbank и O!Банк, зачисление за 5–10 минут, без пароля от аккаунта. Цены от 45 сом.',
    kw='алмазы mlbb, пополнение mlbb кыргызстан, купить алмазы mobile legends бишкек, алмазы mlbb mbank, алмазы mlbb обанк, weekly diamond pass',
    idinfo='ID игрока и Zone ID (сервер) — в профиле игры: ваш ID и число в скобках рядом с ним.',
@@ -25,35 +26,35 @@ G = {
    dev='Moonton', fresh='Дополнительно: Weekly Diamond Pass, Weekly и Monthly Elite Pack, Twilight Pass.'),
  'pubg': dict(name='PUBG Mobile', short='PUBG Mobile', unit='UC', cur='UC', icon='🔫',
    h1='Пополнение UC PUBG Mobile в Кыргызстане',
-   title='UC PUBG Mobile в Кыргызстане — пополнение через Mbank и O!Банк',
+   title='Купить UC PUBG Mobile в Кыргызстане от {min} сом | Mbank, O!Банк',
    desc='Купить UC PUBG Mobile в Кыргызстане: оплата Mbank и O!Банк, пополнение по ID за 5–10 минут, без пароля. Prime, Elite Pass и UC от 115 сом.',
    kw='uc pubg mobile кыргызстан, пополнение uc pubg mbank, купить uc pubg бишкек, uc pubg обанк, pubg mobile uc по id, elite pass pubg',
    idinfo='Откройте PUBG Mobile, нажмите на аватар — там указан ID персонажа (только цифры).',
    needs='ID персонажа', extra='Есть Prime и Elite Pass.', dev='Krafton / Tencent', fresh=''),
  'freefire': dict(name='Free Fire', short='Free Fire', unit='алмазов', cur='алмазы', icon='🔥',
    h1='Пополнение алмазов Free Fire в Кыргызстане',
-   title='Алмазы Free Fire в Кыргызстане — пополнение через Mbank и O!Банк',
+   title='Купить алмазы Free Fire в Кыргызстане от {min} сом | Mbank, O!Банк',
    desc='Алмазы Free Fire в Кыргызстане по ID игрока: оплата Mbank и O!Банк, зачисление за 5–10 минут. Недельная и месячная подписки, пакеты от 49 сом.',
    kw='алмазы free fire кыргызстан, пополнение free fire mbank, купить алмазы фри фаер бишкек, free fire обанк, подписка free fire',
    idinfo='В Free Fire нажмите на аватар в левом верхнем углу — ID игрока указан под ником.',
    needs='ID игрока', extra='Есть недельная и месячная подписки (Membership).', dev='Garena', fresh=''),
  'hok': dict(name='Honor of Kings', short='Honor of Kings', unit='токенов', cur='токены', icon='👑',
    h1='Пополнение токенов Honor of Kings в Кыргызстане',
-   title='Токены Honor of Kings в Кыргызстане — пополнение через Mbank и O!Банк',
+   title='Купить токены Honor of Kings в Кыргызстане от {min} сом | Mbank',
    desc='Пополнение токенов Honor of Kings в Кыргызстане по ID игрока: оплата Mbank и O!Банк, зачисление за 5–10 минут, без пароля от аккаунта.',
    kw='honor of kings токены кыргызстан, пополнение honor of kings mbank, honor of kings tokens, купить токены hok бишкек, weekly card honor of kings',
    idinfo='Откройте профиль в Honor of Kings — ID игрока указан рядом с ником.',
    needs='ID игрока', extra='Есть Weekly Card.', dev='Tencent (TiMi Studio)', fresh=''),
  'genshin': dict(name='Genshin Impact', short='Genshin Impact', unit='кристаллов', cur='кристаллы', icon='✨',
    h1='Пополнение Genesis Crystals Genshin Impact в Кыргызстане',
-   title='Кристаллы Genshin Impact в Кыргызстане — пополнение через Mbank и O!Банк',
+   title='Купить кристаллы Genshin Impact в Кыргызстане от {min} сом | Mbank',
    desc='Genesis Crystals и Благословение полой луны (Welkin Moon) для Genshin Impact в Кыргызстане. Оплата Mbank и O!Банк, пополнение по UID без пароля.',
    kw='genshin impact кристаллы кыргызстан, пополнение genshin impact mbank, genesis crystals купить, welkin moon купить бишкек, геншин донат кыргызстан',
    idinfo='UID (9 цифр) указан внизу справа в главном меню и в меню Паймон. Выберите свой сервер: America, Asia, Europe или TW, HK, MO.',
    needs='UID и сервер', extra='Есть Благословение полой луны (Welkin Moon).', dev='HoYoverse', fresh=''),
  'wuwa': dict(name='Wuthering Waves', short='Wuthering Waves', unit='Lunite', cur='Lunite', icon='🌊',
    h1='Пополнение Lunite Wuthering Waves (WuWa) в Кыргызстане',
-   title='Lunite Wuthering Waves (WuWa) в Кыргызстане — пополнение через Mbank и O!Банк',
+   title='Купить Lunite Wuthering Waves (WuWa) в Кыргызстане от {min} сом | Mbank',
    desc='Пополнение Lunite и Lunite Subscription для Wuthering Waves (WuWa) в Кыргызстане. Оплата Mbank и O!Банк, пополнение по UID без пароля.',
    kw='wuthering waves lunite кыргызстан, wuwa донат кыргызстан, пополнение wuthering waves mbank, lunite купить бишкек, lunite subscription',
    idinfo='UID (9 цифр) указан в меню в разделе профиля. Выберите свой сервер: Asia, America, Europe, SEA или TW, HK, MO.',
@@ -93,7 +94,11 @@ ol{margin:8px 0 8px 22px;color:#d5def2}li{margin:6px 0}details{background:rgba(1
 .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:10px 0}.games a{background:rgba(17,37,72,.9);border:1px solid rgba(46,125,237,.18);border-radius:12px;padding:12px;text-decoration:none;color:#f0f4ff;font-weight:700}
 footer{margin:40px 0 0;padding:24px 16px;border-top:1px solid rgba(46,125,237,.18);text-align:center;color:#8ba3cc;font-size:.85rem}.note{font-size:.85rem;color:#8ba3cc}"""
 def page(g):
-    d = G[g]; slug = SLUG[g]; url = f"{BASE}/{slug}/"; ps = packs(g); fq = faq(g)
+    d = dict(G[g]); slug = SLUG[g]; url = f"{BASE}/{slug}/"; ps = packs(g); fq = faq(g)
+    lo = min(ps, key=lambda x: x[1]); hi = max(ps, key=lambda x: x[1]); fmt = lambda n: f"{n:,}".replace(',', ' ')
+    d['title'] = d['title'].replace('{min}', fmt(lo[1]))
+    fq.insert(1, (f"Сколько стоят {d['cur']} {d['name']} в Кыргызстане?",
+        f"Цены в сомах: от {fmt(lo[1])} сом ({lo[0]}) до {fmt(hi[1])} сом ({hi[0]}). Оплата через Mbank и O!Банк, без дополнительных комиссий. Полный список цен — в таблице на этой странице."))
     rows = ''.join(f"<tr><td>{e(n)}</td><td class='p'>{pr:,} сом</td></tr>".replace(',', ' ') for n, pr, _ in ps)
     ld = [
      {"@context": "https://schema.org", "@type": "Service", "name": d['h1'], "serviceType": f"Пополнение {d['name']}", "description": d['desc'],
@@ -146,6 +151,6 @@ for g in G:
     open(os.path.join(ROOT, SLUG[g], 'index.html'), 'w', encoding='utf-8').write(page(g))
 urls = [(BASE + '/', '1.0')] + [(f"{BASE}/{SLUG[g]}/", '0.9') for g in G]
 sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join(
-    f"  <url>\n    <loc>{u}</loc>\n    <lastmod>2026-10-17</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>{p}</priority>\n  </url>\n" for u, p in urls) + '</urlset>\n'
+    f"  <url>\n    <loc>{u}</loc>\n    <lastmod>{TODAY}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>{p}</priority>\n  </url>\n" for u, p in urls) + '</urlset>\n'
 open(os.path.join(ROOT, 'sitemap.xml'), 'w', encoding='utf-8').write(sm)
 print('ok', list(SLUG.values()))

@@ -24,6 +24,7 @@ export const GLOBAL_CATALOG = {
   '2500+475': { offer: '2976_diamonds', cost: 45.98 },
   '3099+589': { offer: '3099_589_diamonds', cost: 46.827 },
   '4649+883': { offer: '4649_883_diamonds', cost: 70.703 },
+  '7502+0': { offer: '7502_diamonds', cost: 115.5703 },
   '7740+1548': { offer: '7740_1548_diamonds', cost: 117.433 },
   'Weekly Diamond Pass': { offer: 'weekly_pass', cost: 1.4777 },
   'Weekly Elite Pack': { offer: 'weekly_elite_pack', cost: 0.7759 },

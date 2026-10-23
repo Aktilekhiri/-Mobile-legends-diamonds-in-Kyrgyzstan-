@@ -1422,13 +1422,14 @@
         <option value="wuwa">Wuthering Waves</option>
       </select>
       <label>ID ИГРОКА</label>
-      <input type="text" class="input-field" id="playerId" placeholder="598505997" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
+      <input type="text" class="input-field" id="playerId" placeholder="598505997" inputmode="numeric" autocomplete="off" onpaste="return smartPasteId(event)" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
       <div class="field-hint" id="idHint">User ID: только цифры, без скобок. Пример: 598505997</div>
       <div id="serverRow">
       <label id="serverLabel">ZONE ID (СЕРВЕР)</label>
       <input type="text" class="input-field" id="serverId" placeholder="8403" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
       <select class="input-field" id="serverSelect" style="display:none" onchange="updateBuyBtn()"></select>
       <div class="field-hint" id="serverHint">Zone ID: цифры в скобках рядом с ID в профиле. Пример: (8403) → введите 8403</div>
+      <div class="zone-warn" id="idWarn" role="alert" hidden></div>
       <div class="zone-warn" id="zoneWarn" role="alert" hidden>🚫 Сервер 6xxx — российский. Для него выберите регион «🇷🇺 Россия» выше. В глобальном регионе такой сервер не принимается.</div>
       </div>
       <div id="regionRow">
@@ -1680,13 +1681,51 @@ function selectPackage(id) {
 function isRuZoneOnGlobal(sid) {
   return currentGame === 'mlbb' && currentRegion === 'global' && /^6\d{3}$/.test(String(sid || '').trim());
 }
+// MLBB: ID 6–10 цифр, Zone ID 4–5 цифр. Клиенты часто пишут ID и зону слитно или в одно поле.
+function mlbbIdProblem(pid, sid) {
+  if (currentGame !== 'mlbb') return '';
+  if (pid.length > 10) {
+    if (sid && pid.endsWith(sid) && pid.length - sid.length >= 6 && pid.length - sid.length <= 10)
+      return 'fix|Похоже, в поле ID вместе с зоной. ID — только первые цифры, а Zone ID (в скобках) вводится отдельно.';
+    return 'ID слишком длинный (бывает 6–10 цифр). Zone ID из скобок вводится в отдельное поле ниже.';
+  }
+  if (pid && pid.length < 6) return 'ID слишком короткий — проверьте цифры в профиле игры.';
+  if (sid && (sid.length < 4 || sid.length > 5)) return 'Zone ID — это 4–5 цифр в скобках рядом с ID, например (8403).';
+  return '';
+}
+function fixMergedId() {
+  const p = document.getElementById('playerId'), z = document.getElementById('serverId');
+  if (z.value && p.value.endsWith(z.value)) p.value = p.value.slice(0, p.value.length - z.value.length);
+  updateBuyBtn();
+}
+function smartPasteId(e) {
+  if (currentGame !== 'mlbb') return true;
+  const t = ((e.clipboardData || window.clipboardData).getData('text') || '').trim();
+  const m = t.match(/^(\d{6,10})\s*[\(\[\-:,\/\s]\s*(\d{4,5})\s*[\)\]]?$/);
+  if (!m) return true;
+  e.preventDefault();
+  document.getElementById('playerId').value = m[1];
+  document.getElementById('serverId').value = m[2];
+  updateBuyBtn();
+  return false;
+}
 function updateBuyBtn() {
   const pid = document.getElementById('playerId').value.trim();
   const sid = getServerValue();
   const btn = document.getElementById('buyBtn');
   const zoneBad = isRuZoneOnGlobal(sid);
+  const prob = mlbbIdProblem(pid, sid);
+  const iw = document.getElementById('idWarn');
+  if (iw) {
+    iw.hidden = !prob;
+    if (prob) {
+      const fix = prob.startsWith('fix|');
+      iw.textContent = '⚠️ ' + (fix ? prob.slice(4) : prob);
+      if (fix) { const b = document.createElement('button'); b.type = 'button'; b.className = 'link-btn'; b.textContent = ' Исправить'; b.onclick = fixMergedId; iw.appendChild(b); }
+    }
+  }
   const zw = document.getElementById('zoneWarn'); if (zw) zw.hidden = !zoneBad;
-  const ok = pid && sid && selectedPkg && !zoneBad;
+  const ok = pid && sid && selectedPkg && !zoneBad && !prob;
   btn.disabled = !ok;
   btn.style.opacity = ok ? '1' : '0.5';
   btn.textContent = (ok && selectedPkg) ? `Оплатить ${selectedPkg.price.toLocaleString()} Сом →` : 'Перейти к оплате →';
@@ -1695,7 +1734,7 @@ function updateBuyBtn() {
 function proceedToPayment() {
   const pid = document.getElementById('playerId').value.trim();
   const sid = getServerValue();
-  if (!pid || !sid || !selectedPkg || isRuZoneOnGlobal(sid)) return;
+  if (!pid || !sid || !selectedPkg || isRuZoneOnGlobal(sid) || mlbbIdProblem(pid, sid)) return;
   currentOrder = {
     playerId: pid,
     serverId: sid,

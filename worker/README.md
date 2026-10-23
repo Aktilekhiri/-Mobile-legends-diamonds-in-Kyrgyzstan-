@@ -12,3 +12,6 @@ Cloudflare Worker + D1 для каталога аккаунтов на diamond.k
 2. Settings → Variables and Secrets → добавить секрет `ADMIN_PASSWORD` (пароль админки).
 3. Адрес Worker (`https://diamond-kg-api.<поддомен>.workers.dev`) вписать в `api-config.js` в корне сайта.
 4. Админка (заказы и аккаунты во вкладках): https://diamond.kg/admin.html
+
+## Отчёт о прибыли
+Каждый день в 23:55 (Бишкек) бот шлёт в Telegram прибыль за день и с 1 числа месяца (worker/src/report.js, cron каждую минуту). В последний день месяца заголовок — «Итог месяца». Считаются доставленные заказы: цена − cost_usd × USD_KGS.

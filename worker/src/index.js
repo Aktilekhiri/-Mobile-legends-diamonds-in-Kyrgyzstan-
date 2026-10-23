@@ -8,6 +8,7 @@ const MAX_PHOTO_BYTES = 450 * 1024;
 const TOKEN_DAYS = 30;
 const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
+import { maybeSendReport } from './report.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook } from './orders.js';
 
 function cors(req) {
@@ -264,5 +265,6 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(pollProcessing(env).catch(() => {}));
     ctx.waitUntil(checkBalance(env).catch(() => {}));
+    ctx.waitUntil(maybeSendReport(env).catch(() => {}));
   },
 };

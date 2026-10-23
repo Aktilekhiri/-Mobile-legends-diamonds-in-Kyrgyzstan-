@@ -251,3 +251,9 @@ body.v2 .suc-status{margin:2px 0 10px;color:var(--text);font-size:.95rem}
 
 body.v2 .zone-warn{margin:-4px 0 14px;padding:10px 12px;border-radius:10px;background:rgba(255,93,93,.1);border:1px solid rgba(255,93,93,.35);color:#ffb4b4;font-size:.88rem}
 body.v2 .zone-warn[hidden]{display:none}
+
+body.v2 .suc-timer:empty{display:none}
+body.v2 .suc-timer{margin:10px auto 4px;padding:10px 16px;border-radius:14px;background:var(--card-2);border:1px solid var(--line);color:var(--text);font-weight:800;font-size:1rem;display:inline-block;max-width:100%}
+body.v2 .suc-timer.run{font-family:'Rajdhani',sans-serif;font-size:1.6rem;color:var(--cyan);letter-spacing:.04em;font-variant-numeric:tabular-nums}
+body.v2 .suc-timer.done{background:rgba(37,211,102,.14);border-color:rgba(37,211,102,.5);color:#7ff0ad;font-size:1.2rem}
+body.v2 .suc-timer.night,body.v2 .suc-timer.late{font-weight:700;font-size:.95rem;color:var(--muted)}

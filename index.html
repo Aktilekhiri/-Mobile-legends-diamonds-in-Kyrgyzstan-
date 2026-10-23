@@ -1472,7 +1472,7 @@
     <div id="receiptMsg" class="receipt-msg" role="alert" aria-live="polite"></div>
     <div class="alt-send" id="altSend">Не получается приложить чек? <button type="button" class="link-btn" id="sendWhatsAppBtn" onclick="sendOrderToWhatsApp()" disabled style="opacity:0.5">Отправить через WhatsApp</button></div>
     </div>
-    <div id="successBox" class="success-box"><div class="suc-icon">✅</div><h3>Заказ отправлен!</h3><p>Алмазы придут через 5–10 минут после получения чека</p><div class="suc-code" id="successCode"></div><div class="suc-status" id="successStatus" aria-live="polite"></div><a class="btn-wa" href="https://wa.me/996555920204" target="_blank">📲 Написать в WhatsApp</a><button class="btn-secondary" onclick="showPage('topup')" style="margin-top:10px">Новый заказ</button></div></div>
+    <div id="successBox" class="success-box"><div class="suc-icon">✅</div><h3>Заказ отправлен!</h3><p>Алмазы придут через 5–10 минут после получения чека</p><div class="suc-timer" id="successTimer" aria-live="off"></div><div class="suc-code" id="successCode"></div><div class="suc-status" id="successStatus" aria-live="polite"></div><a class="btn-wa" href="https://wa.me/996555920204" target="_blank">📲 Написать в WhatsApp</a><button class="btn-secondary" onclick="showPage('topup')" style="margin-top:10px">Новый заказ</button></div></div>
   </div>
 </div>
 
@@ -1789,6 +1789,8 @@ function resetReceiptUI(pid) {
   const sc = document.getElementById('successCode'); if (sc) sc.textContent = '';
   const ss = document.getElementById('successStatus'); if (ss) ss.textContent = '';
   if (window._statusTimer) { clearInterval(window._statusTimer); window._statusTimer = null; }
+  if (window._countTimer) { clearInterval(window._countTimer); window._countTimer = null; }
+  const tb = document.getElementById('successTimer'); if (tb) { tb.textContent = ''; tb.className = 'suc-timer'; }
 }
 
 function updateReceiptBtn() {
@@ -1882,10 +1884,34 @@ const STATUS_TEXT = {
   delivered: '✅ Готово! Проверьте игру', refund_due: '⚠️ Возникла проблема — мы вернём деньги, напишите в поддержку',
   refunded: '💸 Деньги возвращены', cancelled: '❌ Заказ отменён. Если вы оплатили — напишите в поддержку'
 };
+const bishkekHour = () => (new Date().getUTCHours() + 6) % 24;
+function stopStatusTimers() {
+  if (window._statusTimer) { clearInterval(window._statusTimer); window._statusTimer = null; }
+  if (window._countTimer) { clearInterval(window._countTimer); window._countTimer = null; }
+}
+function setTimerBox(text, cls) {
+  const t = document.getElementById('successTimer'); if (!t) return;
+  t.textContent = text || ''; t.className = 'suc-timer' + (cls ? ' ' + cls : '');
+}
 function showSuccessInfo() {
   const code = currentOrder && currentOrder.code;
   const sc = document.getElementById('successCode');
   if (sc) sc.textContent = code ? 'Код заказа: ' + code : '';
+  stopStatusTimers();
+  // Ночью (00:00–08:00 по Бишкеку) заказы выдаются утром — обратный отсчёт не показываем.
+  if (bishkekHour() < 8) {
+    setTimerBox('🌙 Сейчас ночь (00:00–08:00 по Бишкеку). Алмазы придут утром.', 'night');
+  } else {
+    const total = 600, t0 = Date.now();
+    const fmt = n => String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
+    const draw = () => {
+      const left = Math.max(0, total - Math.floor((Date.now() - t0) / 1000));
+      if (left > 0) setTimerBox('⏱ Доставка: ' + fmt(left), 'run');
+      else { setTimerBox('⏳ Проверяем оплату — немного дольше обычного', 'late'); clearInterval(window._countTimer); window._countTimer = null; }
+    };
+    draw();
+    window._countTimer = setInterval(draw, 1000);
+  }
   if (!code || !window.DK_API) return;
   const ss = document.getElementById('successStatus');
   const tick = async () => {
@@ -1894,13 +1920,13 @@ function showSuccessInfo() {
       if (!r.ok) return;
       const d = await r.json();
       if (ss) ss.textContent = STATUS_TEXT[d.status] || '';
-      if (['delivered', 'refunded', 'cancelled'].includes(d.status) && window._statusTimer) { clearInterval(window._statusTimer); window._statusTimer = null; }
+      if (d.status === 'delivered') { if (window._countTimer) { clearInterval(window._countTimer); window._countTimer = null; } setTimerBox('✅ Доставлено', 'done'); stopStatusTimers(); }
+      else if (['refunded', 'cancelled', 'refund_due'].includes(d.status)) { stopStatusTimers(); setTimerBox(''); }
     } catch (e) { /* без статуса */ }
   };
-  if (window._statusTimer) clearInterval(window._statusTimer);
   tick();
   let n = 0;
-  window._statusTimer = setInterval(() => { if (++n > 90) { clearInterval(window._statusTimer); window._statusTimer = null; return; } tick(); }, 10000);
+  window._statusTimer = setInterval(() => { if (++n > 180) { stopStatusTimers(); return; } tick(); }, 5000);
 }
 
 async function sendOrderWithReceipt() {

@@ -1370,10 +1370,10 @@
     </div>
     </div>
     <div class="quick-buy"><div class="qb-title">Популярные пакеты</div><div class="qb-grid">
-      <button type="button" class="qb-card hot" onclick="quickBuy('Weekly Elite Pack')"><div class="qd">🎫 Weekly</div><div class="qp">100 Сом</div><div class="qb">Elite Pack −30%</div></button>
-      <button type="button" class="qb-card" onclick="quickBuy('Monthly Elite Pack')"><div class="qd">🎫 Monthly</div><div class="qp">505 Сом</div><div class="qb">Elite Pack −22%</div></button>
-      <button type="button" class="qb-card" onclick="quickBuy(1000)"><div class="qd">💎 1160</div><div class="qp">1 990 Сом</div><div class="qb">1000+160 бонус</div></button>
-      <button type="button" class="qb-card" onclick="quickBuy(2015)"><div class="qd">💎 2398</div><div class="qp">3 605 Сом</div><div class="qb">2015+383 бонус</div></button>
+      <button type="button" class="qb-card hot" onclick="quickBuy('Weekly Elite Pack')"><div class="qd">🎫 Weekly</div><div class="qp">102 Сом</div><div class="qb">Elite Pack −29%</div></button>
+      <button type="button" class="qb-card" onclick="quickBuy('Monthly Elite Pack')"><div class="qd">🎫 Monthly</div><div class="qp">515 Сом</div><div class="qb">Elite Pack −20%</div></button>
+      <button type="button" class="qb-card" onclick="quickBuy(1000)"><div class="qd">💎 1160</div><div class="qp">2 030 Сом</div><div class="qb">1000+160 бонус</div></button>
+      <button type="button" class="qb-card" onclick="quickBuy(2015)"><div class="qd">💎 2398</div><div class="qp">3 675 Сом</div><div class="qb">2015+383 бонус</div></button>
     </div><button type="button" class="qb-all" onclick="showPage('topup')">Все пакеты →</button></div>
     <div class="hero-timer">⏱ Среднее время зачисления: <strong>5–10 минут</strong></div>
     <div class="hero-stats"><div class="stat-pill"><div class="val">5-10 мин</div><div class="lbl">Доставка</div></div><div class="stat-pill"><div class="val">24/7</div><div class="lbl">Приём заказов</div></div><div class="stat-pill"><div class="val">2 банка</div><div class="lbl">Mbank и O!Банк</div></div></div>
@@ -1502,48 +1502,48 @@
 /* out:true = пакет закончился у поставщика (показывается как «Нет в наличии», цена не меняется). Уберите out:true, когда пакет снова есть. */
 const packagesData = {
   global: [
-    {type:'pass', name:'Twilight Pass', price:1030, discount:32},
-    {type:'pass', name:'Weekly Diamond Pass', price:190},
-    {type:'pass', name:'Weekly Elite Pack', price:100, discount:30},
-    {type:'pass', name:'Monthly Elite Pack', price:505, discount:22},
-    {type:'diamond', diam:50, bonus:5, price:123, discount:19, popular:true},
-    {type:'diamond', diam:13, bonus:1, price:45, discount:17},
-    {type:'diamond', diam:38, bonus:4, price:92, discount:18},
-    {type:'diamond', diam:64, bonus:6, price:150, discount:18},
-    {type:'diamond', diam:78, bonus:8, price:155, discount:11},
-    {type:'diamond', diam:156, bonus:16, price:295, discount:11},
-    {type:'diamond', diam:234, bonus:23, price:400, discount:11},
-    {type:'diamond', diam:284, bonus:0, price:500},
-    {type:'diamond', diam:317, bonus:38, price:620, discount:18},
-    {type:'diamond', diam:383, bonus:46, price:750, discount:18},
-    {type:'diamond', diam:625, bonus:81, price:1200, discount:11},
-    {type:'diamond', diam:500, bonus:500, price:805, note:'Только на 1-е пополнение'},
-    {type:'diamond', diam:1000, bonus:160, price:1990, discount:8},
-    {type:'diamond', diam:1252, bonus:194, price:2470, discount:19},
-    {type:'diamond', diam:1860, bonus:335, price:3030, discount:17},
-    {type:'diamond', diam:2015, bonus:383, price:3605},
-    {type:'diamond', diam:2500, bonus:475, price:4800, discount:8},
-    {type:'diamond', diam:3099, bonus:589, price:5055, discount:17},
-    {type:'diamond', diam:4649, bonus:883, price:7630, discount:17},
-    {type:'diamond', diam:7502, bonus:0, price:12355},
-    {type:'diamond', diam:7740, bonus:1548, price:12670, discount:17}
+    {type:'pass', name:'Twilight Pass', price:1050, discount:31},
+    {type:'pass', name:'Weekly Diamond Pass', price:195},
+    {type:'pass', name:'Weekly Elite Pack', price:102, discount:29},
+    {type:'pass', name:'Monthly Elite Pack', price:515, discount:20},
+    {type:'diamond', diam:50, bonus:5, price:126, discount:17, popular:true},
+    {type:'diamond', diam:13, bonus:1, price:46, discount:15},
+    {type:'diamond', diam:38, bonus:4, price:94, discount:16},
+    {type:'diamond', diam:64, bonus:6, price:155, discount:15},
+    {type:'diamond', diam:78, bonus:8, price:160, discount:8},
+    {type:'diamond', diam:156, bonus:16, price:300, discount:9},
+    {type:'diamond', diam:234, bonus:23, price:410, discount:9},
+    {type:'diamond', diam:284, bonus:0, price:510},
+    {type:'diamond', diam:317, bonus:38, price:630, discount:17},
+    {type:'diamond', diam:383, bonus:46, price:765, discount:16},
+    {type:'diamond', diam:625, bonus:81, price:1225, discount:9},
+    {type:'diamond', diam:500, bonus:500, price:820, note:'Только на 1-е пополнение'},
+    {type:'diamond', diam:1000, bonus:160, price:2030, discount:6},
+    {type:'diamond', diam:1252, bonus:194, price:2520, discount:17},
+    {type:'diamond', diam:1860, bonus:335, price:3090, discount:15},
+    {type:'diamond', diam:2015, bonus:383, price:3675},
+    {type:'diamond', diam:2500, bonus:475, price:4895, discount:6},
+    {type:'diamond', diam:3099, bonus:589, price:5155, discount:15},
+    {type:'diamond', diam:4649, bonus:883, price:7785, discount:15},
+    {type:'diamond', diam:7502, bonus:0, price:12600},
+    {type:'diamond', diam:7740, bonus:1548, price:12925, discount:15}
   ],
   russia: [
-    {type:'diamond', diam:35, bonus:0, price:82},
-    {type:'diamond', diam:55, bonus:0, price:125},
-    {type:'diamond', diam:165, bonus:0, price:365},
-    {type:'diamond', diam:275, bonus:0, price:610},
-    {type:'diamond', diam:565, bonus:0, price:1220},
-    {type:'diamond', diam:1155, bonus:0, price:2195},
-    {type:'diamond', diam:1765, bonus:0, price:3280},
-    {type:'diamond', diam:2975, bonus:0, price:5475},
-    {type:'diamond', diam:6000, bonus:0, price:10515},
-    {type:'pass', name:'Diamond Pass (weekly)', price:245}
+    {type:'diamond', diam:35, bonus:0, price:84},
+    {type:'diamond', diam:55, bonus:0, price:128},
+    {type:'diamond', diam:165, bonus:0, price:370},
+    {type:'diamond', diam:275, bonus:0, price:620},
+    {type:'diamond', diam:565, bonus:0, price:1245},
+    {type:'diamond', diam:1155, bonus:0, price:2240},
+    {type:'diamond', diam:1765, bonus:0, price:3345},
+    {type:'diamond', diam:2975, bonus:0, price:5585},
+    {type:'diamond', diam:6000, bonus:0, price:10725},
+    {type:'pass', name:'Diamond Pass (weekly)', price:250}
   ]
 };
 const regionLabels = { global: '🌍 Глобальный', russia: '🇷🇺 Россия' };
 // Другие игры (цены в Сом). k = offer_id у поставщика. amt+bonus = сколько получает игрок; name = пасс/подписка.
-const gamesData = {"pubg":{"name":"PUBG Mobile","unit":"UC","servers":null,"packs":[{"k":"60_uc","price":115,"amt":60},{"k":"325_uc","price":570,"amt":325},{"k":"660_uc","price":900,"amt":660},{"k":"1800_uc","price":2250,"amt":1800},{"k":"3850_uc","price":4500,"amt":3850},{"k":"8100_uc","price":9355,"amt":8100},{"k":"prime_1_month","price":115,"name":"Prime (1 мес)"},{"k":"elite_pass_lv1_50","price":685,"name":"Elite Pass LV1-50"},{"k":"elite_pass_lv1_100","price":1100,"name":"Elite Pass LV1-100"}],"icon":"🔫"},"freefire":{"name":"Free Fire","unit":"алмазов","servers":null,"packs":[{"k":"110_diamonds","price":105,"amt":110},{"k":"341_diamonds","price":310,"amt":341},{"k":"572_diamonds","price":500,"amt":572},{"k":"1166_diamonds","price":830,"amt":1166},{"k":"2398_diamonds","price":1660,"amt":2398},{"k":"6160_diamonds","price":4200,"amt":6160},{"k":"weekly_lite","price":49,"name":"Weekly Lite"},{"k":"weekly_membership","price":205,"name":"Weekly Membership"},{"k":"monthly_membership","price":600,"name":"Monthly Membership"}],"icon":"🔥"},"hok":{"name":"Honor of Kings","unit":"токенов","servers":null,"packs":[{"k":"80_tokens","price":110,"amt":80},{"k":"240_tokens","price":325,"amt":240},{"k":"400_tokens","price":450,"amt":400},{"k":"830_tokens","price":900,"amt":830},{"k":"2508_tokens","price":2690,"amt":2508},{"k":"8360_tokens","price":8960,"amt":8360},{"k":"weekly_card","price":125,"name":"Weekly Card"}],"icon":"👑"},"genshin":{"name":"Genshin Impact","unit":"кристаллов","servers":[{"v":"america","l":"America"},{"v":"asia","l":"Asia"},{"v":"europe","l":"Europe"},{"v":"tw_hk_mo","l":"TW, HK, MO"}],"packs":[{"k":"60_genesis_crystals","price":135,"amt":60},{"k":"300_30_genesis_crystals","price":650,"amt":300,"bonus":30},{"k":"980_110_genesis_crystals","price":1615,"amt":980,"bonus":110},{"k":"1980_260_genesis_crystals","price":3225,"amt":1980,"bonus":260},{"k":"3280_600_genesis_crystals","price":5370,"amt":3280,"bonus":600},{"k":"6480_1600_genesis_crystals","price":10735,"amt":6480,"bonus":1600},{"k":"blessing_of_the_welkin_moon","price":650,"name":"Blessing of the Welkin Moon"}],"icon":"✨"},"wuwa":{"name":"Wuthering Waves","unit":"Lunite","servers":[{"v":"os_asia","l":"Asia"},{"v":"os_usa","l":"America"},{"v":"os_euro","l":"Europe"},{"v":"os_sea","l":"SEA"},{"v":"os_cht","l":"TW, HK, MO"}],"packs":[{"k":"60_lunite","price":110,"amt":60},{"k":"330_lunite","price":535,"amt":330},{"k":"1090_lunite","price":1335,"amt":1090},{"k":"2240_lunite","price":2670,"amt":2240},{"k":"3880_lunite","price":4420,"amt":3880},{"k":"8080_lunite","price":8695,"amt":8080},{"k":"lunite_subscription","price":535,"name":"Lunite Subscription"}],"icon":"🌊"}};
+const gamesData = {"pubg":{"name":"PUBG Mobile","unit":"UC","servers":null,"packs":[{"k":"60_uc","price":118,"amt":60},{"k":"325_uc","price":580,"amt":325},{"k":"660_uc","price":920,"amt":660},{"k":"1800_uc","price":2295,"amt":1800},{"k":"3850_uc","price":4590,"amt":3850},{"k":"8100_uc","price":9540,"amt":8100},{"k":"prime_1_month","price":118,"name":"Prime (1 мес)"},{"k":"elite_pass_lv1_50","price":700,"name":"Elite Pass LV1-50"},{"k":"elite_pass_lv1_100","price":1120,"name":"Elite Pass LV1-100"}],"icon":"🔫"},"freefire":{"name":"Free Fire","unit":"алмазов","servers":null,"packs":[{"k":"110_diamonds","price":108,"amt":110},{"k":"341_diamonds","price":315,"amt":341},{"k":"572_diamonds","price":510,"amt":572},{"k":"1166_diamonds","price":845,"amt":1166},{"k":"2398_diamonds","price":1695,"amt":2398},{"k":"6160_diamonds","price":4285,"amt":6160},{"k":"weekly_lite","price":50,"name":"Weekly Lite"},{"k":"weekly_membership","price":210,"name":"Weekly Membership"},{"k":"monthly_membership","price":610,"name":"Monthly Membership"}],"icon":"🔥"},"hok":{"name":"Honor of Kings","unit":"токенов","servers":null,"packs":[{"k":"80_tokens","price":113,"amt":80},{"k":"240_tokens","price":330,"amt":240},{"k":"400_tokens","price":460,"amt":400},{"k":"830_tokens","price":920,"amt":830},{"k":"2508_tokens","price":2745,"amt":2508},{"k":"8360_tokens","price":9140,"amt":8360},{"k":"weekly_card","price":128,"name":"Weekly Card"}],"icon":"👑"},"genshin":{"name":"Genshin Impact","unit":"кристаллов","servers":[{"v":"america","l":"America"},{"v":"asia","l":"Asia"},{"v":"europe","l":"Europe"},{"v":"tw_hk_mo","l":"TW, HK, MO"}],"packs":[{"k":"60_genesis_crystals","price":138,"amt":60},{"k":"300_30_genesis_crystals","price":665,"amt":300,"bonus":30},{"k":"980_110_genesis_crystals","price":1645,"amt":980,"bonus":110},{"k":"1980_260_genesis_crystals","price":3290,"amt":1980,"bonus":260},{"k":"3280_600_genesis_crystals","price":5475,"amt":3280,"bonus":600},{"k":"6480_1600_genesis_crystals","price":10950,"amt":6480,"bonus":1600},{"k":"blessing_of_the_welkin_moon","price":665,"name":"Blessing of the Welkin Moon"}],"icon":"✨"},"wuwa":{"name":"Wuthering Waves","unit":"Lunite","servers":[{"v":"os_asia","l":"Asia"},{"v":"os_usa","l":"America"},{"v":"os_euro","l":"Europe"},{"v":"os_sea","l":"SEA"},{"v":"os_cht","l":"TW, HK, MO"}],"packs":[{"k":"60_lunite","price":113,"amt":60},{"k":"330_lunite","price":545,"amt":330},{"k":"1090_lunite","price":1360,"amt":1090},{"k":"2240_lunite","price":2725,"amt":2240},{"k":"3880_lunite","price":4510,"amt":3880},{"k":"8080_lunite","price":8870,"amt":8080},{"k":"lunite_subscription","price":545,"name":"Lunite Subscription"}],"icon":"🌊"}};
 const gameIds = {
   mlbb: 'Введите ID игрока и Zone ID из профиля Mobile Legends',
   pubg: 'PUBG Mobile → профиль (аватар) → ID персонажа. Только цифры, пароль не нужен.',

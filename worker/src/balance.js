@@ -2,7 +2,7 @@
 import { fzGetBalance } from './fazercards.js';
 import { notify } from './notify.js';
 
-export const LOW_BALANCE_USD = 15;          // порог оповещения
+export const LOW_BALANCE_USD = 50;          // порог оповещения
 const REPEAT_MS = 6 * 3600 * 1000;          // пока баланс низкий, напоминаем раз в 6 часов
 
 async function getMeta(env, k) {

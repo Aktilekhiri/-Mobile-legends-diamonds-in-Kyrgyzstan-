@@ -55,6 +55,16 @@ export async function fzCreateOrder(env, { region, offerId, playerId, serverId, 
   const category_id = CATEGORY[region || 'global'];
   if (!category_id) throw new Error('Регион не поддерживается для авто-выдачи');
   const g = GAMES[region];
+  // Telegram Stars / Premium: FazerCards сам отправляет на @username клиента (асинхронно), кода нет
+  if (g && g.direct) {
+    const uname = String(playerId || '').replace(/^@/, '');
+    const isStars = g.direct === 'stars';
+    const body = isStars ? { telegram_username: uname, quantity: Number(offerId) } : { telegram_username: uname, months: parseInt(offerId, 10) };
+    const d = await call(env, 'POST', isStars ? '/api/v2/telegram/stars/buy' : '/api/v2/telegram/premium/buy', body, { 'Idempotency-Key': String(idempotencyKey) });
+    const o = normalize(d.order);
+    if (!o.id) throw new Error('FazerCards не вернул номер заказа');
+    return o;
+  }
   // Коды (Roblox, Telegram): покупаем один код; игрок ничего не вводит, код показываем ему после выдачи
   if (g && g.type === 'gift_cards') {
     let d, lastErr;

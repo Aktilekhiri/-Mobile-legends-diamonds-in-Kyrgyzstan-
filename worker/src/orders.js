@@ -150,7 +150,7 @@ export async function confirmOrder(env, id) {
 export async function syncFromFz(env, o, fz) {
   const st = fz.status;
   if (st === 'completed') {
-    const isCode = !!(GAMES[o.region] && GAMES[o.region].type === 'gift_cards');
+    const isCode = !!(GAMES[o.region] && GAMES[o.region].type === 'gift_cards' && !GAMES[o.region].direct);
     const codes = isCode ? (fz.codes || []) : [];
     if (isCode && !codes.length) {
       // заказ на коды выполнен, но кода в ответе нет: не говорим клиенту «выдан», владелец заберёт код в FazerCards

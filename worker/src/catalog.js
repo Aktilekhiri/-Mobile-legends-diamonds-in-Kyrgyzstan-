@@ -124,7 +124,7 @@ export const GAMES = {
     '6480_1600_monochromes': { offer: '6480_1600_monochromes', cost: 98.4367 },
     'inter_knot_membership': { offer: 'inter_knot_membership', cost: 4.9042 },
   } },
-  tgstars: { category: 'telegram_stars', serverField: null, servers: null, type: 'gift_cards', kind: 'username', catalog: {
+  tgstars: { category: 'telegram_stars', serverField: null, servers: null, type: 'gift_cards', direct: 'stars', kind: 'username', catalog: {
     '50': { offer: '50', cost: 0.7669 },
     '100': { offer: '100', cost: 1.5337 },
     '250': { offer: '250', cost: 3.8344 },
@@ -133,7 +133,7 @@ export const GAMES = {
     '2500': { offer: '2500', cost: 38.3438 },
     '5000': { offer: '5000', cost: 76.6875 },
   } },
-  tgpremium: { category: 'telegram_premium', serverField: null, servers: null, type: 'gift_cards', kind: 'username', catalog: {
+  tgpremium: { category: 'telegram_premium', serverField: null, servers: null, type: 'gift_cards', direct: 'premium', kind: 'username', catalog: {
     '3m': { offer: '3m', cost: 12.27 },
     '6m': { offer: '6m', cost: 16.36 },
     '12m': { offer: '12m', cost: 29.6525 },

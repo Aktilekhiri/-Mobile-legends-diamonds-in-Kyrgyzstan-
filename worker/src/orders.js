@@ -13,6 +13,18 @@ function newCode() {
   for (const x of b) s += CODE_CHARS[x % CODE_CHARS.length];
   return s;
 }
+function newSecret() {
+  const b = crypto.getRandomValues(new Uint8Array(18));
+  let s = '';
+  for (const x of b) s += CODE_CHARS[x % CODE_CHARS.length];
+  return s;
+}
+function safeEq(a, b) {
+  a = String(a || ''); b = String(b || '');
+  if (!a || a.length !== b.length) return false;
+  let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
 const publicView = o => ({
   id: o.id, status: o.status, pkg_label: o.pkg_label, price_kgs: o.price_kgs,
   created_at: o.created_at, finished_at: o.finished_at,
@@ -25,7 +37,7 @@ function profitText(price, cat) {
   return ` (${p >= 0 ? '+' : '−'}${Math.abs(p)} сом прибыль)`;
 }
 
-const GAME_TITLE = { pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', global: 'Mobile Legends' };
+const GAME_TITLE = { bloodstrike: 'Blood Strike', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', global: 'Mobile Legends' };
 const gameTitle = region => GAME_TITLE[region] || 'Mobile Legends';
 
 function alertText(o, cat, auto, withReceipt) {
@@ -36,14 +48,22 @@ function alertText(o, cat, auto, withReceipt) {
 export async function createOrder(env, ip, b, userId = null) {
   const region = clean(b.region, 20) || 'global';
   const game = GAMES[region]; // undefined = Mobile Legends
-  const player = digits(b.playerId, 14);
-  let server;
-  if (!game) server = digits(b.serverId, 8);
-  else if (game.servers) server = game.servers.includes(String(b.serverId)) ? String(b.serverId) : '';
-  else server = '-';
-  if (!game && region === 'global' && /^6\d{3}$/.test(server)) return { error: 'Сервер 6xxx — российский. Выберите регион «Россия»' };
-  if (!game && (player.length < 6 || player.length > 10 || server.length < 3 || server.length > 5)) return { error: 'Проверьте ID (6–10 цифр) и Zone ID (4–5 цифр) — вводите их в отдельные поля' };
-  if (player.length < 5 || !server) return { error: game ? 'Проверьте ID и сервер' : 'Проверьте ID и Zone ID' };
+  const kind = game && game.kind; // 'username' (Telegram) | 'none' (Roblox) | undefined
+  let player, server;
+  if (kind === 'none') { player = '-'; server = '-'; }
+  else if (kind === 'username') {
+    const u = clean(b.playerId, 40).replace(/^@/, '');
+    if (!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(u)) return { error: 'Проверьте Telegram @username (5–32 символа: латиница, цифры, _)' };
+    player = '@' + u; server = '-';
+  } else {
+    player = digits(b.playerId, 14);
+    if (!game) server = digits(b.serverId, 8);
+    else if (game.servers) server = game.servers.includes(String(b.serverId)) ? String(b.serverId) : '';
+    else server = '-';
+    if (!game && region === 'global' && /^6\d{3}$/.test(server)) return { error: 'Сервер 6xxx — российский. Выберите регион «Россия»' };
+    if (!game && (player.length < 6 || player.length > 10 || server.length < 3 || server.length > 5)) return { error: 'Проверьте ID (6–10 цифр) и Zone ID (4–5 цифр) — вводите их в отдельные поля' };
+    if (player.length < 5 || !server) return { error: game ? 'Проверьте ID и сервер' : 'Проверьте ID и Zone ID' };
+  }
   const pkg = clean(b.pkg, 60);
   const price = Math.max(0, Math.min(10000000, Math.floor(Number(b.price) || 0)));
   if (!pkg || !price) return { error: 'Не указан пакет или сумма' };
@@ -55,6 +75,7 @@ export async function createOrder(env, ip, b, userId = null) {
   }
   const cat = (CATALOGS[region] || {})[pkg] || null;
   const id = newCode(), now = Date.now();
+  const secret = newSecret();
   const auto = !!(cat && cat.cost <= MAX_AUTO_COST_USD);
   await env.DB.prepare(
     `INSERT INTO orders (id,created_at,updated_at,player_id,server_id,region,pkg,pkg_label,price_kgs,method,phone,offer_id,cost_usd,status,ip)
@@ -63,14 +84,20 @@ export async function createOrder(env, ip, b, userId = null) {
     auto ? cat.offer : '', auto ? cat.cost : 0, auto ? 'new' : 'manual', ip || '').run();
   // привязка к аккаунту (если клиент вошёл через Google); сбой не должен ломать заказ
   if (userId) { try { await env.DB.prepare('UPDATE orders SET user_id = ? WHERE id = ?').bind(userId, id).run(); } catch (e) {} }
+  // секрет заказа: по нему клиент без входа может увидеть выданный код (колонка secret; сбой не должен ломать заказ)
+  try { await env.DB.prepare('UPDATE orders SET secret = ? WHERE id = ?').bind(secret, id).run(); } catch (e) {}
   // Заказ «с чеком на сайте» (deferNotify): уведомляем позже, когда придёт чек, одним сообщением с фото.
   if (!b.deferNotify) await notify(env, alertText({ id, region, pkg, pkg_label: clean(b.pkgLabel || pkg, 100), price_kgs: price, method: clean(b.method, 30), player_id: player, server_id: server }, cat, auto));
-  return { id, status: auto ? 'new' : 'manual' };
+  return { id, status: auto ? 'new' : 'manual', secret };
 }
 
-export async function getOrderPublic(env, id) {
+export async function getOrderPublic(env, id, secret) {
   const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(clean(id, 20)).first();
-  return o ? publicView(o) : null;
+  if (!o) return null;
+  const v = publicView(o);
+  // выданный код видит только тот, у кого секрет заказа (его получает браузер, оформивший заказ)
+  if (o.status === 'delivered' && o.delivery && safeEq(secret, o.secret)) v.delivery = o.delivery;
+  return v;
 }
 
 export async function listOrders(env, status) {
@@ -123,8 +150,16 @@ export async function confirmOrder(env, id) {
 export async function syncFromFz(env, o, fz) {
   const st = fz.status;
   if (st === 'completed') {
-    await setStatus(env, o.id, { status: 'delivered', fz_status: st, fz_order_id: fz.id || o.fz_order_id, finished_at: Date.now(), fail_reason: '' });
-    await notify(env, `✅ Заказ ${o.id} выдан (${o.pkg_label}, ${o.price_kgs} сом).`);
+    const isCode = !!(GAMES[o.region] && GAMES[o.region].type === 'gift_cards');
+    const codes = isCode ? (fz.codes || []) : [];
+    if (isCode && !codes.length) {
+      // заказ на коды выполнен, но кода в ответе нет: не говорим клиенту «выдан», владелец заберёт код в FazerCards
+      await setStatus(env, o.id, { status: 'manual', fz_status: st, fz_order_id: fz.id || o.fz_order_id, finished_at: Date.now(), fail_reason: 'Код не найден в ответе FazerCards — возьмите его в заказе ' + (fz.id || o.fz_order_id) });
+      await notify(env, `⚠️ Заказ ${o.id} (${o.pkg_label}): FazerCards выдал заказ ${fz.id || o.fz_order_id}, но код не удалось прочитать автоматически. Откройте заказ в FazerCards, скопируйте код и отправьте клиенту (${o.player_id}), затем нажмите «Выдал вручную».`);
+      return;
+    }
+    await setStatus(env, o.id, { status: 'delivered', fz_status: st, fz_order_id: fz.id || o.fz_order_id, finished_at: Date.now(), fail_reason: '', ...(isCode ? { delivery: codes.join('\n') } : {}) });
+    await notify(env, `✅ Заказ ${o.id} выдан (${o.pkg_label}, ${o.price_kgs} сом).${isCode ? ' Код показан клиенту на сайте.' : ''}`);
   } else if (st === 'partial') {
     // составной пакет: часть выдана, часть возвращена — разбирать вручную
     await setStatus(env, o.id, { status: 'manual', fz_status: st, fz_order_id: fz.id || o.fz_order_id, fail_reason: 'Частично выдан: ' + String(fz.fail_reason || '').slice(0, 200), finished_at: Date.now() });

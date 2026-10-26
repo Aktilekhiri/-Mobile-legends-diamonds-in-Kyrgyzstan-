@@ -285,3 +285,13 @@ body.v2 .user-name:hover{background:rgba(14,116,144,.16)}
 .hist-st.wait{background:rgba(217,119,6,.12);color:#b45309}
 .hist-st.bad{background:rgba(220,38,38,.1);color:#b91c1c}
 #page-orders .page-header{padding-left:max(16px,5%);padding-right:max(16px,5%)}
+
+/* Код активации (Roblox, Telegram): блок после выдачи и в истории заказов */
+.suc-delivery{margin:14px 0;padding:14px;border:1px dashed var(--cyan);border-radius:12px;background:var(--card-2);text-align:left}
+.suc-delivery[hidden]{display:none}
+.suc-delivery .dl-title{font-weight:800;margin-bottom:8px;color:var(--text)}
+.suc-delivery .dl-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.suc-delivery code{flex:1 1 180px;min-width:0;padding:9px 11px;border-radius:9px;background:#fff;border:1px solid rgba(16,24,40,.12);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.95rem;color:var(--text);word-break:break-all;user-select:all}
+.suc-delivery .copy-btn{padding:9px 14px;border-radius:9px;border:1px solid var(--cyan);background:#fff;color:var(--cyan);font-weight:800;cursor:pointer}
+.suc-delivery .dl-help{margin:10px 0 6px;font-size:.88rem;color:var(--muted)}
+.suc-delivery .dl-link{display:inline-block;font-weight:800;color:var(--cyan)}

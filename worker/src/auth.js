@@ -107,7 +107,7 @@ export async function getMe(env, sub) {
 // История заказов пользователя: только безопасные поля (без телефона, IP, чека и себестоимости).
 export async function listMyOrders(env, sub) {
   const { results } = await env.DB.prepare(
-    'SELECT id, created_at, region, pkg_label, price_kgs, method, status, player_id, server_id FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 100'
+    'SELECT id, created_at, region, pkg_label, price_kgs, method, status, player_id, server_id, delivery FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 100'
   ).bind(sub).all();
   return { orders: results };
 }

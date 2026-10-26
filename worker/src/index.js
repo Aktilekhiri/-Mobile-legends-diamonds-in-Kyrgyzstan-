@@ -168,7 +168,7 @@ export default {
       }
       mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})$/);
       if (mm && m === 'GET') {
-        const o = await getOrderPublic(env, mm[1]);
+        const o = await getOrderPublic(env, mm[1], url.searchParams.get('s'));
         return o ? json(req, o) : err(req, 'Заказ не найден', 404);
       }
       // вебхук FazerCards (подпись проверяется внутри)

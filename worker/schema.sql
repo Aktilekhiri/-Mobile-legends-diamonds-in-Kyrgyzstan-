@@ -48,3 +48,5 @@ CREATE TABLE IF NOT EXISTS users (
 );
 -- ALTER TABLE orders ADD COLUMN user_id TEXT;   (выполнено один раз)
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id, created_at);
+-- Коды (Roblox, Telegram): ALTER TABLE orders ADD COLUMN delivery TEXT NOT NULL DEFAULT ''; ALTER TABLE orders ADD COLUMN secret TEXT NOT NULL DEFAULT '';  (выполнено один раз)
+-- delivery = выданный код (показывается клиенту по секрету заказа), secret = секрет заказа, который получает браузер клиента

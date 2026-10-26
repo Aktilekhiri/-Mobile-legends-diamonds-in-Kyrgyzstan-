@@ -29,9 +29,24 @@ async function call(env, method, path, body, extraHeaders) {
   return data;
 }
 
+// Коды (gift_cards) в ответе FazerCards: формат точно не задокументирован, поэтому ищем по типичным полям.
+function extractCodes(o) {
+  const out = [];
+  const take = v => {
+    if (v == null) return;
+    if (typeof v === 'string' || typeof v === 'number') { const t = String(v).trim(); if (t) out.push(t); return; }
+    if (Array.isArray(v)) { v.forEach(take); return; }
+    if (typeof v === 'object') {
+      for (const k of ['code', 'pin', 'serial', 'key', 'value', 'redeem_code', 'gift_code']) if (v[k] != null && typeof v[k] !== 'object') { take(v[k]); return; }
+      for (const k of ['codes', 'cards', 'keys', 'items', 'products']) if (v[k] != null) { take(v[k]); return; }
+    }
+  };
+  for (const k of ['codes', 'cards', 'keys', 'items', 'code', 'delivery', 'products']) if (o && o[k] != null) { take(o[k]); if (out.length) break; }
+  return [...new Set(out)].slice(0, 20);
+}
 function normalize(o) {
   if (!o || typeof o !== 'object') return {};
-  return { id: o.id || '', status: o.status || '', fail_reason: o.fail_reason || '' };
+  return { id: o.id || '', status: o.status || '', fail_reason: o.fail_reason || '', codes: extractCodes(o) };
 }
 
 // Создать заказ. Один и тот же idempotencyKey безопасно повторять: вернётся тот же заказ, повторного списания не будет.
@@ -40,6 +55,20 @@ export async function fzCreateOrder(env, { region, offerId, playerId, serverId, 
   const category_id = CATEGORY[region || 'global'];
   if (!category_id) throw new Error('Регион не поддерживается для авто-выдачи');
   const g = GAMES[region];
+  // Коды (Roblox, Telegram): покупаем один код; игрок ничего не вводит, код показываем ему после выдачи
+  if (g && g.type === 'gift_cards') {
+    let d, lastErr;
+    for (const path of ['/api/v2/gift_cards/order', '/api/v2/gift-cards/order']) {
+      try {
+        d = await call(env, 'POST', path, { category_id, offer_id: String(offerId), quantity: 1 }, { 'Idempotency-Key': String(idempotencyKey) });
+        break;
+      } catch (e) { lastErr = e; if (e.status !== 404) throw e; }
+    }
+    if (!d) throw lastErr;
+    const o = normalize(d.order);
+    if (!o.id) throw new Error('FazerCards не вернул номер заказа');
+    return o;
+  }
   const fields = { player_id: String(playerId) };
   if (!g) fields.server_id = String(serverId);              // MLBB
   else if (g.serverField) fields[g.serverField] = String(serverId); // Genshin / WuWa: значение из списка серверов
@@ -66,7 +95,7 @@ function combine(parts) {
   else if (st.every(x => x === 'completed' || x === 'refund') ) status = 'partial';
   else if (st.some(x => x === 'failed')) status = 'failed';
   else if (st.every(x => x === 'created')) status = 'created';
-  return { id: parts.map(p => p.id).join(','), status, fail_reason: parts.map(p => p.fail_reason).filter(Boolean).join('; ') };
+  return { id: parts.map(p => p.id).join(','), status, fail_reason: parts.map(p => p.fail_reason).filter(Boolean).join('; '), codes: parts.flatMap(p => p.codes || []) };
 }
 
 export async function fzGetOrder(env, fzOrderId) {

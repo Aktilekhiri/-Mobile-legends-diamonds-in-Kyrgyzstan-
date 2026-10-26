@@ -14,7 +14,9 @@ for m in re.finditer(r"\{type:'(diamond|pass)'(?:, name:'([^']+)')?(?:, diam:(\d
     mlbb.append(dict(name=name, amt=int(d) if d else None, bonus=int(b) if b else 0, price=int(price)))
 BASE = 'https://diamond.kg'
 SLUG = {'mlbb': 'mobile-legends-almazy', 'pubg': 'pubg-mobile-uc', 'freefire': 'free-fire-almazy',
-        'hok': 'honor-of-kings-tokeny', 'genshin': 'genshin-impact-kristally', 'wuwa': 'wuthering-waves-lunite'}
+        'hok': 'honor-of-kings-tokeny', 'genshin': 'genshin-impact-kristally', 'wuwa': 'wuthering-waves-lunite',
+        'hsr': 'honkai-star-rail-oneiric-shard', 'zzz': 'zenless-zone-zero-monochrome', 'bloodstrike': 'blood-strike-bc',
+        'tgstars': 'telegram-stars-kyrgyzstan', 'tgpremium': 'telegram-premium-kyrgyzstan', 'roblox': 'roblox-robux-kyrgyzstan'}
 G = {
  'mlbb': dict(name='Mobile Legends: Bang Bang', short='MLBB', unit='алмазов', cur='алмазы', icon='💎',
    h1='Пополнение алмазов Mobile Legends (Мобайл Легендс, MLBB) в Кыргызстане',
@@ -59,6 +61,54 @@ G = {
    kw='wuthering waves lunite кыргызстан, wuwa донат кыргызстан, пополнение wuthering waves mbank, lunite купить бишкек, lunite subscription',
    idinfo='UID (9 цифр) указан в меню в разделе профиля. Выберите свой сервер: Asia, America, Europe, SEA или TW, HK, MO.',
    needs='UID и сервер', extra='Есть Lunite Subscription (месячная подписка).', dev='Kuro Games', fresh=''),
+ 'hsr': dict(name='Honkai: Star Rail', short='Star Rail', unit='Oneiric Shard', cur='Oneiric Shard', icon='🚂',
+   h1='Пополнение Oneiric Shard Honkai: Star Rail (Хонкай Стар Рейл) в Кыргызстане',
+   title='Купить Oneiric Shard Honkai: Star Rail в Кыргызстане от {min} сом | Mbank',
+   desc='Пополнение Oneiric Shard и Express Supply Pass для Honkai: Star Rail в Кыргызстане. Оплата Mbank и O!Банк, пополнение по UID без пароля.',
+   kw='honkai star rail кыргызстан, хонкай стар рейл донат, oneiric shard купить, express supply pass купить, пополнение star rail mbank, star rail донат бишкек',
+   idinfo='UID (9 цифр) указан в меню игры (Настройки) внизу справа. Выберите свой сервер: America, Asia, Europe или TW, HK, MO.',
+   needs='UID и сервер', extra='Есть Express Supply Pass.', dev='HoYoverse', fresh=''),
+ 'zzz': dict(name='Zenless Zone Zero', short='Zenless Zone Zero', unit='Monochrome', cur='Monochrome', icon='📺',
+   h1='Пополнение Monochrome Zenless Zone Zero (ZZZ) в Кыргызстане',
+   title='Купить Monochrome Zenless Zone Zero (ZZZ) в Кыргызстане от {min} сом | Mbank',
+   desc='Пополнение Monochrome и Inter-Knot Membership для Zenless Zone Zero (ZZZ) в Кыргызстане. Оплата Mbank и O!Банк, пополнение по UID без пароля.',
+   kw='zenless zone zero кыргызстан, zzz донат, monochrome купить, inter-knot membership купить, пополнение zzz mbank, зензлесс зон зиро донат',
+   idinfo='UID указан в меню игры (Настройки). Выберите свой сервер: America, Asia, Europe или TW, HK, MO.',
+   needs='UID и сервер', extra='Есть Inter-Knot Membership.', dev='HoYoverse', fresh=''),
+ 'bloodstrike': dict(name='Blood Strike', short='Blood Strike', unit='BC', cur='BC', icon='🎯',
+   h1='Пополнение BC Blood Strike (Блад Страйк) в Кыргызстане',
+   title='Купить BC Blood Strike в Кыргызстане от {min} сом | Mbank, O!Банк',
+   desc='Пополнение BC и пассов Blood Strike в Кыргызстане по ID игрока: оплата Mbank и O!Банк, зачисление за 5–10 минут, без пароля от аккаунта.',
+   kw='blood strike кыргызстан, блад страйк донат, blood strike bc купить, пополнение blood strike mbank, strike pass blood strike, блад страйк бишкек',
+   idinfo='Откройте профиль в Blood Strike: ID игрока указан рядом с ником (только цифры).',
+   needs='ID игрока', extra='Есть Level Up Pass и Strike Pass.', dev='NetEase', fresh=''),
+ 'tgstars': dict(name='Telegram Stars', short='Telegram Stars', unit='звёзд', cur='звёзды', icon='⭐', code=True, cta='Купить', 
+   h1='Купить Telegram Stars (звёзды Телеграм) в Кыргызстане',
+   title='Купить Telegram Stars в Кыргызстане от {min} сом | Mbank, O!Банк',
+   desc='Telegram Stars за сомы: покупка звёзд Телеграм в Кыргызстане через Mbank и O!Банк. Вы получаете код активации и зачисляете звёзды на свой @username.',
+   kw='telegram stars кыргызстан, купить звезды телеграм, telegram stars mbank, звёзды телеграм бишкек, телеграм старс купить за сомы',
+   idinfo='Ваш @username — в Telegram: Настройки → Имя пользователя.',
+   needs='Telegram @username', extra='Покупка идёт кодом: после оплаты вы получаете код и активируете его на своём аккаунте.', dev='Telegram', fresh='',
+   howto='После проверки оплаты на странице заказа появится код. Откройте страницу активации, введите свой @username и код — звёзды придут в Telegram.',
+   h2price='Цены на Telegram Stars в сомах'),
+ 'tgpremium': dict(name='Telegram Premium', short='Telegram Premium', unit='мес.', cur='подписки', icon='✈️', code=True, cta='Купить',
+   h1='Купить Telegram Premium в Кыргызстане за сомы',
+   title='Купить Telegram Premium в Кыргызстане от {min} сом | Mbank, O!Банк',
+   desc='Telegram Premium на 3, 6 и 12 месяцев в Кыргызстане: оплата Mbank и O!Банк, вы получаете код активации и подключаете подписку на свой @username.',
+   kw='telegram premium кыргызстан, купить телеграм премиум, telegram premium mbank, телеграм премиум бишкек, подписка telegram premium за сомы',
+   idinfo='Ваш @username — в Telegram: Настройки → Имя пользователя.',
+   needs='Telegram @username', extra='Подписка на 3, 6 или 12 месяцев; покупка идёт кодом активации.', dev='Telegram', fresh='',
+   howto='После проверки оплаты на странице заказа появится код. Откройте страницу активации, введите свой @username и код — Premium подключится к вашему аккаунту.',
+   h2price='Цены на Telegram Premium в сомах'),
+ 'roblox': dict(name='Roblox', short='Roblox', unit='Robux', cur='Robux', icon='🧱', code=True, cta='Купить', noid=True,
+   h1='Купить Robux Roblox (Роблокс) в Кыргызстане за сомы',
+   title='Купить Robux Roblox в Кыргызстане от {min} сом | Mbank, O!Банк',
+   desc='Robux для Roblox в Кыргызстане: оплата Mbank и O!Банк, вы получаете код и активируете его на roblox.com/redeem. Без пароля от аккаунта.',
+   kw='robux кыргызстан, купить робуксы бишкек, roblox robux mbank, роблокс донат кыргызстан, roblox gift card за сомы, робуксы за сомы',
+   idinfo='Вводить ничего не нужно: вы получите код и активируете его на roblox.com/redeem.',
+   needs='ничего, кроме оплаты', extra='Покупка идёт кодом: после оплаты вы получаете код и активируете его на своём аккаунте Roblox.', dev='Roblox Corporation', fresh='',
+   howto='После проверки оплаты на странице заказа появится код. Введите его на roblox.com/redeem — Robux придут на ваш аккаунт.',
+   h2price='Цены на Robux в сомах'),
 }
 def packs(g):
     if g == 'mlbb':
@@ -76,6 +126,14 @@ def packs(g):
 e = html.escape
 def faq(g):
     d = G[g]; n = d['name']
+    if d.get('code'):
+        return [
+         (f"Как купить {n} в Кыргызстане?", f"Нажмите «Купить», выберите пакет, переведите сумму через Mbank или O!Банк и приложите чек. {d['howto']}"),
+         (f"Какие способы оплаты {n} доступны?", "Оплата переводом через Mbank и O!Банк. Цены указаны в сомах, комиссий сверх цены пакета нет."),
+         (f"Нужен ли пароль от аккаунта {n}?", "Нет. Пароль не нужен и мы его никогда не просим. " + d['idinfo']),
+         ("Сколько ждать код?", "Обычно 5–10 минут после проверки оплаты. Заказы с 00:00 до 08:00 по времени Бишкека выполняются утром, оплатить можно в любое время."),
+         ("Что делать, если код не пришёл или не подошёл?", "Напишите нам в WhatsApp с кодом заказа и чеком. Если выдать код не получится, мы вернём деньги."),
+        ]
     return [
      (f"Как пополнить {d['cur']} {n} в Кыргызстане?", f"Нажмите «Купить», введите {d['needs']}, выберите пакет и переведите сумму через Mbank или O!Банк. Затем отправьте чек в WhatsApp — {d['cur']} придут на аккаунт обычно за 5–10 минут."),
      (f"Какие способы оплаты {n} доступны?", "Оплата переводом через Mbank и O!Банк. Цены указаны в сомах, комиссий сверх цены пакета нет."),
@@ -112,17 +170,34 @@ def page(g):
     others = ''.join(f"<a href='/{SLUG[k]}/'>{G[k]['icon']} {e(G[k]['name'])}</a>" for k in G if k != g)
     intro = (f"Нужно пополнить {d['name']} в Кыргызстане и не хочется возиться с зарубежными картами? Здесь можно купить {d['cur']} за сомы: "
              f"переводом через Mbank или O!Банк. Пополнение идёт по {d['needs']}, пароль от аккаунта не нужен. {d['extra']}")
+    if d.get('code'):
+        intro = (f"Нужны {d['name']}, а зарубежной карты нет? Здесь можно купить их за сомы: переводом через Mbank или O!Банк. "
+                 f"{d['extra']} Пароль от аккаунта не нужен.")
+    cta = d.get('cta', 'Пополнить')
+    h2price = d.get('h2price') or f"Цены на {d['cur']} {d['name']} в сомах"
+    if d.get('code'):
+        needs_step = '' if d.get('noid') else f"<li>Введите {e(d['needs'])}. {e(d['idinfo'])}</li>"
+        steps = (f"<ol><li>Нажмите «{cta}» и выберите нужный пакет.</li>{needs_step}<li>Переведите сумму через Mbank или O!Банк по реквизитам на странице оплаты.</li>"
+                 f"<li>Приложите чек на сайте. {e(d['howto'])}</li></ol>")
+        night = "Заказы, оформленные с 00:00 до 08:00 по времени Бишкека, выполняются утром. Оплатить можно в любое время."
+        why = "Оплата в сомах через Mbank и O!Банк, без зарубежной карты. Никаких паролей от аккаунта. Код показывается на странице заказа и в истории после входа через Google. Если выдать код не получится, возвращаем деньги."
+        h2steps = f"Как купить {d['name']}: шаги"
+    else:
+        steps = (f"<ol><li>Нажмите «Пополнить» и выберите нужный пакет.</li><li>Введите {e(d['needs'])}. {e(d['idinfo'])}</li><li>Переведите сумму через Mbank или O!Банк по реквизитам на странице оплаты.</li><li>Отправьте чек в WhatsApp — после проверки оплаты {e(d['cur'])} поступят на аккаунт, обычно за 5–10 минут.</li></ol>")
+        night = "Заказы, оформленные с 00:00 до 08:00 по времени Бишкека, зачисляются утром. Оплатить можно в любое время."
+        why = f"Оплата в сомах через Mbank и O!Банк, без зарубежной карты. Никаких паролей от аккаунта: нужен только {d['needs']}. Заказ получает код, статус можно уточнить в WhatsApp. Если пополнение невозможно, возвращаем деньги."
+        h2steps = f"Как пополнить {d['name']}: 4 шага"
     body = f"""<h1>{e(d['h1'])}</h1>
 <p class="lead">{e(intro)}</p>
-<a class="btn" href="/?game={g}">{d['icon']} Пополнить {e(d['short'])}</a><a class="btn s" href="https://wa.me/996555920204" rel="noopener">💬 Вопрос в WhatsApp</a>
-<h2>Цены на {e(d['cur'])} {e(d['name'])} в сомах</h2>
+<a class="btn" href="/?game={g}">{d['icon']} {cta} {e(d['short'])}</a><a class="btn s" href="https://wa.me/996555920204" rel="noopener">💬 Вопрос в WhatsApp</a>
+<h2>{e(h2price)}</h2>
 <table><tr><th>Пакет</th><th>Цена</th></tr>{rows}</table>
 <p class="note">Цены в сомах, без дополнительных комиссий. Актуальные цены всегда на странице оформления заказа.</p>
-<h2>Как пополнить {e(d['name'])}: 4 шага</h2>
-<ol><li>Нажмите «Пополнить» и выберите нужный пакет.</li><li>Введите {e(d['needs'])}. {e(d['idinfo'])}</li><li>Переведите сумму через Mbank или O!Банк по реквизитам на странице оплаты.</li><li>Отправьте чек в WhatsApp — после проверки оплаты {e(d['cur'])} поступят на аккаунт, обычно за 5–10 минут.</li></ol>
-<p>Заказы, оформленные с 00:00 до 08:00 по времени Бишкека, зачисляются утром. Оплатить можно в любое время.</p>
+<h2>{e(h2steps)}</h2>
+{steps}
+<p>{e(night)}</p>
 <h2>Почему выбирают Diamond.kg</h2>
-<p>Оплата в сомах через Mbank и O!Банк, без зарубежной карты. Никаких паролей от аккаунта: нужен только {e(d['needs'])}. Заказ получает код, статус можно уточнить в WhatsApp. Если пополнение невозможно, возвращаем деньги.</p>
+<p>{e(why)}</p>
 <h2>Частые вопросы</h2>
 {''.join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in fq)}
 <h2>Другие игры</h2><div class="games">{others}</div>

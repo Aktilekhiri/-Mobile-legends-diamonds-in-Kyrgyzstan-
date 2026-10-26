@@ -150,6 +150,8 @@ h2{font-family:'Rajdhani',sans-serif;font-size:1.5rem;margin:30px 0 10px;color:#
 table{width:100%;border-collapse:collapse;margin:10px 0;background:#fff;border-radius:12px;overflow:hidden}td,th{padding:10px 14px;text-align:left;border-bottom:1px solid rgba(16,24,40,.12)}th{color:#566377;font-size:.8rem;text-transform:uppercase}td.p{color:#0E7490;font-weight:800;white-space:nowrap}
 ol{margin:8px 0 8px 22px;color:#344054}li{margin:6px 0}details{background:#fff;border-radius:12px;padding:12px 16px;margin:8px 0}summary{cursor:pointer;font-weight:700}details p{margin-top:8px}
 .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:10px 0}.games a{background:#fff;border:1px solid rgba(16,24,40,.12);border-radius:12px;padding:12px;text-decoration:none;color:#101828;font-weight:700}
+#rv{margin:6px 0}.lr-sum{color:#566377;margin:6px 0 12px}.lr-sum strong{font-size:1.5rem;color:#101828}.lr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.lr-card{margin:0;padding:14px;border:1px solid rgba(16,24,40,.12);border-radius:14px;background:#fff}.lr-stars{color:#F59E0B;letter-spacing:2px}.lr-card blockquote{margin:8px 0;word-break:break-word}.lr-card figcaption{font-size:.82rem;color:#566377}.lr-card figcaption span{color:#067647}
 footer{margin:40px 0 0;padding:24px 16px;border-top:1px solid rgba(16,24,40,.12);text-align:center;color:#566377;font-size:.85rem}.note{font-size:.85rem;color:#566377}"""
 def page(g):
     d = dict(G[g]); slug = SLUG[g]; url = f"{BASE}/{slug}/"; ps = packs(g); fq = faq(g)
@@ -200,6 +202,7 @@ def page(g):
 <p>{e(why)}</p>
 <h2>Частые вопросы</h2>
 {''.join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in fq)}
+<section id="rv" hidden><h2>Отзывы покупателей</h2><div id="rvBox"></div></section>
 <h2>Другие игры</h2><div class="games">{others}</div>
 <p class="note" style="margin-top:20px">Diamond.kg — неофициальный сервис. Не связан с {e(d['dev'])}; все названия и товарные знаки принадлежат их владельцам.</p>"""
     return f"""<!DOCTYPE html>
@@ -220,6 +223,12 @@ def page(g):
 <nav><a class="logo" href="/">💎 <b>Diamond</b>.kg</a><div class="links"><a href="/">Все игры</a><a href="/?game={g}">Пополнить</a></div></nav>
 <main class="wrap">{body}</main>
 <footer>© 2026 Diamond.kg · Пополнение игр в Кыргызстане · <a href="/">Главная</a></footer>
+<script src="/api-config.js"></script>
+<script>(function(){{var G={json.dumps(g)};if(!window.DK_API)return;var e=function(s){{return String(s==null?'':s).replace(/[&<>"']/g,function(c){{return{{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c]}})}};
+fetch(String(window.DK_API).replace(/[/]+$/,'')+'/api/reviews?limit=6&game='+encodeURIComponent(G)).then(function(r){{return r.ok?r.json():null}}).then(function(d){{
+if(!d||!d.count||!(d.reviews||[]).length)return;var dt=function(t){{return new Date(t).toLocaleDateString('ru-RU',{{month:'long',year:'numeric'}})}};
+document.getElementById('rvBox').innerHTML='<div class="lr-sum"><strong>'+Number(d.avg).toFixed(1)+'</strong> из 5 · отзывов: '+d.count+'</div><div class="lr-grid">'+d.reviews.map(function(v){{return '<figure class="lr-card"><div class="lr-stars" aria-label="Оценка '+v.rating+' из 5">'+'★'.repeat(v.rating)+'☆'.repeat(5-v.rating)+'</div><blockquote>'+e(v.text)+'</blockquote><figcaption><b>'+e(v.name)+'</b><br><span>✔ Проверенная покупка · '+e(dt(v.created_at))+'</span></figcaption></figure>'}}).join('')+'</div>';
+document.getElementById('rv').hidden=false}}).catch(function(){{}})}})();</script>
 </body></html>"""
 for g in G:
     os.makedirs(os.path.join(ROOT, SLUG[g]), exist_ok=True)

@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=8">
+<link rel="stylesheet" href="theme.css?v=9">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1404,6 +1404,7 @@
   <div class="disclaimer">⚠️ Неофициальный сервис. Не связан с разработчиками игр, все названия принадлежат их владельцам.</div>
   <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>24/7 без выходных</h3><p>Заказы принимаем всегда, ночью зачисляем утром.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
   <section id="reviews"><div class="sec-label">Отзывы</div><div class="sec-divider"></div><h2 class="sec-title">Что пишут <em>клиенты</em></h2>
+    <div id="liveReviews" class="live-reviews" hidden></div>
     <div class="rev-row">
       <figure class="rev-card"><img src="reviews/r5.jpg" alt="Отзыв клиента: «Благодаря вам я наконец-то выбил сразу то что хотел. Буду и другим вас советовать»" loading="lazy" width="640" height="330"></figure>
       <figure class="rev-card"><img src="reviews/r6.jpg" alt="Отзыв клиента: «Да, пришли. Спасибо»" loading="lazy" width="640" height="410"></figure>
@@ -1501,7 +1502,7 @@
     <div id="receiptMsg" class="receipt-msg" role="alert" aria-live="polite"></div>
     <div class="alt-send" id="altSend">Не получается приложить чек? <button type="button" class="link-btn" id="sendWhatsAppBtn" onclick="sendOrderToWhatsApp()" disabled style="opacity:0.5">Отправить через WhatsApp</button></div>
     </div>
-    <div id="successBox" class="success-box"><div class="suc-icon">✅</div><h3>Заказ отправлен!</h3><p id="successMsg">Алмазы придут через 5–10 минут после получения чека</p><div id="successDelivery" class="suc-delivery" hidden></div><div class="suc-timer" id="successTimer" aria-live="off"></div><div class="suc-code" id="successCode"></div><div class="suc-status" id="successStatus" aria-live="polite"></div><a class="btn-wa" href="https://wa.me/996555920204" target="_blank">📲 Написать в WhatsApp</a><button class="btn-secondary" onclick="showPage('topup')" style="margin-top:10px">Новый заказ</button></div></div>
+    <div id="successBox" class="success-box"><div class="suc-icon">✅</div><h3>Заказ отправлен!</h3><p id="successMsg">Алмазы придут через 5–10 минут после получения чека</p><div id="successDelivery" class="suc-delivery" hidden></div><div id="successReview" class="rv-slot"></div><div class="suc-timer" id="successTimer" aria-live="off"></div><div class="suc-code" id="successCode"></div><div class="suc-status" id="successStatus" aria-live="polite"></div><a class="btn-wa" href="https://wa.me/996555920204" target="_blank">📲 Написать в WhatsApp</a><button class="btn-secondary" onclick="showPage('topup')" style="margin-top:10px">Новый заказ</button></div></div>
   </div>
   </div>
 </div>
@@ -2021,6 +2022,7 @@ function showSuccessInfo() {
   const sm = document.getElementById('successMsg');
   if (sm) sm.textContent = isCodeOrder ? 'Код появится здесь после проверки оплаты, обычно через 5–10 минут. Не закрывайте страницу.' : 'Алмазы придут через 5–10 минут после получения чека';
   const sd = document.getElementById('successDelivery'); if (sd) { sd.hidden = true; sd.innerHTML = ''; }
+  const sr = document.getElementById('successReview'); if (sr) { sr.innerHTML = ''; delete sr.dataset.on; }
   try { if (code && currentOrder.secret) localStorage.setItem('dk_sec_' + code, currentOrder.secret); } catch (e) {}
   const sc = document.getElementById('successCode');
   if (sc) sc.textContent = code ? 'Код заказа: ' + code : '';
@@ -2049,6 +2051,7 @@ function showSuccessInfo() {
       const d = await r.json();
       if (ss) ss.textContent = STATUS_TEXT[d.status] || '';
       if (d.delivery) renderDelivery(document.getElementById('successDelivery'), currentOrder.region, d.delivery);
+      if (d.status === 'delivered' && !d.reviewed) showReviewOnce('successReview', code, currentOrder.secret);
       if (d.status === 'delivered') { if (window._countTimer) { clearInterval(window._countTimer); window._countTimer = null; } setTimerBox('✅ Доставлено', 'done'); stopStatusTimers(); }
       else if (['refunded', 'cancelled', 'refund_due'].includes(d.status)) { stopStatusTimers(); setTimerBox(''); }
     } catch (e) { /* без статуса */ }
@@ -2256,6 +2259,57 @@ const ORDER_STATUS = {
   new: ['Ожидает проверки оплаты', 'wait'], manual: ['Ожидает выдачи', 'wait'], processing: ['Зачисляется', 'wait'],
   delivered: ['Выдан', 'ok'], refund_due: ['Возврат', 'bad'], refunded: ['Деньги возвращены', 'bad'], cancelled: ['Отменён', 'bad']
 };
+// ---------- Отзывы ----------
+function pluralReviews(n) { const a = n % 10, b = n % 100; return n + ' ' + (b > 10 && b < 20 ? 'отзывов' : a === 1 ? 'отзыв' : (a >= 2 && a <= 4) ? 'отзыва' : 'отзывов'); }
+function reviewWidget(el, orderId, secret) {
+  if (!el) return;
+  const u = getCurrentUser();
+  const defName = u && u.name ? String(u.name).split(' ')[0] : '';
+  el.innerHTML = `<div class="rv-form"><div class="dl-title">⭐ Оцените заказ</div>
+    <div class="rv-stars" role="radiogroup" aria-label="Оценка">${[1, 2, 3, 4, 5].map(i => `<button type="button" class="rv-star" data-v="${i}" role="radio" aria-checked="false" aria-label="${i} из 5">★</button>`).join('')}</div>
+    <label>ВАШ ОТЗЫВ</label><textarea class="input-field rv-text" maxlength="600" rows="3" placeholder="Как прошёл заказ? Быстро ли пришло?"></textarea>
+    <label>ИМЯ (ПОКАЖЕМ ВМЕСТЕ С ОТЗЫВОМ)</label><input type="text" class="input-field rv-name" maxlength="30" value="${esc(defName)}" placeholder="Например, Айбек" autocomplete="given-name">
+    <button type="button" class="btn-primary btn-full rv-send" style="margin-top:10px">Отправить отзыв</button>
+    <div class="rv-msg" role="alert"></div><p class="rv-note">Отзыв появится на сайте после проверки. ID, телефон и чек не публикуются.</p></div>`;
+  let rating = 0;
+  const stars = el.querySelectorAll('.rv-star'), msg = el.querySelector('.rv-msg'), send = el.querySelector('.rv-send');
+  stars.forEach(b => b.onclick = () => { rating = Number(b.dataset.v); stars.forEach(x => { const on = Number(x.dataset.v) <= rating; x.classList.toggle('on', on); x.setAttribute('aria-checked', Number(x.dataset.v) === rating ? 'true' : 'false'); }); });
+  send.onclick = async () => {
+    const text = el.querySelector('.rv-text').value.trim(), name = el.querySelector('.rv-name').value.trim();
+    if (!rating) { msg.textContent = 'Выберите оценку, нажав на звёзды'; return; }
+    if (text.length < 5) { msg.textContent = 'Напишите хотя бы пару слов'; return; }
+    send.disabled = true; msg.textContent = 'Отправляем…';
+    try {
+      const r = await fetch(API_BASE() + '/api/orders/' + encodeURIComponent(orderId) + '/review', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ rating, text, name, s: secret || '' })
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { msg.textContent = d.error || 'Не удалось отправить отзыв'; send.disabled = false; return; }
+      el.innerHTML = '<div class="rv-thanks">🙏 Спасибо за отзыв! Он появится на сайте после проверки.</div>';
+    } catch (e) { msg.textContent = 'Нет связи с сервером, попробуйте ещё раз'; send.disabled = false; }
+  };
+}
+// Показываем форму один раз (чтобы опрос статуса не стирал то, что человек уже печатает)
+function showReviewOnce(id, orderId, secret) {
+  const el = document.getElementById(id);
+  if (!el || el.dataset.on) return;
+  el.dataset.on = '1'; reviewWidget(el, orderId, secret);
+}
+async function loadLiveReviews() {
+  const box = document.getElementById('liveReviews');
+  if (!box || !window.DK_API) return;
+  try {
+    const r = await fetch(API_BASE() + '/api/reviews?limit=9');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.count || !(d.reviews || []).length) return;
+    const dt = ts => new Date(ts).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+    box.innerHTML = `<div class="lr-sum"><strong>${Number(d.avg).toFixed(1)}</strong> из 5 · ${pluralReviews(d.count)} от покупателей</div><div class="lr-grid">` + d.reviews.map(v =>
+      `<figure class="lr-card"><div class="lr-stars" aria-label="Оценка ${v.rating} из 5">${'★'.repeat(v.rating)}${'☆'.repeat(5 - v.rating)}</div><blockquote>${esc(v.text)}</blockquote><figcaption><b>${esc(v.name)}</b> · ${esc(v.game_title || '')}<br><span>✔ Проверенная покупка · ${esc(dt(v.created_at))}</span></figcaption></figure>`).join('') + '</div>';
+    box.hidden = false;
+  } catch (e) { /* без отзывов блок просто скрыт */ }
+}
+
 // Проверка заказа по коду (без входа). Код активации виден только в этом браузере, где оформлен заказ (секрет в localStorage).
 async function checkOrderStatus() {
   const inp = document.getElementById('statusCode'), box = document.getElementById('statusResult'), btn = document.getElementById('statusBtn');
@@ -2273,8 +2327,10 @@ async function checkOrderStatus() {
     box.innerHTML = `<div class="hist-card"><div class="hist-top"><strong>${esc(o.pkg_label)}</strong><span class="hist-price">${esc(o.price_kgs)} Сом</span></div>
       <div class="hist-mid">${esc(STATUS_TEXT[o.status] || st[0])}</div>
       <div class="suc-delivery" id="statusDelivery" hidden></div>
+      <div class="rv-slot" id="statusReview"></div>
       <div class="hist-bot"><span class="hist-st ${st[1]}">${esc(st[0])}</span><span>${esc(when)} · №${esc(o.id)}</span></div></div>`;
     if (o.delivery) renderDelivery(document.getElementById('statusDelivery'), o.region, o.delivery);
+    if (o.status === 'delivered' && !o.reviewed && (sec || getCurrentUser())) { const sr = document.getElementById('statusReview'); if (sr) { delete sr.dataset.on; showReviewOnce('statusReview', o.id, sec); } }
   } catch (e) {
     box.innerHTML = '<div class="orders-empty">Не удалось проверить заказ. Попробуйте позже или напишите в поддержку.</div>';
   } finally { btn.disabled = false; }
@@ -2302,6 +2358,7 @@ async function renderOrders() {
       return `<div class="hist-card"><div class="hist-top"><strong>${esc(o.pkg_label)}</strong><span class="hist-price">${esc(o.price_kgs)} Сом</span></div>
         ${o.player_id && o.player_id !== '-' ? `<div class="hist-mid">${(gamesData[o.region] || {}).kind === 'username' ? 'Telegram' : 'ID'}: ${esc(o.player_id)}${srv}</div>` : ''}
         ${o.delivery && o.status === 'delivered' ? `<div class="suc-delivery" id="dl-${esc(o.id)}"></div>` : ''}
+        ${o.status === 'delivered' && !o.reviewed ? `<div class="rv-slot" id="rv-${esc(o.id)}"><button type="button" class="link-btn" onclick="reviewWidget(document.getElementById('rv-${esc(o.id)}'),'${esc(o.id)}','')">⭐ Оставить отзыв</button></div>` : ''}
         <div class="hist-bot"><span class="hist-st ${st[1]}">${esc(st[0])}</span><span>${esc(when)} · ${esc(o.method)} · №${esc(o.id)}</span></div></div>`;
     }).join('');
     orders.forEach(o => { if (o.delivery && o.status === 'delivered') { const el = document.getElementById('dl-' + o.id); if (el) renderDelivery(el, o.region, o.delivery); } });
@@ -2338,6 +2395,7 @@ function restoreLastId() {
 renderMethods();
 renderPackages();
 updateUserUI();
+document.addEventListener('DOMContentLoaded', loadLiveReviews); // api-config.js подключён ниже
 restoreLastId();
 (function(){ try {
   const g = new URLSearchParams(location.search).get('game');

@@ -28,10 +28,12 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
 <header><div class="bar" role="tablist" aria-label="Разделы админки">
   <span class="brand"><b>Diamond</b>.kg · админка</span>
   <button class="tab" role="tab" id="t-orders" aria-selected="true" data-t="orders">Заказы <span class="badge" id="badge" title="Требуют действия"></span></button>
+  <button class="tab" role="tab" id="t-reviews" aria-selected="false" data-t="reviews">Отзывы</button>
   <button class="tab" role="tab" id="t-accounts" aria-selected="false" data-t="accounts">Аккаунты</button>
 </div></header>
 <div class="frame">
   <iframe id="f-orders" src="admin-orders.html" title="Заказы"></iframe>
+  <iframe id="f-reviews" class="hidden" src="admin-reviews.html" title="Отзывы"></iframe>
   <iframe id="f-accounts" class="hidden" src="admin-accounts.html" title="Аккаунты"></iframe>
 </div>
 <script src="api-config.js"></script>
@@ -41,7 +43,7 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
   function sget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
   function show(t){
     cur=t;
-    ['orders','accounts'].forEach(function(x){
+    ['orders','reviews','accounts'].forEach(function(x){
       document.getElementById('f-'+x).classList.toggle('hidden',x!==t);
       document.getElementById('t-'+x).setAttribute('aria-selected',x===t?'true':'false');
     });
@@ -72,7 +74,7 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
   }
   badge();setInterval(badge,20000);
   window.addEventListener('storage',badge);
-  show(location.hash==='#accounts'?'accounts':'orders');
+  show(location.hash==='#accounts'?'accounts':(location.hash==='#reviews'?'reviews':'orders'));
 })();
 </script>
 </body>

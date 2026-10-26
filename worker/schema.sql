@@ -50,3 +50,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id, created_at);
 -- Коды (Roblox, Telegram): ALTER TABLE orders ADD COLUMN delivery TEXT NOT NULL DEFAULT ''; ALTER TABLE orders ADD COLUMN secret TEXT NOT NULL DEFAULT '';  (выполнено один раз)
 -- delivery = выданный код (показывается клиенту по секрету заказа), secret = секрет заказа, который получает браузер клиента
+
+-- Отзывы клиентов (создаётся автоматически в reviews.js; здесь для справки)
+CREATE TABLE IF NOT EXISTS reviews (id TEXT PRIMARY KEY, order_id TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL, rating INTEGER NOT NULL, text TEXT NOT NULL DEFAULT '', name TEXT NOT NULL DEFAULT '', game TEXT NOT NULL DEFAULT '', pkg_label TEXT NOT NULL DEFAULT '', user_id TEXT, status TEXT NOT NULL DEFAULT 'pending');
+CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews(status, created_at);

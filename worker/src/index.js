@@ -10,6 +10,7 @@ const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
 import { loginWithGoogle, getMe, listMyOrders, userFromRequest } from './auth.js';
 import { maybeSendReport } from './report.js';
+import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook } from './orders.js';
 
 function cors(req) {
@@ -161,6 +162,15 @@ export default {
         const r = await saveReceipt(env, mm[1], await req.arrayBuffer());
         return r.error ? err(req, r.error, r.status || 400) : json(req, r);
       }
+      mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/review$/);
+      if (mm && m === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const r = await submitReview(env, mm[1], b, await userFromRequest(req, env));
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      if (path === '/api/reviews' && m === 'GET') {
+        return json(req, await listPublicReviews(env, url.searchParams.get('game') || '', url.searchParams.get('limit')), 200, { 'Cache-Control': 'public, max-age=60' });
+      }
       mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/notify$/);
       if (mm && m === 'POST') {
         const r = await notifyWithoutReceipt(env, mm[1]);
@@ -169,6 +179,7 @@ export default {
       mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})$/);
       if (mm && m === 'GET') {
         const o = await getOrderPublic(env, mm[1], url.searchParams.get('s'));
+        if (o) o.reviewed = await hasReview(env, mm[1]);
         return o ? json(req, o) : err(req, 'Заказ не найден', 404);
       }
       // вебхук FazerCards (подпись проверяется внутри)
@@ -193,6 +204,12 @@ export default {
         // заказы
         if (path === '/api/admin/orders' && m === 'GET') {
           return json(req, { orders: await listOrders(env, url.searchParams.get('status') || 'all') });
+        }
+        if (path === '/api/admin/reviews' && m === 'GET') return json(req, await adminListReviews(env, url.searchParams.get('status') || 'all'));
+        mm = path.match(/^\/api\/admin\/reviews\/([A-Za-z0-9]{4,40})\/(approve|hide|pending)$/);
+        if (mm && m === 'POST') {
+          const r = await adminSetReview(env, mm[1], mm[2]);
+          return r.error ? err(req, r.error, r.status || 400) : json(req, r);
         }
         mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9]{4,20})\/receipt$/);
         if (mm && m === 'GET') {

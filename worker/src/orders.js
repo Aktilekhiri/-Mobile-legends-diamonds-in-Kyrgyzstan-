@@ -26,7 +26,7 @@ function safeEq(a, b) {
   return r === 0;
 }
 const publicView = o => ({
-  id: o.id, status: o.status, pkg_label: o.pkg_label, price_kgs: o.price_kgs,
+  id: o.id, status: o.status, pkg_label: o.pkg_label, price_kgs: o.price_kgs, region: o.region,
   created_at: o.created_at, finished_at: o.finished_at,
 });
 

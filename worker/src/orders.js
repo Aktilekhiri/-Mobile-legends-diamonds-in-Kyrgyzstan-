@@ -67,6 +67,10 @@ export async function createOrder(env, ip, b, userId = null) {
   const pkg = clean(b.pkg, 60);
   const price = Math.max(0, Math.min(10000000, Math.floor(Number(b.price) || 0)));
   if (!pkg || !price) return { error: 'Не указан пакет или сумма' };
+  // защита от мусорных заказов: телефон обязателен (до ИП), цена не ниже реальной стоимости пакета
+  if (String(b.phone || '').replace(/\D/g, '').length < 9) return { error: 'Укажите номер телефона' };
+  const cat0 = (CATALOGS[region] || {})[pkg] || null;
+  if (cat0 ? price < Math.floor(cat0.cost * USD_KGS * 0.9) : price < 20) return { error: 'Некорректная сумма заказа' };
 
   // защита от спама: не более 8 заказов с одного IP за час
   if (ip) {

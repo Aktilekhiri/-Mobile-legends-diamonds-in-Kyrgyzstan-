@@ -1,12 +1,12 @@
 /* ===== Каталог аккаунтов ===== */
 #page-accounts .acc-wrap{max-width:1100px;margin:0 auto;padding:22px 5% 56px}
 .acc-filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
-.acc-chip{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;color:var(--muted);background:rgba(17,37,72,.7);border:1px solid var(--border);border-radius:999px;padding:8px 18px;cursor:pointer;min-height:40px;transition:all .2s}
-.acc-chip.on{color:var(--navy);background:var(--gold);border-color:var(--gold)}
+.acc-chip{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:999px;padding:8px 18px;cursor:pointer;min-height:40px;transition:all .2s}
+.acc-chip.on{color:#fff;background:var(--gold);border-color:var(--gold)}
 .acc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
 .acc-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform .25s,border-color .25s,box-shadow .25s;text-align:left;padding:0;color:inherit;font:inherit}
-.acc-card:hover,.acc-card:focus-visible{transform:translateY(-4px);border-color:rgba(255,186,8,.55);box-shadow:0 12px 32px rgba(0,0,0,.35);outline:none}
-.acc-cover{position:relative;aspect-ratio:4/3;background:#0a1630;overflow:hidden}
+.acc-card:hover,.acc-card:focus-visible{transform:translateY(-4px);border-color:rgba(255,186,8,.55);box-shadow:0 12px 32px rgba(16,24,40,.14);outline:none}
+.acc-cover{position:relative;aspect-ratio:4/3;background:#E6ECF6;overflow:hidden}
 .acc-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .acc-cover .acc-ph{display:flex;align-items:center;justify-content:center;height:100%;font-size:2.6rem;opacity:.5}
 .acc-badge{position:absolute;top:10px;left:10px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.85rem;padding:4px 10px;border-radius:999px;background:rgba(37,211,102,.92);color:#04230f}
@@ -15,7 +15,7 @@
 .acc-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
 .acc-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.2rem;line-height:1.2;color:var(--white);margin:0}
 .acc-tags{display:flex;flex-wrap:wrap;gap:6px}
-.acc-tag{font-size:.8rem;color:var(--muted);background:rgba(46,125,237,.12);border:1px solid var(--border);border-radius:8px;padding:3px 8px}
+.acc-tag{font-size:.8rem;color:var(--muted);background:rgba(91,99,240,.1);border:1px solid var(--border);border-radius:8px;padding:3px 8px}
 .acc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:8px}
 .acc-price{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.45rem;color:var(--gold)}
 .acc-more{font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--blue-light);font-size:.95rem}
@@ -28,7 +28,7 @@
 /* окно карточки */
 .acc-modal{position:fixed;inset:0;z-index:1200;background:rgba(2,6,16,.86);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:0;-webkit-overflow-scrolling:touch}
 .acc-modal.open{display:flex}
-.acc-sheet{background:#0d2040;width:100%;max-width:880px;min-height:100%;position:relative;padding:0 0 28px}
+.acc-sheet{background:#fff;width:100%;max-width:880px;min-height:100%;position:relative;padding:0 0 28px}
 @media(min-width:760px){.acc-modal{padding:32px 16px}.acc-sheet{border-radius:22px;min-height:0;border:1px solid var(--border)}}
 .acc-x{position:sticky;top:8px;display:block;margin:8px 8px -52px auto;z-index:5;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:rgba(5,8,16,.8);color:#fff;font-size:1.3rem;cursor:pointer;line-height:1}
 .acc-gal{position:relative;background:#06101f;width:100%;height:min(62vh,75vw);overflow:hidden;touch-action:pan-y}

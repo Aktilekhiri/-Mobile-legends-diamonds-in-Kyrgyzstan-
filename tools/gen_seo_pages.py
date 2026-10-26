@@ -83,16 +83,16 @@ def faq(g):
      ("Сколько ждать пополнения?", "Обычно 5–10 минут после проверки оплаты. Заказы с 00:00 до 08:00 по времени Бишкека зачисляются утром, оплатить можно в любое время."),
      ("Что делать, если пополнение не пришло?", "Напишите нам в WhatsApp с кодом заказа и чеком. Если пополнение невозможно (например, указан неверный ID), мы вернём деньги."),
     ]
-CSS = """*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Nunito',system-ui,sans-serif;background:#0B1D3A;color:#f0f4ff;line-height:1.6}a{color:#4d93f5}
-.wrap{max-width:900px;margin:0 auto;padding:0 16px}nav{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(46,125,237,.18);flex-wrap:wrap;gap:8px}
-.logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.4rem;color:#f0f4ff;text-decoration:none}.logo b{color:#FFBA08}
-nav .links a{margin-left:14px;text-decoration:none;font-size:.9rem;color:#8ba3cc}h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.7rem,5vw,2.5rem);line-height:1.15;margin:28px 0 10px}
-h2{font-family:'Rajdhani',sans-serif;font-size:1.5rem;margin:30px 0 10px;color:#FFBA08}p{margin:8px 0;color:#d5def2}.lead{font-size:1.05rem}
-.btn{display:inline-block;background:#FFBA08;color:#0B1D3A;font-weight:800;padding:13px 24px;border-radius:12px;text-decoration:none;margin:14px 10px 6px 0}.btn.s{background:transparent;color:#f0f4ff;border:1px solid #2E7DED}
-table{width:100%;border-collapse:collapse;margin:10px 0;background:rgba(17,37,72,.9);border-radius:12px;overflow:hidden}td,th{padding:10px 14px;text-align:left;border-bottom:1px solid rgba(46,125,237,.18)}th{color:#8ba3cc;font-size:.8rem;text-transform:uppercase}td.p{color:#FFBA08;font-weight:800;white-space:nowrap}
-ol{margin:8px 0 8px 22px;color:#d5def2}li{margin:6px 0}details{background:rgba(17,37,72,.9);border-radius:12px;padding:12px 16px;margin:8px 0}summary{cursor:pointer;font-weight:700}details p{margin-top:8px}
-.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:10px 0}.games a{background:rgba(17,37,72,.9);border:1px solid rgba(46,125,237,.18);border-radius:12px;padding:12px;text-decoration:none;color:#f0f4ff;font-weight:700}
-footer{margin:40px 0 0;padding:24px 16px;border-top:1px solid rgba(46,125,237,.18);text-align:center;color:#8ba3cc;font-size:.85rem}.note{font-size:.85rem;color:#8ba3cc}"""
+CSS = """*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Nunito',system-ui,sans-serif;background:#F4F7FB;color:#101828;line-height:1.6}a{color:#0E7490}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}nav{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(16,24,40,.12);flex-wrap:wrap;gap:8px}
+.logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.4rem;color:#101828;text-decoration:none}.logo b{color:#0E7490}
+nav .links a{margin-left:14px;text-decoration:none;font-size:.9rem;color:#566377}h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.7rem,5vw,2.5rem);line-height:1.15;margin:28px 0 10px}
+h2{font-family:'Rajdhani',sans-serif;font-size:1.5rem;margin:30px 0 10px;color:#0E7490}p{margin:8px 0;color:#344054}.lead{font-size:1.05rem}
+.btn{display:inline-block;background:#0E7490;color:#fff;font-weight:800;padding:13px 24px;border-radius:12px;text-decoration:none;margin:14px 10px 6px 0}.btn.s{background:transparent;color:#101828;border:1px solid #5B63F0}
+table{width:100%;border-collapse:collapse;margin:10px 0;background:#fff;border-radius:12px;overflow:hidden}td,th{padding:10px 14px;text-align:left;border-bottom:1px solid rgba(16,24,40,.12)}th{color:#566377;font-size:.8rem;text-transform:uppercase}td.p{color:#0E7490;font-weight:800;white-space:nowrap}
+ol{margin:8px 0 8px 22px;color:#344054}li{margin:6px 0}details{background:#fff;border-radius:12px;padding:12px 16px;margin:8px 0}summary{cursor:pointer;font-weight:700}details p{margin-top:8px}
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:10px 0}.games a{background:#fff;border:1px solid rgba(16,24,40,.12);border-radius:12px;padding:12px;text-decoration:none;color:#101828;font-weight:700}
+footer{margin:40px 0 0;padding:24px 16px;border-top:1px solid rgba(16,24,40,.12);text-align:center;color:#566377;font-size:.85rem}.note{font-size:.85rem;color:#566377}"""
 def page(g):
     d = dict(G[g]); slug = SLUG[g]; url = f"{BASE}/{slug}/"; ps = packs(g); fq = faq(g)
     lo = min(ps, key=lambda x: x[1]); hi = max(ps, key=lambda x: x[1]); fmt = lambda n: f"{n:,}".replace(',', ' ')

@@ -1,17 +1,17 @@
 /* diamond.kg — redesign preview (phase 1: shell, home, game catalog).
    Loaded after all legacy CSS; scoped by body.v2 where it must win. */
 :root{
-  --bg:#0B1020; --surface:#10182B; --card:#151D33; --card-2:#1D2943;
-  --cyan:#32D9F5; --indigo:#7C83FF; --violet:#9B72FF;
-  --text:#F5F7FF; --muted:#AAB8D0;
-  --line:rgba(170,184,208,.16); --line-strong:rgba(124,131,255,.38);
-  --grad:linear-gradient(135deg,#32D9F5 0%,#7C83FF 60%,#9B72FF 100%);
+  --bg:#F4F7FB; --surface:#FFFFFF; --card:#FFFFFF; --card-2:#EEF2F8;
+  --cyan:#0E7490; --indigo:#5B63F0; --violet:#7C5CF0;
+  --text:#101828; --muted:#566377;
+  --line:rgba(16,24,40,.12); --line-strong:rgba(91,99,240,.45);
+  --grad:linear-gradient(135deg,#0891B2 0%,#5B63F0 62%,#7C5CF0 100%);
   --radius:16px; --radius-lg:22px;
   /* map legacy tokens so untouched pages (topup, accounts…) follow the palette */
-  --navy:#0B1020; --navy-light:#10182B; --blue:#7C83FF; --blue-light:#32D9F5;
-  --gold:#32D9F5; --gold-dark:#1fb3cc; --white:#F5F7FF; --border:rgba(170,184,208,.16);
-  --glass-bg:rgba(16,24,43,.86); --glass-bg-strong:rgba(16,24,43,.96);
-  --glass-border:rgba(170,184,208,.16); --glass-border-hover:rgba(50,217,245,.55);
+  --navy:#F4F7FB; --navy-light:#FFFFFF; --blue:#5B63F0; --blue-light:#0E7490;
+  --gold:#0E7490; --gold-dark:#0B5E75; --white:#101828; --border:rgba(16,24,40,.12);
+  --glass-bg:rgba(255,255,255,.92); --glass-bg-strong:rgba(255,255,255,.98);
+  --glass-border:rgba(16,24,40,.12); --glass-border-hover:rgba(14,116,144,.55);
 }
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body.v2{background:var(--bg);color:var(--text);font-family:'Nunito',system-ui,sans-serif;line-height:1.5}
@@ -21,16 +21,16 @@ body.v2 .page{padding-top:80px}
 
 /* ---------- nav ---------- */
 body.v2 nav{top:0;left:0;right:0;width:auto;height:64px;border-radius:0;padding:0 max(16px,4%);
-  background:rgba(11,16,32,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(255,255,255,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border:0;border-bottom:1px solid var(--line);box-shadow:none;transition:box-shadow .2s}
-body.v2 nav.nav-scrolled{height:64px;background:rgba(11,16,32,.96);box-shadow:0 6px 24px rgba(0,0,0,.35)}
+body.v2 nav.nav-scrolled{height:64px;background:rgba(255,255,255,.97);box-shadow:0 6px 24px rgba(16,24,40,.10)}
 body.v2 .nav-logo{font-size:1.35rem;min-height:44px}
 body.v2 .nav-logo .hl{color:var(--cyan)}
 body.v2 .nav-links{gap:4px}
 body.v2 .nav-links a{min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border-radius:10px;color:var(--muted);transition:color .15s,background .15s}
 body.v2 .nav-links a:hover,body.v2 .nav-links a.active{color:var(--text);background:rgba(124,131,255,.12)}
-body.v2 .nav-cta,body.v2 .nav-links a.nav-cta{background:var(--grad);color:#0B1020;font-weight:800;padding:0 16px;border-radius:12px}
-body.v2 .nav-links a.nav-cta:hover{color:#0B1020;filter:brightness(1.08)}
+body.v2 .nav-cta,body.v2 .nav-links a.nav-cta{background:var(--grad);color:#fff;font-weight:800;padding:0 16px;border-radius:12px}
+body.v2 .nav-links a.nav-cta:hover{color:#fff;filter:brightness(1.08)}
 body.v2 .hamburger{width:44px;height:44px;display:none;align-items:center;justify-content:center;gap:5px;flex-direction:column}
 body.v2 .mobile-menu{top:64px;margin:0;left:0;right:0;border-radius:0;background:var(--surface);border-bottom:1px solid var(--line)}
 body.v2 .mobile-menu a{min-height:48px;display:flex;align-items:center;padding:0 20px;color:var(--text)}
@@ -38,7 +38,7 @@ body.v2 .mobile-menu a{min-height:48px;display:flex;align-items:center;padding:0
 
 /* ---------- buttons ---------- */
 body.v2 .btn-primary,body.v2 .btn-secondary,body.v2 .btn-wa{min-height:48px;border-radius:14px;font-weight:800;transition:transform .15s,filter .15s,border-color .15s}
-body.v2 .btn-primary{background:var(--grad);color:#0B1020;border:0;box-shadow:0 8px 24px rgba(50,217,245,.18)}
+body.v2 .btn-primary{background:var(--grad);color:#fff;border:0;box-shadow:0 8px 24px rgba(50,217,245,.18)}
 body.v2 .btn-primary.glow{animation:none}
 body.v2 .btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
 body.v2 .btn-primary:active,body.v2 .btn-secondary:active,body.v2 .btn-wa:active{transform:scale(.98)}
@@ -118,7 +118,7 @@ body.v2 .steps-grid{display:grid;grid-template-columns:1fr;gap:12px}
 body.v2 .trust-card,body.v2 .feature-card,body.v2 .step-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;text-align:left;transform:none!important;box-shadow:none}
 body.v2 .trust-card h3,body.v2 .feature-card h3,body.v2 .step-card h3{color:var(--text);font-size:1.05rem;margin:8px 0 4px}
 body.v2 .trust-card p,body.v2 .feature-card p,body.v2 .step-card p{color:var(--muted);font-size:.92rem;margin:0}
-body.v2 .step-num{width:36px;height:36px;border-radius:50%;background:var(--grad);color:#0B1020;font-weight:800;display:flex;align-items:center;justify-content:center}
+body.v2 .step-num{width:36px;height:36px;border-radius:50%;background:var(--grad);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
 body.v2 .ficon{background:var(--card-2)!important;border-radius:12px}
 body.v2 .disclaimer{max-width:1120px;margin:16px auto;padding:12px 16px;color:var(--muted);font-size:.85rem;background:var(--surface);border:1px solid var(--line);border-radius:12px;text-align:left}
 body.v2 .rev-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
@@ -216,7 +216,7 @@ body.v2 .pkg-card.out{opacity:.5}
 
 /* sticky action bar */
 body.v2 .buy-bar{position:sticky;bottom:0;z-index:30;margin:16px -18px -18px;padding:12px 18px calc(12px + env(safe-area-inset-bottom));
-  background:rgba(16,24,43,.97);border-top:1px solid var(--line);border-radius:0 0 var(--radius-lg) var(--radius-lg);display:flex;flex-direction:column;gap:10px;box-shadow:0 -10px 24px rgba(0,0,0,.3)}
+  background:rgba(255,255,255,.98);border-top:1px solid var(--line);border-radius:0 0 var(--radius-lg) var(--radius-lg);display:flex;flex-direction:column;gap:10px;box-shadow:0 -10px 24px rgba(0,0,0,.3)}
 @media (min-width:600px){body.v2 .buy-bar{margin:16px -22px -22px;padding:14px 22px;flex-direction:row;align-items:center;justify-content:space-between}}
 body.v2 .buy-bar .sel-info{margin:0!important;background:none!important;padding:0!important;flex:1;min-width:0;font-size:.8rem;color:var(--muted)}
 body.v2 .buy-bar .sel-info .sir{font-size:1.05rem;font-weight:800;color:var(--text);gap:12px}

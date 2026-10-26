@@ -33,7 +33,7 @@ function alertText(o, cat, auto, withReceipt) {
 }
 
 // POST /api/orders — публично (с сайта)
-export async function createOrder(env, ip, b) {
+export async function createOrder(env, ip, b, userId = null) {
   const region = clean(b.region, 20) || 'global';
   const game = GAMES[region]; // undefined = Mobile Legends
   const player = digits(b.playerId, 14);
@@ -61,6 +61,8 @@ export async function createOrder(env, ip, b) {
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
   ).bind(id, now, now, player, server, region, pkg, clean(b.pkgLabel || pkg, 100), price, clean(b.method, 30), clean(b.phone, 30),
     auto ? cat.offer : '', auto ? cat.cost : 0, auto ? 'new' : 'manual', ip || '').run();
+  // привязка к аккаунту (если клиент вошёл через Google); сбой не должен ломать заказ
+  if (userId) { try { await env.DB.prepare('UPDATE orders SET user_id = ? WHERE id = ?').bind(userId, id).run(); } catch (e) {} }
   // Заказ «с чеком на сайте» (deferNotify): уведомляем позже, когда придёт чек, одним сообщением с фото.
   if (!b.deferNotify) await notify(env, alertText({ id, region, pkg, pkg_label: clean(b.pkgLabel || pkg, 100), price_kgs: price, method: clean(b.method, 30), player_id: player, server_id: server }, cat, auto));
   return { id, status: auto ? 'new' : 'manual' };

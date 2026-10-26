@@ -39,3 +39,12 @@ CREATE TABLE IF NOT EXISTS receipts (
 );
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status, created_at);
 CREATE INDEX IF NOT EXISTS idx_orders_fz ON orders(fz_order_id);
+
+-- Клиенты, вошедшие через Google
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,                 -- Google sub
+  email TEXT NOT NULL DEFAULT '', name TEXT NOT NULL DEFAULT '', picture TEXT NOT NULL DEFAULT '',
+  created_at INTEGER NOT NULL, last_login INTEGER NOT NULL
+);
+-- ALTER TABLE orders ADD COLUMN user_id TEXT;   (выполнено один раз)
+CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id, created_at);

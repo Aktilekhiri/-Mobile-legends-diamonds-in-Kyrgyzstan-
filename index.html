@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=3">
+<link rel="stylesheet" href="theme.css?v=6">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1331,7 +1331,7 @@
     <a href="#" onclick="showPage('orders')" id="nav-orders">История</a>
     <span class="online-dot">Онлайн</span>
     <div class="lang-toggle"><button class="active">RU</button><button>KY</button></div>
-    <span class="user-name" id="userNameDisplay" onclick="toggleAuthModal()">👤 Войти</span>
+    <button type="button" class="user-name" id="userNameDisplay" onclick="toggleAuthModal()">👤 Войти</button>
     <a href="#" class="nav-cta" onclick="showPage('topup')">💎 Купить →</a>
   </div>
   <button class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></button>
@@ -1342,16 +1342,24 @@
   <a href="#" onclick="showPage('accounts');toggleMenu()">🎮 Аккаунты</a>
   <a href="#" onclick="showPage('support');toggleMenu()">💬 Поддержка</a>
   <a href="#" onclick="showPage('orders');toggleMenu()">📜 История</a>
+  <a href="#" id="mobileUserLink" onclick="toggleAuthModal();toggleMenu();return false">👤 Войти</a>
 </div>
 
 <!-- Auth Modal -->
-<div id="authModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.8); z-index:1000; align-items:center; justify-content:center;">
-  <div style="background:var(--card); border-radius:20px; padding:32px; max-width:400px; width:90%;">
-    <h3 style="margin-bottom:20px">Вход / Гость</h3>
-    <input type="text" id="authName" placeholder="Ваше имя" class="input-field">
-    <button class="btn-primary btn-full" onclick="loginAsUser()" style="margin-bottom:10px">Войти</button>
-    <button class="btn-secondary btn-full" onclick="loginAsGuest()">Гость</button>
-    <button style="margin-top:15px; background:none; border:none; color:var(--muted); cursor:pointer" onclick="closeAuthModal()">Закрыть</button>
+<div id="authModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="authTitle" onclick="if(event.target===this)closeAuthModal()">
+  <div class="auth-card">
+    <button type="button" class="auth-x" aria-label="Закрыть" onclick="closeAuthModal()">✕</button>
+    <div id="authGuest">
+      <h3 id="authTitle">Вход в Diamond.kg</h3>
+      <p class="auth-sub">Войдите через Google, чтобы видеть историю заказов на любом устройстве. Покупать можно и без входа.</p>
+      <div id="googleBtn" class="google-btn-wrap"></div>
+      <p id="authMsg" class="auth-msg" role="status"></p>
+    </div>
+    <div id="authUser" style="display:none">
+      <div class="auth-profile"><img id="authAvatar" alt="" width="56" height="56" referrerpolicy="no-referrer"><div><strong id="authName"></strong><div id="authEmail" class="auth-sub"></div></div></div>
+      <button type="button" class="btn-primary btn-full" onclick="closeAuthModal();showPage('orders')">📋 История заказов</button>
+      <button type="button" class="btn-secondary btn-full" style="margin-top:10px" onclick="logout()">Выйти</button>
+    </div>
   </div>
 </div>
 
@@ -1746,6 +1754,7 @@ function proceedToPayment() {
     bonus: selectedPkg.bonus || 0,
     isPass: selectedPkg.type === 'pass'
   };
+  saveLastId();
   document.getElementById('payPlayerId').innerText = pid;
   const gdPay = gamesData[currentGame];
   const srvShown = gdPay && gdPay.servers ? ((gdPay.servers.find(x => x.v === sid) || {}).l || sid) : sid;
@@ -1884,7 +1893,7 @@ async function registerOrderDeferred(phone) {
     try {
       const ctrl = new AbortController(); const tm = setTimeout(() => ctrl.abort(), 9000);
       const resp = await fetch(API_BASE() + '/api/orders', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
+        method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, signal: ctrl.signal,
         body: JSON.stringify({
           playerId: currentOrder.playerId, serverId: currentOrder.serverId, region: currentOrder.region,
           pkg: currentOrder.packageName, pkgLabel: currentOrder.label, price: currentOrder.price,
@@ -1981,15 +1990,6 @@ async function sendOrderWithReceipt() {
   const e2 = await uploadReceipt();
   if (e2) { setReceiptMsg(e2 + '. Попробуйте ещё раз или отправьте через WhatsApp ниже.', 'err'); updateReceiptBtn(); return; }
   currentOrder.deferred = false;
-  const user = getCurrentUser();
-  if (user) {
-    try {
-      const orders = JSON.parse(localStorage.getItem(`orders_${user.id}`) || '[]');
-      orders.unshift({ id: Date.now(), code: currentOrder.code, playerId: currentOrder.playerId, serverId: currentOrder.serverId, region: currentOrder.region,
-        diamonds: currentOrder.diamonds, price: currentOrder.price, method: selectedMethod, phone: phone, date: new Date().toLocaleString(), status: 'Чек отправлен' });
-      localStorage.setItem(`orders_${user.id}`, JSON.stringify(orders));
-    } catch (e) {}
-  }
   setReceiptMsg('');
   document.getElementById('receiptBox').style.display = 'none';
   document.getElementById('successBox').classList.add('show');
@@ -2016,7 +2016,7 @@ async function sendOrderToWhatsApp() {
         const ctrl = new AbortController();
         const tm = setTimeout(() => ctrl.abort(), 9000);
         const resp = await fetch(String(window.DK_API).replace(/\/+$/, '') + '/api/orders', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
+          method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, signal: ctrl.signal,
           body: JSON.stringify({
             playerId: currentOrder.playerId, serverId: currentOrder.serverId, region: currentOrder.region,
             pkg: currentOrder.packageName,
@@ -2029,26 +2029,6 @@ async function sendOrderToWhatsApp() {
         else if (resp.status >= 400 && resp.status < 500) break; // ошибка данных, повтор не поможет
       } catch (e) { /* повторим */ }
     }
-  }
-
-  const user = getCurrentUser();
-  if (user) {
-    const orderRecord = {
-      id: Date.now(),
-      code: currentOrder.code || '',
-      playerId: currentOrder.playerId,
-      serverId: currentOrder.serverId,
-      region: currentOrder.region,
-      diamonds: currentOrder.diamonds,
-      price: currentOrder.price,
-      method: selectedMethod,
-      phone: phone,
-      date: new Date().toLocaleString(),
-      status: 'Ожидает чека'
-    };
-    let orders = JSON.parse(localStorage.getItem(`orders_${user.id}`) || '[]');
-    orders.unshift(orderRecord);
-    localStorage.setItem(`orders_${user.id}`, JSON.stringify(orders));
   }
 
   // Формируем сообщение для WhatsApp
@@ -2112,71 +2092,146 @@ function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// ---------- Вход через Google ----------
+const GOOGLE_CLIENT_ID = '98998507136-5eda7u7us7vv104dtaaajfnabk4ivaj4.apps.googleusercontent.com';
 function getCurrentUser() {
-  const saved = localStorage.getItem('mlbb_current_user');
-  return saved ? JSON.parse(saved) : null;
+  try { const u = JSON.parse(localStorage.getItem('dk_user') || 'null'); return u && u.token ? u : null; } catch (e) { return null; }
 }
-
+function authHeaders() {
+  const u = getCurrentUser();
+  return u ? { 'Authorization': 'Bearer ' + u.token } : {};
+}
 function updateUserUI() {
   const user = getCurrentUser();
+  const first = user && user.name ? user.name.split(' ')[0] : '';
+  const label = user ? '👤 ' + (first || 'Профиль') : '👤 Войти';
   const span = document.getElementById('userNameDisplay');
-  span.textContent = user ? `👤 ${user.name}` : '👤 Войти';
+  if (span) span.textContent = label;
+  const m = document.getElementById('mobileUserLink');
+  if (m) m.textContent = label;
 }
-
+let googleReady = false;
+function initGoogle() {
+  if (googleReady || !window.google || !google.accounts || !google.accounts.id) return;
+  googleReady = true;
+  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential, auto_select: false });
+}
+function renderGoogleButton() {
+  const box = document.getElementById('googleBtn');
+  const msg = document.getElementById('authMsg');
+  if (!box) return;
+  initGoogle();
+  if (!googleReady) { msg.textContent = 'Загружается вход через Google… Если кнопка не появилась, обновите страницу.'; setTimeout(() => { if (document.getElementById('authModal').style.display !== 'none' && !getCurrentUser()) renderGoogleButton(); }, 800); return; }
+  msg.textContent = '';
+  box.innerHTML = '';
+  google.accounts.id.renderButton(box, { type: 'standard', theme: 'outline', size: 'large', text: 'continue_with', shape: 'pill', locale: 'ru', width: Math.min(300, Math.max(220, (document.querySelector('.auth-card') || { clientWidth: 300 }).clientWidth - 48)) });
+}
+async function onGoogleCredential(resp) {
+  const msg = document.getElementById('authMsg');
+  if (msg) msg.textContent = 'Входим…';
+  try {
+    if (!window.DK_API) throw new Error('api');
+    const r = await fetch(API_BASE() + '/api/auth/google', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: resp.credential }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.token) throw new Error(d.error || 'fail');
+    localStorage.setItem('dk_user', JSON.stringify({ token: d.token, name: d.user.name, email: d.user.email, picture: d.user.picture }));
+    updateUserUI();
+    showAuthState();
+    if (document.getElementById('page-orders').classList.contains('active')) renderOrders();
+  } catch (e) {
+    if (msg) msg.textContent = 'Не удалось войти. Попробуйте ещё раз.';
+  }
+}
+function showAuthState() {
+  const user = getCurrentUser();
+  document.getElementById('authGuest').style.display = user ? 'none' : '';
+  document.getElementById('authUser').style.display = user ? '' : 'none';
+  if (user) {
+    document.getElementById('authName').textContent = user.name || 'Профиль';
+    document.getElementById('authEmail').textContent = user.email || '';
+    const av = document.getElementById('authAvatar');
+    if (user.picture && /^https:\/\//.test(user.picture)) { av.src = user.picture; av.style.display = ''; } else { av.style.display = 'none'; }
+  }
+}
 function toggleAuthModal() {
   document.getElementById('authModal').style.display = 'flex';
+  showAuthState();
+  if (!getCurrentUser()) renderGoogleButton();
 }
 function closeAuthModal() {
   document.getElementById('authModal').style.display = 'none';
 }
-function loginAsUser() {
-  const name = document.getElementById('authName').value.trim();
-  if (!name) { alert('Введите имя'); return; }
-  const user = { id: 'user_' + Date.now(), name: name };
-  localStorage.setItem('mlbb_current_user', JSON.stringify(user));
-  closeAuthModal();
+function logout() {
+  try { localStorage.removeItem('dk_user'); if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect(); } catch (e) {}
   updateUserUI();
-}
-function loginAsGuest() {
-  const user = { id: 'guest_' + Date.now(), name: 'Гость' };
-  localStorage.setItem('mlbb_current_user', JSON.stringify(user));
   closeAuthModal();
-  updateUserUI();
+  if (document.getElementById('page-orders').classList.contains('active')) renderOrders();
 }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuthModal(); });
 
-function renderOrders() {
+const ORDER_STATUS = {
+  new: ['Ожидает проверки оплаты', 'wait'], manual: ['Ожидает выдачи', 'wait'], processing: ['Зачисляется', 'wait'],
+  delivered: ['Выдан', 'ok'], refund_due: ['Возврат', 'bad'], refunded: ['Деньги возвращены', 'bad'], cancelled: ['Отменён', 'bad']
+};
+async function renderOrders() {
   const user = getCurrentUser();
   const container = document.getElementById('ordersList');
   const noMsg = document.getElementById('noOrdersMsg');
-  if (!user) {
-    container.innerHTML = '<div style="text-align:center; padding:40px;">Войдите, чтобы видеть историю</div>';
-    noMsg.style.display = 'none';
-    return;
-  }
-  const orders = JSON.parse(localStorage.getItem(`orders_${user.id}`) || '[]');
-  if (orders.length === 0) {
-    container.innerHTML = '';
-    noMsg.style.display = 'block';
-    return;
-  }
   noMsg.style.display = 'none';
-  container.innerHTML = orders.map(o => `
-    <div style="background:var(--card); border-radius:14px; padding:16px; margin-bottom:12px;">
-      <div style="display:flex; justify-content:space-between;"><strong>💎 ${esc(o.diamonds)} алмазов</strong><span style="color:var(--gold)">${esc(o.price)} Сом</span></div>
-      <div style="font-size:0.8rem;">ID: ${esc(o.playerId)} (сервер ${esc(o.serverId)})</div>
-      <div style="font-size:0.75rem; color:var(--muted);">${esc(o.date)} · ${esc(o.method)} · ${esc(o.status)}</div>
-      ${o.phone ? `<div style="font-size:0.7rem;">📞 ${esc(o.phone)}</div>` : ''}
-    </div>
-  `).join('');
+  if (!user) {
+    container.innerHTML = '<div class="orders-empty"><p>Войдите через Google, чтобы видеть историю заказов.</p><button type="button" class="btn-primary" onclick="toggleAuthModal()">Войти через Google</button></div>';
+    return;
+  }
+  container.innerHTML = '<div class="orders-empty">Загружаем заказы…</div>';
+  try {
+    const r = await fetch(API_BASE() + '/api/my/orders', { headers: authHeaders() });
+    if (r.status === 401) { try { localStorage.removeItem('dk_user'); } catch (e) {} updateUserUI(); renderOrders(); return; }
+    if (!r.ok) throw new Error('fail');
+    const orders = (await r.json()).orders || [];
+    if (!orders.length) { container.innerHTML = ''; noMsg.style.display = 'block'; return; }
+    container.innerHTML = orders.map(o => {
+      const st = ORDER_STATUS[o.status] || [o.status, 'wait'];
+      const when = new Date(o.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const srv = o.server_id && o.server_id !== '-' ? ` (${esc(o.server_id)})` : '';
+      return `<div class="hist-card"><div class="hist-top"><strong>${esc(o.pkg_label)}</strong><span class="hist-price">${esc(o.price_kgs)} Сом</span></div>
+        <div class="hist-mid">ID: ${esc(o.player_id)}${srv}</div>
+        <div class="hist-bot"><span class="hist-st ${st[1]}">${esc(st[0])}</span><span>${esc(when)} · ${esc(o.method)} · №${esc(o.id)}</span></div></div>`;
+    }).join('');
+  } catch (e) {
+    container.innerHTML = '<div class="orders-empty">Не удалось загрузить заказы. Попробуйте позже.</div>';
+  }
+}
+
+// ---------- Запоминаем последний ID игрока (только в этом браузере) ----------
+function saveLastId() {
+  try {
+    const gd = gamesData[currentGame];
+    const sv = gd && gd.servers ? document.getElementById('serverSelect').value : document.getElementById('serverId').value;
+    localStorage.setItem('dk_last_' + currentGame, JSON.stringify({ p: document.getElementById('playerId').value, s: sv, r: currentGame === 'mlbb' ? document.getElementById('regionSelect').value : '' }));
+  } catch (e) {}
+}
+function restoreLastId() {
+  try {
+    const v = JSON.parse(localStorage.getItem('dk_last_' + currentGame) || 'null');
+    const pid = document.getElementById('playerId');
+    if (!v || !pid || pid.value) return;
+    pid.value = v.p || '';
+    const gd = gamesData[currentGame];
+    if (gd && gd.servers) { if (v.s) document.getElementById('serverSelect').value = v.s; }
+    else if (!gd) document.getElementById('serverId').value = v.s || '';
+    if (!gd && v.r && document.getElementById('regionSelect').value !== v.r) { document.getElementById('regionSelect').value = v.r; changeRegion(); }
+    updateBuyBtn();
+  } catch (e) {}
 }
 
 // Инициализация
 renderMethods();
 renderPackages();
 updateUserUI();
+restoreLastId();
 (function(){ try {
   const g = new URLSearchParams(location.search).get('game');
-  if (g && (g === 'mlbb' || gamesData[g])) { changeGame(g); showPage('topup'); }
+  if (g && (g === 'mlbb' || gamesData[g])) { changeGame(g); showPage('topup'); restoreLastId(); }
 } catch (e) {} })();
 
 // Закрытие мобильного меню при клике вне
@@ -2503,6 +2558,7 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 <script src="api-config.js?v=1"></script>
 <script src="accounts.js?v=1" defer></script>
 <script src="script.js" defer></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 (function(){var n=document.querySelector('nav');if(!n)return;var t=false;
 function f(){n.classList.toggle('nav-scrolled',(window.scrollY||0)>8);t=false}

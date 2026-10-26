@@ -8,6 +8,7 @@ const MAX_PHOTO_BYTES = 450 * 1024;
 const TOKEN_DAYS = 30;
 const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
+import { loginWithGoogle, getMe, listMyOrders, userFromRequest } from './auth.js';
 import { maybeSendReport } from './report.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook } from './orders.js';
 
@@ -120,6 +121,24 @@ export default {
         });
       }
 
+      // вход клиентов через Google
+      if (path === '/api/auth/google' && m === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const r = await loginWithGoogle(env, b.credential);
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+      }
+      if (path === '/api/me' && m === 'GET') {
+        const sub = await userFromRequest(req, env);
+        if (!sub) return err(req, 'Нужен вход', 401);
+        const r = await getMe(env, sub);
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+      }
+      if (path === '/api/my/orders' && m === 'GET') {
+        const sub = await userFromRequest(req, env);
+        if (!sub) return err(req, 'Нужен вход', 401);
+        return json(req, await listMyOrders(env, sub));
+      }
+
       // вход
       if (path === '/api/login' && m === 'POST') {
         if (!env.ADMIN_PASSWORD) return err(req, 'ADMIN_PASSWORD не задан в Cloudflare', 500);
@@ -132,7 +151,7 @@ export default {
       // ----- заказы (публично) -----
       if (path === '/api/orders' && m === 'POST') {
         const b = await req.json().catch(() => ({}));
-        const r = await createOrder(env, req.headers.get('CF-Connecting-IP') || '', b);
+        const r = await createOrder(env, req.headers.get('CF-Connecting-IP') || '', b, await userFromRequest(req, env));
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
       }
       mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/receipt$/);

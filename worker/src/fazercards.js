@@ -58,11 +58,14 @@ export async function fzCreateOrder(env, { region, offerId, playerId, serverId, 
   // Коды (Roblox, Telegram): покупаем один код; игрок ничего не вводит, код показываем ему после выдачи
   if (g && g.type === 'gift_cards') {
     let d, lastErr;
-    for (const path of ['/api/v2/gift_cards/order', '/api/v2/gift-cards/order']) {
+    // Точный путь в документации не найден: пробуем вероятные варианты, 404 = заказ не создан и деньги не списаны
+    for (const path of ['/api/v2/gift_cards/order', '/api/v2/gift-cards/order', '/api/v2/giftcards/order', '/api/v2/cards/order', '/api/v2/codes/order', '/api/v2/orders']) {
       try {
-        d = await call(env, 'POST', path, { category_id, offer_id: String(offerId), quantity: 1 }, { 'Idempotency-Key': String(idempotencyKey) });
+        const body = { category_id, offer_id: String(offerId), quantity: 1 };
+        if (path === '/api/v2/orders') body.type = 'gift_cards';
+        d = await call(env, 'POST', path, body, { 'Idempotency-Key': String(idempotencyKey) });
         break;
-      } catch (e) { lastErr = e; if (e.status !== 404) throw e; }
+      } catch (e) { lastErr = e; if (e.status !== 404 && e.status !== 405) throw e; }
     }
     if (!d) throw lastErr;
     const o = normalize(d.order);

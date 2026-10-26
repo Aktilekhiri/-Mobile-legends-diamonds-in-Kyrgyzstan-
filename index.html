@@ -1496,7 +1496,7 @@
     <label for="receiptFile">Чек (скриншот или фото)</label>
     <input type="file" class="input-field" id="receiptFile" accept="image/*" onchange="onReceiptPicked(this)">
     <div id="receiptPreview" class="receipt-preview"></div>
-    <label for="phoneNumber">Номер телефона (необязательно)</label><input type="tel" class="input-field" id="phoneNumber" placeholder="700 123 456">
+    <label for="phoneNumber">Номер телефона</label><input type="tel" class="input-field" id="phoneNumber" placeholder="700 123 456" required autocomplete="tel">
     <div id="methodNote" class="method-note" style="margin:8px 0; color:var(--muted);">Выберите банк, затем приложите чек</div>
     <button class="btn-primary btn-full" id="sendReceiptBtn" onclick="sendOrderWithReceipt()" disabled style="opacity:0.5">✅ Я оплатил — отправить заказ</button>
     <div id="receiptMsg" class="receipt-msg" role="alert" aria-live="polite"></div>
@@ -2064,6 +2064,7 @@ function showSuccessInfo() {
 async function sendOrderWithReceipt() {
   if (!currentOrder) { setReceiptMsg('Ошибка: нет данных заказа', 'err'); return; }
   if (!selectedMethod) { setReceiptMsg('Выберите способ оплаты (Mbank или O!Банк)', 'err'); return; }
+  if (!phoneOk(document.getElementById('phoneNumber').value)) { setReceiptMsg('Укажите номер телефона (например 700 123 456)', 'err'); document.getElementById('phoneNumber').focus(); return; }
   if (!receiptBlob) { setReceiptMsg('Приложите чек об оплате', 'err'); return; }
   if (!window.DK_API) { setReceiptMsg('Отправка на сайте сейчас недоступна. Отправьте через WhatsApp ниже.', 'err'); return; }
   const btn = document.getElementById('sendReceiptBtn');
@@ -2083,9 +2084,11 @@ async function sendOrderWithReceipt() {
   showSuccessInfo();
 }
 
+const phoneOk = v => String(v || '').replace(/\D/g, '').length >= 9; // пока нет ИП — телефон обязателен
 async function sendOrderToWhatsApp() {
   if (!currentOrder) { alert('Ошибка: нет данных заказа'); return; }
   if (!selectedMethod) { alert('Выберите способ оплаты (Mbank или O!Банк)'); return; }
+  if (!phoneOk(document.getElementById('phoneNumber').value)) { alert('Укажите номер телефона (например 700 123 456)'); document.getElementById('phoneNumber').focus(); return; }
   const phone = document.getElementById('phoneNumber').value.trim();
 
   // Регистрируем заказ на сервере (код заказа). Если сервер недоступен, всё работает как раньше через WhatsApp.

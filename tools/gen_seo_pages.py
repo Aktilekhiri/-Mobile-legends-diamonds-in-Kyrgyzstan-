@@ -144,7 +144,7 @@ def faq(g):
 CSS = """*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Nunito',system-ui,sans-serif;background:#F4F7FB;color:#101828;line-height:1.6}a{color:#0E7490}
 .wrap{max-width:900px;margin:0 auto;padding:0 16px}nav{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(16,24,40,.12);flex-wrap:wrap;gap:8px}
 .logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.4rem;color:#101828;text-decoration:none}.logo b{color:#0E7490}
-nav .links a{margin-left:14px;text-decoration:none;font-size:.9rem;color:#566377}h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.7rem,5vw,2.5rem);line-height:1.15;margin:28px 0 10px}
+nav .links a{margin-left:14px;text-decoration:none;font-size:.9rem;color:#566377}h1 .gic{width:48px;height:48px;border-radius:12px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.18)}h1{display:flex;align-items:center;gap:12px;font-family:'Rajdhani',sans-serif;font-size:clamp(1.7rem,5vw,2.5rem);line-height:1.15;margin:28px 0 10px}
 h2{font-family:'Rajdhani',sans-serif;font-size:1.5rem;margin:30px 0 10px;color:#0E7490}p{margin:8px 0;color:#344054}.lead{font-size:1.05rem}
 .btn{display:inline-block;background:#0E7490;color:#fff;font-weight:800;padding:13px 24px;border-radius:12px;text-decoration:none;margin:14px 10px 6px 0}.btn.s{background:transparent;color:#101828;border:1px solid #5B63F0}
 table{width:100%;border-collapse:collapse;margin:10px 0;background:#fff;border-radius:12px;overflow:hidden}td,th{padding:10px 14px;text-align:left;border-bottom:1px solid rgba(16,24,40,.12)}th{color:#566377;font-size:.8rem;text-transform:uppercase}td.p{color:#0E7490;font-weight:800;white-space:nowrap}
@@ -189,7 +189,7 @@ def page(g):
         night = "Заказы, оформленные с 00:00 до 08:00 по времени Бишкека, зачисляются утром. Оплатить можно в любое время."
         why = f"Оплата в сомах через Mbank и O!Банк, без зарубежной карты. Никаких паролей от аккаунта: нужен только {d['needs']}. Заказ получает код, статус можно уточнить в WhatsApp. Если пополнение невозможно, возвращаем деньги."
         h2steps = f"Как пополнить {d['name']}: 4 шага"
-    body = f"""<h1>{e(d['h1'])}</h1>
+    body = f"""<h1><img class="gic" src="/img/games/{g}.webp" width="48" height="48" alt="{e(d['short'])}"> {e(d['h1'])}</h1>
 <p class="lead">{e(intro)}</p>
 <a class="btn" href="/?game={g}">{d['icon']} {cta} {e(d['short'])}</a><a class="btn s" href="https://wa.me/996555920204" rel="noopener">💬 Вопрос в WhatsApp</a>
 <h2>{e(h2price)}</h2>

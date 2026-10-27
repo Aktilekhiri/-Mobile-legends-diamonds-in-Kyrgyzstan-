@@ -114,7 +114,7 @@
   .games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;max-width:960px;margin:0 auto}
   .game-card{display:block;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;text-decoration:none;color:var(--white);transition:transform .18s,border-color .18s}
   .game-card:hover{transform:translateY(-3px);border-color:rgba(255,200,60,.55)}
-  .game-card .gc-i{font-size:1.8rem}.game-card h3{font-size:1.05rem;margin:6px 0 2px}.game-card p{font-size:.85rem;color:var(--muted)}
+  .game-card .gc-i{font-size:1.8rem;line-height:0}.game-card .gc-i img{width:56px;height:56px;border-radius:14px;object-fit:cover;box-shadow:0 2px 8px rgba(20,30,60,.18);display:block}.ttl-ic{width:34px;height:34px;border-radius:9px;vertical-align:-9px;margin-right:8px;object-fit:cover}.game-card h3{font-size:1.05rem;margin:6px 0 2px}.game-card p{font-size:.85rem;color:var(--muted)}
   .nav-links {
     display: flex;
     gap: 4px;
@@ -1388,18 +1388,18 @@
   </section>
   <section id="games"><div class="sec-label">Игры</div><div class="sec-divider"></div><h2 class="sec-title">Что можно <em>пополнить</em></h2>
     <div class="games-grid">
-      <a class="game-card" href="/mobile-legends-almazy/"><div class="gc-i">💎</div><h3>Mobile Legends</h3><p>Алмазы, Weekly Pass, Twilight Pass</p></a>
-      <a class="game-card" href="/pubg-mobile-uc/"><div class="gc-i">🔫</div><h3>PUBG Mobile</h3><p>UC, Prime, Elite Pass</p></a>
-      <a class="game-card" href="/free-fire-almazy/"><div class="gc-i">🔥</div><h3>Free Fire</h3><p>Алмазы и подписки</p></a>
-      <a class="game-card" href="/honor-of-kings-tokeny/"><div class="gc-i">👑</div><h3>Honor of Kings</h3><p>Токены, Weekly Card</p></a>
-      <a class="game-card" href="/genshin-impact-kristally/"><div class="gc-i">✨</div><h3>Genshin Impact</h3><p>Genesis Crystals, Welkin Moon</p></a>
-      <a class="game-card" href="/wuthering-waves-lunite/"><div class="gc-i">🌊</div><h3>Wuthering Waves</h3><p>Lunite и подписка</p></a>
-      <a class="game-card" href="/honkai-star-rail-oneiric-shard/"><div class="gc-i">🚂</div><h3>Honkai: Star Rail</h3><p>Oneiric Shard, Express Pass</p></a>
-      <a class="game-card" href="/zenless-zone-zero-monochrome/"><div class="gc-i">📺</div><h3>Zenless Zone Zero</h3><p>Monochrome, Inter-Knot</p></a>
-      <a class="game-card" href="/blood-strike-bc/"><div class="gc-i">🎯</div><h3>Blood Strike</h3><p>BC и пассы</p></a>
-      <a class="game-card" href="/telegram-stars-kyrgyzstan/"><div class="gc-i">⭐</div><h3>Telegram Stars</h3><p>Звёзды за сомы</p></a>
-      <a class="game-card" href="/telegram-premium-kyrgyzstan/"><div class="gc-i">✈️</div><h3>Telegram Premium</h3><p>Подписка 3, 6, 12 месяцев</p></a>
-      <a class="game-card" href="/roblox-robux-kyrgyzstan/"><div class="gc-i">🧱</div><h3>Roblox</h3><p>Robux: код на пополнение</p></a>
+      <a class="game-card" href="/mobile-legends-almazy/"><div class="gc-i"><img src="/img/games/mlbb.webp" width="56" height="56" alt="Mobile Legends" loading="lazy" decoding="async"></div><h3>Mobile Legends</h3><p>Алмазы, Weekly Pass, Twilight Pass</p></a>
+      <a class="game-card" href="/pubg-mobile-uc/"><div class="gc-i"><img src="/img/games/pubg.webp" width="56" height="56" alt="PUBG Mobile" loading="lazy" decoding="async"></div><h3>PUBG Mobile</h3><p>UC, Prime, Elite Pass</p></a>
+      <a class="game-card" href="/free-fire-almazy/"><div class="gc-i"><img src="/img/games/freefire.webp" width="56" height="56" alt="Free Fire" loading="lazy" decoding="async"></div><h3>Free Fire</h3><p>Алмазы и подписки</p></a>
+      <a class="game-card" href="/honor-of-kings-tokeny/"><div class="gc-i"><img src="/img/games/hok.webp" width="56" height="56" alt="Honor of Kings" loading="lazy" decoding="async"></div><h3>Honor of Kings</h3><p>Токены, Weekly Card</p></a>
+      <a class="game-card" href="/genshin-impact-kristally/"><div class="gc-i"><img src="/img/games/genshin.webp" width="56" height="56" alt="Genshin Impact" loading="lazy" decoding="async"></div><h3>Genshin Impact</h3><p>Genesis Crystals, Welkin Moon</p></a>
+      <a class="game-card" href="/wuthering-waves-lunite/"><div class="gc-i"><img src="/img/games/wuwa.webp" width="56" height="56" alt="Wuthering Waves" loading="lazy" decoding="async"></div><h3>Wuthering Waves</h3><p>Lunite и подписка</p></a>
+      <a class="game-card" href="/honkai-star-rail-oneiric-shard/"><div class="gc-i"><img src="/img/games/hsr.webp" width="56" height="56" alt="Honkai: Star Rail" loading="lazy" decoding="async"></div><h3>Honkai: Star Rail</h3><p>Oneiric Shard, Express Pass</p></a>
+      <a class="game-card" href="/zenless-zone-zero-monochrome/"><div class="gc-i"><img src="/img/games/zzz.webp" width="56" height="56" alt="Zenless Zone Zero" loading="lazy" decoding="async"></div><h3>Zenless Zone Zero</h3><p>Monochrome, Inter-Knot</p></a>
+      <a class="game-card" href="/blood-strike-bc/"><div class="gc-i"><img src="/img/games/bloodstrike.webp" width="56" height="56" alt="Blood Strike" loading="lazy" decoding="async"></div><h3>Blood Strike</h3><p>BC и пассы</p></a>
+      <a class="game-card" href="/telegram-stars-kyrgyzstan/"><div class="gc-i"><img src="/img/games/tgstars.webp" width="56" height="56" alt="Telegram Stars" loading="lazy" decoding="async"></div><h3>Telegram Stars</h3><p>Звёзды за сомы</p></a>
+      <a class="game-card" href="/telegram-premium-kyrgyzstan/"><div class="gc-i"><img src="/img/games/tgpremium.webp" width="56" height="56" alt="Telegram Premium" loading="lazy" decoding="async"></div><h3>Telegram Premium</h3><p>Подписка 3, 6, 12 месяцев</p></a>
+      <a class="game-card" href="/roblox-robux-kyrgyzstan/"><div class="gc-i"><img src="/img/games/roblox.webp" width="56" height="56" alt="Roblox" loading="lazy" decoding="async"></div><h3>Roblox</h3><p>Robux: код на пополнение</p></a>
     </div></section>
   <div class="disclaimer">⚠️ Неофициальный сервис. Не связан с разработчиками игр, все названия принадлежат их владельцам.</div>
   <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>24/7 без выходных</h3><p>Заказы принимаем всегда, ночью зачисляем утром.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
@@ -1644,7 +1644,11 @@ function changeGame(g) {
     srvSel.innerHTML = '<option value="">Выберите сервер</option>' + gd.servers.map(x => `<option value="${x.v}">${x.l}</option>`).join('');
   } else { srvRow.style.display = 'none'; }
   document.getElementById('idGuide').innerHTML = '<strong>' + (kind ? '📖 Как это работает' : '📖 Как найти ID?') + '</strong><br>' + gameIds[gd ? currentGame : 'mlbb'];
-  document.getElementById('topupTitle').textContent = gd ? (kind ? gd.icon + ' ' + gd.name : gd.icon + ' Пополнить ' + gd.name) : '💎 Пополнить алмазы';
+  { const tk = gd ? currentGame : 'mlbb', tt = document.getElementById('topupTitle');
+    tt.textContent = gd ? (kind ? gd.name : 'Пополнить ' + gd.name) : 'Пополнить алмазы';
+    const im = document.createElement('img'); im.className = 'ttl-ic'; im.alt = ''; im.width = 34; im.height = 34; im.src = '/img/games/' + tk + '.webp';
+    im.onerror = () => { im.remove(); tt.textContent = (gd ? gd.icon : '💎') + ' ' + tt.textContent; };
+    tt.prepend(im); }
   document.getElementById('playerId').placeholder = gd ? '123456789' : '598505997';
   document.getElementById('idHint').textContent = gd ? 'Только цифры, без пробелов и букв.' : 'User ID: только цифры, без скобок. Пример: 598505997';
   document.getElementById('serverHint').textContent = !gd ? 'Zone ID: цифры в скобках рядом с ID в профиле. Пример: (8403) → введите 8403' : (gd.servers ? 'Выберите сервер, как указано в игре рядом с UID.' : '');

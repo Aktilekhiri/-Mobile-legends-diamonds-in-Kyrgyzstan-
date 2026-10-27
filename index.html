@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=9">
+<link rel="stylesheet" href="theme.css?v=10">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1476,6 +1476,7 @@
       <div class="packages-grid" id="packagesGrid"></div>
       <div class="buy-bar">
       <div class="sel-info" id="selectedInfo" style="display:none; margin-top:12px; background:rgba(255,186,8,.07); padding:12px; border-radius:11px;"><div>ВЫБРАННЫЙ ПАКЕТ</div><div class="sir" style="display:flex; justify-content:space-between;"><span id="selDiamonds"></span><span id="selPrice" style="color:var(--gold)"></span></div></div>
+      <div class="first-warn" id="firstWarn" hidden><strong>⚠️ Пакет только для первого пополнения</strong><p>Бонус даётся один раз на аккаунт. Если вы уже пополняли этот аккаунт в Mobile Legends, выберите другой пакет: иначе заказ может обрабатываться очень долго и в итоге будет возвращён.</p><label class="first-ok"><input type="checkbox" id="firstOk" onchange="updateBuyBtn()"> Я ещё ни разу не пополнял этот аккаунт</label></div>
       <button class="btn-primary btn-full" onclick="proceedToPayment()" id="buyBtn" disabled style="margin-top:12px; opacity:0.5">Перейти к оплате →</button>
       </div>
     </div>
@@ -1544,7 +1545,7 @@ const packagesData = {
     {type:'pass', name:'Weekly Diamond Pass', price:195},
     {type:'pass', name:'Weekly Elite Pack', price:102, discount:29},
     {type:'pass', name:'Monthly Elite Pack', price:515, discount:20},
-    {type:'diamond', diam:50, bonus:5, price:126, discount:17, popular:true},
+    {type:'diamond', diam:50, bonus:5, price:126, discount:17, popular:true, firstOnly:true, note:'Только на 1-е пополнение'},
     {type:'diamond', diam:13, bonus:1, price:46, discount:15},
     {type:'diamond', diam:38, bonus:4, price:94, discount:16},
     {type:'diamond', diam:64, bonus:6, price:155, discount:15},
@@ -1555,7 +1556,7 @@ const packagesData = {
     {type:'diamond', diam:317, bonus:38, price:630, discount:17},
     {type:'diamond', diam:383, bonus:46, price:765, discount:16},
     {type:'diamond', diam:625, bonus:81, price:1225, discount:9},
-    {type:'diamond', diam:500, bonus:500, price:820, note:'Только на 1-е пополнение'},
+    {type:'diamond', diam:500, bonus:500, price:820, firstOnly:true, note:'Только на 1-е пополнение'},
     {type:'diamond', diam:1000, bonus:160, price:2030, discount:6},
     {type:'diamond', diam:1252, bonus:194, price:2520, discount:17},
     {type:'diamond', diam:1860, bonus:335, price:3090, discount:15},
@@ -1737,6 +1738,7 @@ function selectPackage(id) {
   const label = selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.totalDiamonds} ${unitOf(currentRegion)}` + (selectedPkg.bonus && selectedPkg.diam ? ` (${selectedPkg.diam} + ${selectedPkg.bonus} бонус)` : '');
   document.getElementById('selDiamonds').innerHTML = `${pkgIcon(selectedPkg)} ${label}`;
   document.getElementById('selPrice').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;
+  { const fw = document.getElementById('firstWarn'), fo = document.getElementById('firstOk'); if (fo) fo.checked = false; if (fw) fw.hidden = !selectedPkg.firstOnly; }
   updateBuyBtn();
 }
 
@@ -1788,7 +1790,8 @@ function updateBuyBtn() {
     }
   }
   const zw = document.getElementById('zoneWarn'); if (zw) zw.hidden = !zoneBad;
-  const ok = pid && sid && selectedPkg && !zoneBad && !prob;
+  const firstOk = !(selectedPkg && selectedPkg.firstOnly) || !!(document.getElementById('firstOk') && document.getElementById('firstOk').checked);
+  const ok = pid && sid && selectedPkg && !zoneBad && !prob && firstOk;
   btn.disabled = !ok;
   btn.style.opacity = ok ? '1' : '0.5';
   btn.textContent = (ok && selectedPkg) ? `Оплатить ${selectedPkg.price.toLocaleString()} Сом →` : 'Перейти к оплате →';
@@ -1798,6 +1801,7 @@ function proceedToPayment() {
   const pid = getPlayerValue();
   const sid = getServerValue();
   if (!pid || !sid || !selectedPkg || isRuZoneOnGlobal(sid) || mlbbIdProblem(pid, sid)) return;
+  if (selectedPkg.firstOnly && !(document.getElementById('firstOk') || {}).checked) return;
   currentOrder = {
     playerId: pid,
     serverId: sid,

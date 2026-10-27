@@ -317,3 +317,6 @@ body.v2 .user-name:hover{background:rgba(14,116,144,.16)}
 .lr-card blockquote{margin:8px 0;color:var(--text);font-size:.95rem;word-break:break-word}
 .lr-card figcaption{font-size:.82rem;color:var(--muted)}
 .lr-card figcaption span{color:#067647}
+
+/* Предупреждение для пакетов «только на 1-е пополнение» */
+.first-warn{margin-top:12px;padding:12px 14px;border-radius:12px;background:#fff7e6;border:1px solid #f5c36b;color:#5c3d00;font-size:.88rem;line-height:1.45}.first-warn p{margin:6px 0 10px}.first-warn .first-ok{text-transform:none;letter-spacing:0;font-size:.9rem;display:flex;gap:10px;align-items:flex-start;font-weight:700;cursor:pointer}.first-warn input{width:20px;height:20px;flex:none;margin-top:1px}

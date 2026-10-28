@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=10">
+<link rel="stylesheet" href="theme.css?v=11">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1473,6 +1473,7 @@
     </div>
     <div class="packages-card">
       <div class="card-title"><span class="ico">💎</span> Выберите пакет </div>
+      <div class="pkg-tabs" id="pkgTabs" role="tablist" hidden></div>
       <div class="packages-grid" id="packagesGrid"></div>
       <div class="buy-bar">
       <div class="sel-info" id="selectedInfo" style="display:none; margin-top:12px; background:rgba(255,186,8,.07); padding:12px; border-radius:11px;"><div>ВЫБРАННЫЙ ПАКЕТ</div><div class="sir" style="display:flex; justify-content:space-between;"><span id="selDiamonds"></span><span id="selPrice" style="color:var(--gold)"></span></div></div>
@@ -1696,12 +1697,29 @@ function changeRegion() {
   updateBuyBtn();
 }
 
+// Категории пакетов (вкладки): валюта, Prime, Elite Pass, подписки и т.д. Вкладки видны, только если категорий больше одной.
+let pkgTab = '';
+const UNIT_TAB = { 'алмазов': 'Алмазы', 'кристаллов': 'Кристаллы', 'токенов': 'Токены', 'звёзд': 'Звёзды' };
+function pkgCat(p) {
+  if (p.type !== 'pass') return UNIT_TAB[p.unit] || p.unit || 'Алмазы';
+  const n = p.name || '';
+  if (currentGame === 'pubg') return /prime/i.test(n) ? 'Prime' : /elite/i.test(n) ? 'Elite Pass' : 'Прочее';
+  if (currentGame === 'freefire' || /subscription|membership|welkin|moon/i.test(n)) return 'Подписки';
+  return 'Пассы';
+}
+function setPkgTab(t) { pkgTab = t; renderPackages(); }
 function renderPackages() {
-  const grid = document.getElementById('packagesGrid');
+  const grid = document.getElementById('packagesGrid'), tabsEl = document.getElementById('pkgTabs');
+  const cats = [...new Set(packages.map(pkgCat))];
+  const useTabs = cats.length > 1;
+  if (!cats.includes(pkgTab)) pkgTab = cats[0];
+  tabsEl.hidden = !useTabs;
+  tabsEl.innerHTML = useTabs ? cats.map(c => `<button type="button" role="tab" aria-selected="${c === pkgTab}" class="pkg-tab${c === pkgTab ? ' on' : ''}" onclick="setPkgTab(this.dataset.t)" data-t="${esc(c)}">${esc(c)}</button>`).join('') : '';
+  const list = useTabs ? packages.filter(p => pkgCat(p) === pkgTab) : packages;
   let lastType = null, lastOut = false;
-  grid.innerHTML = packages.map(p => {
+  grid.innerHTML = list.map(p => {
     let head = '';
-    if (p.type !== lastType) { head = `<div class="pkg-group">${p.type === 'pass' ? pkgIcon(p) + ' Пассы и наборы' : pkgIcon(p) + ' ' + (p.unit ? p.unit.charAt(0).toUpperCase() + p.unit.slice(1) : 'Алмазы')}</div>`; lastOut = false; }
+    if (!useTabs && p.type !== lastType) { head = `<div class="pkg-group">${p.type === 'pass' ? pkgIcon(p) + ' Пассы и наборы' : pkgIcon(p) + ' ' + (p.unit ? p.unit.charAt(0).toUpperCase() + p.unit.slice(1) : 'Алмазы')}</div>`; lastOut = false; }
     if (p.out && !lastOut) head += `<div class="pkg-group">⏳ Нет в наличии</div>`;
     lastType = p.type; lastOut = !!p.out;
     return head + `
@@ -1733,6 +1751,7 @@ function selectPackage(id) {
   const cand = packages.find(p => p.id === id);
   if (!cand || cand.out) return;
   selectedPkg = cand;
+  pkgTab = pkgCat(cand);
   renderPackages();
   document.getElementById('selectedInfo').style.display = 'block';
   const label = selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.totalDiamonds} ${unitOf(currentRegion)}` + (selectedPkg.bonus && selectedPkg.diam ? ` (${selectedPkg.diam} + ${selectedPkg.bonus} бонус)` : '');

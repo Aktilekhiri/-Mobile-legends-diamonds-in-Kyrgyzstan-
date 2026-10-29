@@ -325,3 +325,21 @@ body.v2 .user-name:hover{background:rgba(14,116,144,.16)}
 .pkg-tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;margin:0 -2px;scrollbar-width:none}.pkg-tabs::-webkit-scrollbar{display:none}.pkg-tabs[hidden]{display:none}
 .pkg-tab{flex:none;border:1px solid var(--border);background:var(--card);color:var(--muted);font:inherit;font-weight:800;font-size:.95rem;padding:11px 20px;border-radius:999px;cursor:pointer;min-height:44px;transition:background .15s,color .15s}
 .pkg-tab:hover{color:var(--white)}.pkg-tab.on{background:#0f1b2d;color:#fff;border-color:#0f1b2d}
+
+/* ---------- order flow: 1 игра → 2 пакет → 3 данные ---------- */
+body.v2 .topup-layout{max-width:1000px;grid-template-columns:minmax(0,1fr)!important;gap:16px}
+body.v2 .form-card{position:static!important}
+.step-card[hidden]{display:none!important}
+.step-n{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--cyan);color:#fff;font:800 .95rem/1 'Rajdhani',sans-serif;margin-right:8px;vertical-align:1px}
+#stepData .sel-info{margin:0 0 14px;padding:12px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:.8rem;color:var(--muted)}
+#stepData .sel-info .sir{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:1.05rem;font-weight:800;color:var(--text);margin-top:2px}
+#stepData .sel-info #selPrice{color:var(--cyan)}
+#stepData .btn-full{min-height:52px}
+body.v2 .pkg-card{padding:10px 8px 12px;justify-content:flex-start;gap:3px;cursor:pointer}
+body.v2 .pkg-card .pkg-diamond{width:100%;display:flex;justify-content:center;align-items:center;height:92px;margin-bottom:2px;font-size:2.2rem}
+.pkg-img{width:92px;height:92px;object-fit:contain;display:block;filter:drop-shadow(0 4px 6px rgba(20,30,80,.22))}
+.pkg-buy{display:block;width:100%;margin-top:8px;padding:9px 0;border-radius:10px;background:#0f172a;color:#fff;font-weight:800;font-size:.9rem;text-align:center;transition:background .15s}
+.pkg-card:hover .pkg-buy,.pkg-card.selected .pkg-buy{background:var(--cyan)}
+.pkg-card.selected .pkg-buy{font-size:0}.pkg-card.selected .pkg-buy::after{content:"Выбрано ✓";font-size:.9rem}
+@media (min-width:600px){.pkg-img{width:104px;height:104px}body.v2 .pkg-card .pkg-diamond{height:106px}}
+body.v2 .pkg-card.popular{padding-top:10px}

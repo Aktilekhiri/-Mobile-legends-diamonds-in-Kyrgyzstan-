@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=11">
+<link rel="stylesheet" href="theme.css?v=12">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1423,11 +1423,11 @@
 
 <!-- TOPUP -->
 <div class="page" id="page-topup">
-  <div class="page-header" style="padding:34px 5% 26px; border-bottom:1px solid var(--border);"><h1 id="topupTitle">💎 Пополнить алмазы</h1><p>Введите данные, выберите пакет. Выдача за 5–10 минут.</p></div>
+  <div class="page-header" style="padding:34px 5% 26px; border-bottom:1px solid var(--border);"><h1 id="topupTitle">💎 Пополнить алмазы</h1><p>Выберите игру и пакет, затем введите данные. Выдача за 5–10 минут.</p></div>
   <div class="night-note">🌙 С 00:00 до 08:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
   <div class="topup-layout">
-    <div class="form-card">
-      <div class="card-title"><span class="ico">🎮</span> Данные игрока</div>
+    <div class="form-card step-card" id="stepGame">
+      <div class="card-title"><span class="step-n">1</span> Выберите игру</div>
       <label>ИГРА</label>
       <select class="input-field" id="gameSelect" onchange="changeGame()">
         <option value="mlbb">Mobile Legends: Bang Bang</option>
@@ -1443,6 +1443,23 @@
         <option value="tgpremium">Telegram Premium</option>
         <option value="roblox">Roblox (Robux)</option>
       </select>
+      <div id="regionRow">
+      <label>РЕГИОН</label>
+      <select class="input-field" id="regionSelect" onchange="changeRegion()">
+        <option value="global">🌍 Глобальный</option>
+        <option value="russia">🇷🇺 Россия</option>
+      </select>
+      <div class="field-hint" id="regionHint" style="color:var(--gold)">⚠️ Играете из России или у вас российский аккаунт? Выберите «🇷🇺 Россия». «Глобальный» — для Кыргызстана, Казахстана и других стран. Не уверены? Напишите нам в WhatsApp до оплаты.</div>
+      </div>
+    </div>
+    <div class="packages-card step-card" id="stepPkg">
+      <div class="card-title"><span class="step-n">2</span> Выберите пакет</div>
+      <div class="pkg-tabs" id="pkgTabs" role="tablist" hidden></div>
+      <div class="packages-grid" id="packagesGrid"></div>
+    </div>
+    <div class="form-card step-card" id="stepData" hidden>
+      <div class="card-title"><span class="step-n">3</span> Данные для пополнения</div>
+      <div class="sel-info" id="selectedInfo" style="display:none"><div>ВЫБРАННЫЙ ПАКЕТ</div><div class="sir"><span id="selDiamonds"></span><span id="selPrice"></span></div></div>
       <div id="idRow">
       <label>ID ИГРОКА</label>
       <input type="text" class="input-field" id="playerId" placeholder="598505997" inputmode="numeric" autocomplete="off" onpaste="return smartPasteId(event)" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
@@ -1461,25 +1478,9 @@
       <div class="zone-warn" id="idWarn" role="alert" hidden></div>
       <div class="zone-warn" id="zoneWarn" role="alert" hidden>🚫 Сервер 6xxx — российский. Для него выберите регион «🇷🇺 Россия» выше. В глобальном регионе такой сервер не принимается.</div>
       </div>
-      <div id="regionRow">
-      <label>РЕГИОН</label>
-      <select class="input-field" id="regionSelect" onchange="changeRegion()">
-        <option value="global">🌍 Глобальный</option>
-        <option value="russia">🇷🇺 Россия</option>
-      </select>
-      <div class="field-hint" id="regionHint" style="color:var(--gold)">⚠️ Играете из России или у вас российский аккаунт? Выберите «🇷🇺 Россия». «Глобальный» — для Кыргызстана, Казахстана и других стран. Не уверены? Напишите нам в WhatsApp до оплаты.</div>
-      </div>
       <div class="id-guide" id="idGuide" style="background:rgba(255,186,8,.06); padding:13px; border-radius:12px;"><strong>📖 Как найти ID?</strong><br>Профиль → ваш ID (123456789) и сервер в скобках (1234)</div>
-    </div>
-    <div class="packages-card">
-      <div class="card-title"><span class="ico">💎</span> Выберите пакет </div>
-      <div class="pkg-tabs" id="pkgTabs" role="tablist" hidden></div>
-      <div class="packages-grid" id="packagesGrid"></div>
-      <div class="buy-bar">
-      <div class="sel-info" id="selectedInfo" style="display:none; margin-top:12px; background:rgba(255,186,8,.07); padding:12px; border-radius:11px;"><div>ВЫБРАННЫЙ ПАКЕТ</div><div class="sir" style="display:flex; justify-content:space-between;"><span id="selDiamonds"></span><span id="selPrice" style="color:var(--gold)"></span></div></div>
       <div class="first-warn" id="firstWarn" hidden><strong>⚠️ Пакет только для первого пополнения</strong><p>Бонус даётся один раз на аккаунт. Если вы уже пополняли этот аккаунт в Mobile Legends, выберите другой пакет: иначе заказ может обрабатываться очень долго и в итоге будет возвращён.</p><label class="first-ok"><input type="checkbox" id="firstOk" onchange="updateBuyBtn()"> Я ещё ни разу не пополнял этот аккаунт</label></div>
-      <button class="btn-primary btn-full" onclick="proceedToPayment()" id="buyBtn" disabled style="margin-top:12px; opacity:0.5">Перейти к оплате →</button>
-      </div>
+      <button class="btn-primary btn-full" onclick="proceedToPayment()" id="buyBtn" disabled style="margin-top:14px; opacity:0.5">Перейти к оплате →</button>
     </div>
   </div>
 </div>
@@ -1659,6 +1660,7 @@ function changeGame(g) {
   packages = buildPackages(currentRegion);
   selectedPkg = null;
   document.getElementById('selectedInfo').style.display = 'none';
+  showDataStep(false);
   renderPackages();
   updateBuyBtn();
 }
@@ -1671,6 +1673,15 @@ function getPlayerValue() {
     return /^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(u) ? '@' + u : '';
   }
   return document.getElementById('playerId').value.trim();
+}
+// Картинки пакетов (пока только Mobile Legends): уровень по количеству алмазов, пассы по названию
+const MLBB_TIERS = [[50,'gem1'],[120,'gem3'],[300,'gem7'],[800,'sack-spill'],[1700,'sack'],[3100,'sacks'],[6100,'chest'],[1e9,'chests']];
+function pkgImg(p) {
+  if (currentGame !== 'mlbb' || gamesData[currentGame]) return '';
+  let f;
+  if (p.type === 'pass') f = /twilight|monthly/i.test(p.name || '') ? 'twilight' : 'weekly';
+  else { const t = p.totalDiamonds || p.diam || 0; f = (MLBB_TIERS.find(x => t < x[0]) || MLBB_TIERS[MLBB_TIERS.length - 1])[1]; }
+  return `<img class="pkg-img" src="/img/packs/mlbb/${f}.webp" width="120" height="120" alt="" loading="lazy" decoding="async">`;
 }
 function pkgIcon(p) {
   const gd = gamesData[currentGame];
@@ -1693,6 +1704,7 @@ function changeRegion() {
   packages = buildPackages(currentRegion);
   selectedPkg = null;
   document.getElementById('selectedInfo').style.display = 'none';
+  showDataStep(false);
   renderPackages();
   updateBuyBtn();
 }
@@ -1724,12 +1736,12 @@ function renderPackages() {
     lastType = p.type; lastOut = !!p.out;
     return head + `
     <div class="pkg-card ${p.popular && !p.out ? 'popular' : ''} ${p.out ? 'out' : ''} ${selectedPkg?.id === p.id ? 'selected' : ''}" ${p.out ? 'aria-disabled="true"' : `onclick="selectPackage('${p.id}')"`}>
-      <div class="pkg-diamond">${pkgIcon(p)}</div>
+      <div class="pkg-diamond">${pkgImg(p) || pkgIcon(p)}</div>
       ${p.type === 'pass'
         ? `<div class="pkg-amount" style="font-size:0.92rem; line-height:1.25">${p.name}</div>`
         : `<div class="pkg-amount"><span>${p.totalDiamonds}</span></div>${p.unit ? `<div class="pkg-bonus" style="color:var(--muted)">${p.unit}</div>` : ''}`}
       <div class="pkg-price"><strong>${p.price.toLocaleString()} Сом</strong></div>
-      ${p.out ? `<div class="pkg-out">Нет в наличии</div>` : ''}
+      ${p.out ? `<div class="pkg-out">Нет в наличии</div>` : `<span class="pkg-buy">Купить →</span>`}
       ${p.type === 'diamond' && p.bonus ? `<div class="pkg-bonus pkg-sum">= ${p.diam} + ${p.bonus} бонус</div>` : ''}
       ${p.discount ? `<div class="pkg-bonus" style="color:var(--gold)">-${p.discount}%</div>` : ''}
       ${p.note ? `<div class="pkg-bonus" style="font-size:0.68rem">${p.note}</div>` : ''}
@@ -1747,6 +1759,11 @@ function quickBuy(diam) {
   setTimeout(() => { const el = document.getElementById('playerId'); if (el) el.focus({ preventScroll: true }); }, 450);
 }
 
+function showDataStep(show, scroll) {
+  const el = document.getElementById('stepData'); if (!el) return;
+  const wasHidden = el.hidden; el.hidden = !show;
+  if (show && wasHidden && scroll !== false) setTimeout(() => { try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }, 60);
+}
 function selectPackage(id) {
   const cand = packages.find(p => p.id === id);
   if (!cand || cand.out) return;
@@ -1754,6 +1771,7 @@ function selectPackage(id) {
   pkgTab = pkgCat(cand);
   renderPackages();
   document.getElementById('selectedInfo').style.display = 'block';
+  showDataStep(true);
   const label = selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.totalDiamonds} ${unitOf(currentRegion)}` + (selectedPkg.bonus && selectedPkg.diam ? ` (${selectedPkg.diam} + ${selectedPkg.bonus} бонус)` : '');
   document.getElementById('selDiamonds').innerHTML = `${pkgIcon(selectedPkg)} ${label}`;
   document.getElementById('selPrice').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;

@@ -1378,8 +1378,8 @@
     </div>
     </div>
     <div class="quick-buy"><div class="qb-title">Популярные пакеты</div><div class="qb-grid">
-      <button type="button" class="qb-card hot" onclick="quickBuy('Weekly Elite Pack')"><div class="qd"><img class="qd-img" src="/img/packs/mlbb/weekly.webp" width="64" height="64" alt="" loading="lazy" decoding="async"> Weekly</div><div class="qp">102 Сом</div><div class="qb">Elite Pack −29%</div></button>
-      <button type="button" class="qb-card" onclick="quickBuy('Monthly Elite Pack')"><div class="qd"><img class="qd-img" src="/img/packs/mlbb/twilight.webp" width="64" height="64" alt="" loading="lazy" decoding="async"> Monthly</div><div class="qp">515 Сом</div><div class="qb">Elite Pack −20%</div></button>
+      <button type="button" class="qb-card hot" onclick="quickBuy('Weekly Elite Pack')"><div class="qd"><img class="qd-img" src="/img/packs/mlbb/weekly-elite.webp" width="64" height="64" alt="" loading="lazy" decoding="async"> Weekly</div><div class="qp">102 Сом</div><div class="qb">Elite Pack −29%</div></button>
+      <button type="button" class="qb-card" onclick="quickBuy('Monthly Elite Pack')"><div class="qd"><img class="qd-img" src="/img/packs/mlbb/monthly-elite.webp" width="64" height="64" alt="" loading="lazy" decoding="async"> Monthly</div><div class="qp">515 Сом</div><div class="qb">Elite Pack −20%</div></button>
       <button type="button" class="qb-card" onclick="quickBuy(1000)"><div class="qd"><img class="qd-img" src="/img/packs/mlbb/sack.webp" width="64" height="64" alt="" loading="lazy" decoding="async"> 1160</div><div class="qp">2 030 Сом</div><div class="qb">1000+160 бонус</div></button>
       <button type="button" class="qb-card" onclick="quickBuy(2015)"><div class="qd"><img class="qd-img" src="/img/packs/mlbb/sacks.webp" width="64" height="64" alt="" loading="lazy" decoding="async"> 2398</div><div class="qp">3 675 Сом</div><div class="qb">2015+383 бонус</div></button>
     </div><button type="button" class="qb-all" onclick="showPage('topup')">Все пакеты →</button></div>
@@ -1676,12 +1676,19 @@ function getPlayerValue() {
 }
 // Картинки пакетов (пока только Mobile Legends): уровень по количеству алмазов, пассы по названию
 const MLBB_TIERS = [[50,'gem1'],[120,'gem3'],[300,'gem7'],[800,'sack-spill'],[1700,'sack'],[3100,'sacks'],[6100,'chest'],[1e9,'chests']];
+const PUBG_TIERS = [[200,'uc-1'],[500,'uc-3'],[1000,'uc-stack'],[2500,'uc-crate'],[5000,'uc-crate-big'],[1e9,'uc-crates']];
 function pkgImg(p) {
-  if (currentGame !== 'mlbb' || gamesData[currentGame]) return '';
-  let f;
-  if (p.type === 'pass') f = /twilight|monthly/i.test(p.name || '') ? 'twilight' : 'weekly';
-  else { const t = p.totalDiamonds || p.diam || 0; f = (MLBB_TIERS.find(x => t < x[0]) || MLBB_TIERS[MLBB_TIERS.length - 1])[1]; }
-  return `<img class="pkg-img" src="/img/packs/mlbb/${f}.webp" width="120" height="120" alt="" loading="lazy" decoding="async">`;
+  let dir, f;
+  if (currentGame === 'mlbb') {
+    dir = 'mlbb';
+    if (p.type === 'pass') { const n = p.name || ''; f = /twilight/i.test(n) ? 'twilight' : /monthly/i.test(n) ? 'monthly-elite' : /elite/i.test(n) ? 'weekly-elite' : 'weekly'; }
+    else { const t = p.totalDiamonds || p.diam || 0; f = (MLBB_TIERS.find(x => t < x[0]) || MLBB_TIERS[MLBB_TIERS.length - 1])[1]; }
+  } else if (currentGame === 'pubg') {
+    dir = 'pubg';
+    if (p.type === 'pass') f = /prime/i.test(p.name || '') ? 'prime' : 'elite';
+    else { const t = p.totalDiamonds || p.diam || 0; f = (PUBG_TIERS.find(x => t < x[0]) || PUBG_TIERS[PUBG_TIERS.length - 1])[1]; }
+  } else return '';
+  return `<img class="pkg-img" src="/img/packs/${dir}/${f}.webp" width="120" height="120" alt="" loading="lazy" decoding="async">`;
 }
 function pkgIcon(p) {
   const gd = gamesData[currentGame];

@@ -343,3 +343,5 @@ body.v2 .pkg-card .pkg-diamond{width:100%;display:flex;justify-content:center;al
 .pkg-card.selected .pkg-buy{font-size:0}.pkg-card.selected .pkg-buy::after{content:"Выбрано ✓";font-size:.9rem}
 @media (min-width:600px){.pkg-img{width:104px;height:104px}body.v2 .pkg-card .pkg-diamond{height:106px}}
 body.v2 .pkg-card.popular{padding-top:10px}
+.qb-card .qd{display:flex;flex-direction:column;align-items:center;gap:2px}
+.qd-img{width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(20,30,80,.22))}

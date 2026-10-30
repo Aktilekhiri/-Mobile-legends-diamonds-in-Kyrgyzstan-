@@ -77,7 +77,10 @@ button:disabled{opacity:.5;cursor:default}
     var h={}; if(token)h.Authorization='Bearer '+token;
     var o={method:method,headers:h};
     if(body!==undefined){h['Content-Type']='application/json';o.body=JSON.stringify(body)}
-    var r=await fetch(api()+path,o), d={}; try{d=await r.json()}catch(e){}
+    var ac=window.AbortController?new AbortController():null, tm=null;
+    if(ac){o.signal=ac.signal;tm=setTimeout(function(){ac.abort()},15000)}
+    var r; try{r=await fetch(api()+path,o)}catch(e){throw new Error('Сервер не отвечает. Проверьте интернет и нажмите «Обновить».')}finally{if(tm)clearTimeout(tm)}
+    var d={}; try{d=await r.json()}catch(e){}
     if(r.status===401&&path!=='/api/login'){token='';sset(TK,'');show('loginBox');throw new Error('Войдите заново')}
     if(!r.ok)throw new Error(d.error||('Ошибка '+r.status));
     return d;
@@ -144,14 +147,14 @@ button:disabled{opacity:.5;cursor:default}
     catch(e){msg(e.message,'err');b.disabled=false}
   }
   async function load(){
-    try{var d=await call('GET','/api/admin/orders');orders=d.orders||[];show('listBox');drawChips();draw()}
-    catch(e){msg(e.message,'err')}
+    try{var d=await call('GET','/api/admin/orders');orders=d.orders||[];msg('');show('listBox');drawChips();draw()}
+    catch(e){msg(e.message,'err');if(token){show('listBox');drawChips();if(!orders.length)$('list').innerHTML=''}}
   }
   function start(){
     token=sget(TK);msg('');
     if(!api()){msg('Не задан адрес API (api-config.js)','err');return}
     if(!token){show('loginBox');return}
-    load();clearInterval(timer);timer=setInterval(function(){if(!document.hidden&&token)load()},20000);
+    msg('Загрузка заказов…','hint');load();clearInterval(timer);timer=setInterval(function(){if(!document.hidden&&token)load()},20000);
   }
   $('loginBtn').onclick=async function(){var b=this;b.disabled=true;try{var d=await call('POST','/api/login',{password:$('pw').value});token=d.token;sset(TK,token);$('pw').value='';start()}catch(e){msg(e.message,'err')}b.disabled=false};
   $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')$('loginBtn').click()});

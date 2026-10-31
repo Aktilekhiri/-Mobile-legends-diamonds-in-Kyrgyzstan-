@@ -1708,7 +1708,7 @@ function pkgImg(p) {
     if (p.type === 'pass') f = 'gs-moon';
     else { const t = p.totalDiamonds || p.diam || 0; f = (GS_TIERS.find(x => t < x[0]) || GS_TIERS[GS_TIERS.length - 1])[1]; }
   } else return '';
-  return `<img class="pkg-img" src="/img/packs/${dir}/${f}.webp${dir === 'mlbb' ? '?v=2' : ''}" width="120" height="120" alt="" loading="lazy" decoding="async">`;
+  return `<img class="pkg-img" src="/img/packs/${dir}/${f}.webp${dir === 'mlbb' || dir === 'freefire' ? '?v=2' : ''}" width="120" height="120" alt="" loading="lazy" decoding="async">`;
 }
 function pkgIcon(p) {
   const gd = gamesData[currentGame];

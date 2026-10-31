@@ -1318,27 +1318,27 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=18">
+<link rel="stylesheet" href="theme.css?v=19">
 </head>
 <body data-page="home" class="v2">
 <nav>
   <a href="#" class="nav-logo" onclick="showPage('home')"><span class="di">💎</span><span class="hl">Diamond</span>.kg</a>
   <div class="nav-links">
     <a href="#" onclick="showPage('home')" class="active" id="nav-home">Главная</a>
-    <a href="#" onclick="showPage('topup')" id="nav-topup">Пополнить</a>
+    <a href="#" onclick="showPage('catalog')" id="nav-catalog">Каталог</a>
     <a href="#" onclick="showPage('accounts')" id="nav-accounts">Аккаунты</a>
     <a href="#" onclick="showPage('support')" id="nav-support">Поддержка</a>
     <a href="#" onclick="showPage('orders')" id="nav-orders">История</a>
     <span class="online-dot">Онлайн</span>
     <div class="lang-toggle"><button class="active">RU</button><button>KY</button></div>
     <button type="button" class="user-name" id="userNameDisplay" onclick="toggleAuthModal()">👤 Войти</button>
-    <a href="#" class="nav-cta" onclick="showPage('topup')">💎 Купить →</a>
+    <a href="#" class="nav-cta" onclick="showPage('catalog')">💎 Купить →</a>
   </div>
   <button class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></button>
 </nav>
 <div class="mobile-menu" id="mobileMenu">
   <a href="#" onclick="showPage('home');toggleMenu()">🏠 Главная</a>
-  <a href="#" onclick="showPage('topup');toggleMenu()">💎 Пополнить</a>
+  <a href="#" onclick="showPage('catalog');toggleMenu()">💎 Каталог</a>
   <a href="#" onclick="showPage('accounts');toggleMenu()">🎮 Аккаунты</a>
   <a href="#" onclick="showPage('support');toggleMenu()">💬 Поддержка</a>
   <a href="#" onclick="showPage('orders');toggleMenu()">📜 История</a>
@@ -1350,9 +1350,9 @@
     <span class="bn-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span>
     <span class="bn-tx">Главная</span>
   </button>
-  <button type="button" class="bn-item" id="bn-topup" onclick="showPage('topup')">
-    <span class="bn-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20"/></svg></span>
-    <span class="bn-tx">Пополнить</span>
+  <button type="button" class="bn-item" id="bn-topup" onclick="showPage('catalog')">
+    <span class="bn-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></svg></span>
+    <span class="bn-tx">Каталог</span>
   </button>
   <button type="button" class="bn-item" id="bn-orders" onclick="showPage('orders')">
     <span class="bn-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span>
@@ -1394,7 +1394,7 @@
       <h1>Пополнение <em>игр</em><br>в Кыргызстане<br><span class="bl">MLBB, PUBG, Free Fire и другие</span></h1>
       <p class="hero-lead">Алмазы, UC и кристаллы за сомы · Оплата через Mbank и O!Банк</p>
       <div class="hero-cta-group">
-      <button class="btn-primary glow" onclick="showPage('topup')">💎 Пополнить игру</button>
+      <button class="btn-primary glow" onclick="showPage('catalog')">💎 Пополнить игру</button>
       <button class="btn-secondary" onclick="showPage('accounts')">🎮 Аккаунты</button>
       <button class="btn-wa" onclick="showPage('support')">💬 Поддержка</button>
     </div>
@@ -1444,17 +1444,27 @@
   <section><div class="sec-label">Преимущества</div><div class="sec-divider"></div><h2 class="sec-title">Почему <em>мы</em></h2><div class="features-grid"><div class="feature-card reveal reveal-delay-1"><div class="ficon g">⚡</div><h3>5–10 минут</h3><p>Быстрое зачисление</p></div><div class="feature-card reveal reveal-delay-2"><div class="ficon b">🏦</div><h3>Локальные платежи</h3><p>Mbank, O!Банк</p></div><div class="feature-card reveal reveal-delay-3"><div class="ficon gr">🛡️</div><h3>Безопасно</h3><p>Не запрашиваем пароль</p></div></div></section>
   <section><div class="sec-label">Процесс</div><div class="sec-divider"></div><h2 class="sec-title">Как <em>работает</em></h2><div class="steps-grid"><div class="step-card reveal reveal-delay-1"><div class="step-num">1</div><h3>Введите ID</h3><p>ID и сервер из профиля</p></div><div class="step-card reveal reveal-delay-2"><div class="step-num">2</div><h3>Выберите пакет</h3><p>Любое количество алмазов</p></div><div class="step-card reveal reveal-delay-3"><div class="step-num">3</div><h3>Оплатите</h3><p>Mbank или O!Банк, приложите чек на сайте</p></div><div class="step-card reveal reveal-delay-4"><div class="step-num">4</div><h3>Получите алмазы</h3><p>Через 5–10 минут</p></div></div></section>
   <section id="faq"><div class="sec-label">FAQ</div><div class="sec-divider"></div><h2 class="sec-title">Частые <em>вопросы</em></h2><div class="faq-list" style="max-width:800px; margin:0 auto"><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Как оформить заказ?</span><span>▼</span></div><div class="faq-a">Выберите игру и пакет, введите ID (и сервер, если он нужен), переведите сумму через Mbank или O!Банк и приложите чек на сайте. После проверки оплаты заказ выдаётся на ваш аккаунт.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Нужен ли пароль от игрового аккаунта?</span><span>▼</span></div><div class="faq-a">Нет. Пароль не нужен и мы его никогда не просим: пополнение идёт только по ID игрока (для некоторых игр ещё по серверу).</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Сколько ждать зачисления?</span><span>▼</span></div><div class="faq-a">Обычно 5–10 минут после проверки оплаты. Заказы с 00:00 до 08:00 по времени Бишкека выдаются утром: оформить и оплатить можно в любое время.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Какие способы оплаты доступны?</span><span>▼</span></div><div class="faq-a">Перевод через Mbank и O!Банк. Цены указаны в сомах, дополнительных комиссий сверх цены пакета нет.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Можно ли пополнить аккаунт друга?</span><span>▼</span></div><div class="faq-a">Да. Нужен ID игрока и сервер друга, пароль не нужен. Внимательно проверьте данные до оплаты: заказ выдаётся именно на тот ID, который вы указали.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Можно ли исправить неправильный ID после оплаты?</span><span>▼</span></div><div class="faq-a">Если заказ ещё не выдан, сразу напишите в WhatsApp или Telegram с кодом заказа, мы постараемся исправить данные. Уже выданное на указанный ID вернуть нельзя, поэтому проверяйте ID и сервер до оплаты.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Оплата прошла, а статус не обновился. Что делать?</span><span>▼</span></div><div class="faq-a">Откройте страницу «Проверить заказ» и введите код заказа (он начинается с DK). Если статус долго не меняется, напишите в поддержку с кодом заказа и чеком.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Как получить Robux, Telegram Stars и Premium?</span><span>▼</span></div><div class="faq-a">Для них ID не нужен: после проверки оплаты на странице заказа появляется код активации. Для Telegram нужен ваш @username, чтобы активировать код на своём аккаунте. Код также сохраняется в «Истории» после входа через Google.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Где посмотреть историю заказов?</span><span>▼</span></div><div class="faq-a">Войдите через Google и откройте «История»: там все заказы с аккаунта. Без входа статус любого заказа можно проверить по коду на странице «Проверить заказ».</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Вернёте ли вы деньги?</span><span>▼</span></div><div class="faq-a">Да, если заказ невозможно выполнить (например, пакет недоступен для региона аккаунта). Мы возвращаем оплату на реквизиты, с которых вы платили.</div></div><div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Как запросить добавление новой игры?</span><span>▼</span></div><div class="faq-a">Напишите нам в WhatsApp +996 555 920 204 или Telegram @topupdiamondkg: какую игру и какие пакеты вы хотите. Мы проверим, можем ли мы её добавить.</div></div></div></section>
-  <section class="final-cta"><div class="final-cta-box"><h2 class="sec-title">Готов пополнить <em>алмазы</em>?</h2><button class="btn-primary" onclick="showPage('topup')">💎 Пополнить сейчас</button></div></section>
+  <section class="final-cta"><div class="final-cta-box"><h2 class="sec-title">Готов пополнить <em>алмазы</em>?</h2><button class="btn-primary" onclick="showPage('catalog')">💎 Пополнить сейчас</button></div></section>
 </div>
 
 <!-- TOPUP -->
+<!-- CATALOG -->
+<div class="page" id="page-catalog">
+  <div class="page-header" style="padding:30px 5% 14px;"><h1>🎮 Каталог</h1><p>Выберите игру или сервис. Выдача за 5–10 минут.</p></div>
+  <div class="night-note">🌙 С 00:00 до 08:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
+  <div class="catalog-wrap">
+    <div class="cat-search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="catSearch" placeholder="Найти игру или сервис" autocomplete="off" aria-label="Поиск игры" oninput="renderCatalog()"></div>
+    <div id="catList"></div>
+  </div>
+</div>
+
 <div class="page" id="page-topup">
-  <div class="page-header" style="padding:34px 5% 26px; border-bottom:1px solid var(--border);"><h1 id="topupTitle">💎 Пополнить алмазы</h1><p>Выберите игру и пакет, затем введите данные. Выдача за 5–10 минут.</p></div>
+  <div class="page-header" style="padding:34px 5% 26px; border-bottom:1px solid var(--border);"><h1 id="topupTitle">💎 Пополнить алмазы</h1><p>Выберите пакет, затем введите данные. Выдача за 5–10 минут.</p></div>
   <div class="night-note">🌙 С 00:00 до 08:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
   <div class="topup-layout">
     <div class="form-card step-card" id="stepGame">
-      <div class="card-title"><span class="step-n">1</span> Выберите игру</div>
-      <div class="game-picker" id="gamePicker" role="radiogroup" aria-label="Игра"></div>
+      <button type="button" class="back-cat" onclick="showPage('catalog')">← Каталог</button>
+      <div class="game-picker" id="gamePicker" role="radiogroup" aria-label="Игра" hidden></div>
       <select class="input-field" id="gameSelect" onchange="changeGame()" hidden aria-hidden="true" tabindex="-1">
         <option value="mlbb">Mobile Legends: Bang Bang</option>
         <option value="pubg">PUBG Mobile (UC)</option>
@@ -1483,12 +1493,12 @@
       </div>
     </div>
     <div class="packages-card step-card" id="stepPkg">
-      <div class="card-title"><span class="step-n">2</span> Выберите пакет</div>
+      <div class="card-title"><span class="step-n">1</span> Выберите пакет</div>
       <div class="pkg-tabs" id="pkgTabs" role="tablist" hidden></div>
       <div class="packages-grid" id="packagesGrid"></div>
     </div>
     <div class="form-card step-card" id="stepData" hidden>
-      <div class="card-title"><span class="step-n">3</span> Данные для пополнения</div>
+      <div class="card-title"><span class="step-n">2</span> Данные для пополнения</div>
       <div class="sel-info" id="selectedInfo" style="display:none"><div>ВЫБРАННЫЙ ПАКЕТ</div><div class="sir"><span id="selDiamonds"></span><span id="selPrice"></span></div></div>
       <div id="idRow">
       <label>ID ИГРОКА</label>
@@ -1514,6 +1524,8 @@
       <button class="btn-primary btn-full" onclick="proceedToPayment()" id="buyBtn" disabled style="margin-top:14px; opacity:0.5">Перейти к оплате →</button>
     </div>
   </div>
+
+  <section class="game-about" id="gameAbout" aria-live="polite"></section>
 </div>
 
 <!-- PAYMENT -->
@@ -1559,7 +1571,7 @@
 
 
 
-<footer><div class="footer-brand"><a href="#" class="nav-logo">Diamond.kg</a><p>Неофициальный сервис пополнения игр в Кыргызстане: Mobile Legends, PUBG Mobile, Free Fire, Honor of Kings, Genshin Impact, Wuthering Waves, Honkai: Star Rail, Zenless Zone Zero, Blood Strike, Telegram Stars, Roblox</p><div><a class="btn-wa" href="#" onclick="showPage('support');return false" style="padding:9px 16px; font-size:0.8rem">💬 Поддержка</a></div><div class="social-links"><a href="https://www.tiktok.com/@yujiomlbb" target="_blank" rel="noopener" aria-label="TikTok @yujiomlbb"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M16.5 3c.3 2.4 1.7 3.9 4 4.1v3.1c-1.5 0-2.9-.5-4-1.3v6.2a6.1 6.1 0 1 1-6.1-6.1c.3 0 .7 0 1 .1v3.2a2.9 2.9 0 1 0 1.9 2.7V3h3.2z"/></svg>@yujiomlbb</a><a href="https://www.youtube.com/@YujioPlays" target="_blank" rel="noopener" aria-label="YouTube @YujioPlays"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 4.8 12 4.8 12 4.8s-6 0-7.7.5A2.7 2.7 0 0 0 2.4 7.2C2 8.9 2 12 2 12s0 3.1.4 4.8a2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.7.5 7.7.5s6 0 7.7-.5a2.7 2.7 0 0 0 1.9-1.9c.4-1.7.4-4.8.4-4.8s0-3.1-.4-4.8zM10 15.1V8.9l5.2 3.1-5.2 3.1z"/></svg>@YujioPlays</a><a href="https://t.me/topupdiamondskg" target="_blank" rel="noopener" aria-label="Telegram канал @topupdiamondskg"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.3 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.8.7.8.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.8c.3-1.2-.5-1.8-1.3-1.4zM9 14l9.2-5.8c.4-.3.8-.1.5.2L11 15.3l-.3 3.3L9 14z"/></svg>Канал</a></div></div><div class="footer-links"><a href="#" onclick="showPage('home')">Главная</a><a href="#" onclick="showPage('topup')">Пополнить</a><a href="#" onclick="showPage('accounts')">Аккаунты</a><a href="#" onclick="showPage('support')">Поддержка</a><a href="#" onclick="showPage('orders')">История</a><a href="/delivery/">Доставка</a><a href="/refund/">Возврат</a><a href="/guides/">Гайды</a><a href="/privacy/">Конфиденциальность</a><a href="/terms/">Условия</a></div><div class="footer-bottom">© 2026 Diamond.kg · Не связан с разработчиками игр</div></footer>
+<footer><div class="footer-brand"><a href="#" class="nav-logo">Diamond.kg</a><p>Неофициальный сервис пополнения игр в Кыргызстане: Mobile Legends, PUBG Mobile, Free Fire, Honor of Kings, Genshin Impact, Wuthering Waves, Honkai: Star Rail, Zenless Zone Zero, Blood Strike, Telegram Stars, Roblox</p><div><a class="btn-wa" href="#" onclick="showPage('support');return false" style="padding:9px 16px; font-size:0.8rem">💬 Поддержка</a></div><div class="social-links"><a href="https://www.tiktok.com/@yujiomlbb" target="_blank" rel="noopener" aria-label="TikTok @yujiomlbb"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M16.5 3c.3 2.4 1.7 3.9 4 4.1v3.1c-1.5 0-2.9-.5-4-1.3v6.2a6.1 6.1 0 1 1-6.1-6.1c.3 0 .7 0 1 .1v3.2a2.9 2.9 0 1 0 1.9 2.7V3h3.2z"/></svg>@yujiomlbb</a><a href="https://www.youtube.com/@YujioPlays" target="_blank" rel="noopener" aria-label="YouTube @YujioPlays"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 4.8 12 4.8 12 4.8s-6 0-7.7.5A2.7 2.7 0 0 0 2.4 7.2C2 8.9 2 12 2 12s0 3.1.4 4.8a2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.7.5 7.7.5s6 0 7.7-.5a2.7 2.7 0 0 0 1.9-1.9c.4-1.7.4-4.8.4-4.8s0-3.1-.4-4.8zM10 15.1V8.9l5.2 3.1-5.2 3.1z"/></svg>@YujioPlays</a><a href="https://t.me/topupdiamondskg" target="_blank" rel="noopener" aria-label="Telegram канал @topupdiamondskg"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.3 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.8.7.8.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.8c.3-1.2-.5-1.8-1.3-1.4zM9 14l9.2-5.8c.4-.3.8-.1.5.2L11 15.3l-.3 3.3L9 14z"/></svg>Канал</a></div></div><div class="footer-links"><a href="#" onclick="showPage('home')">Главная</a><a href="#" onclick="showPage('catalog')">Каталог</a><a href="#" onclick="showPage('accounts')">Аккаунты</a><a href="#" onclick="showPage('support')">Поддержка</a><a href="#" onclick="showPage('orders')">История</a><a href="/delivery/">Доставка</a><a href="/refund/">Возврат</a><a href="/guides/">Гайды</a><a href="/privacy/">Конфиденциальность</a><a href="/terms/">Условия</a></div><div class="footer-bottom">© 2026 Diamond.kg · Не связан с разработчиками игр</div></footer>
 
 <script>
 // Каталоги по регионам (цены в KGS)
@@ -1669,6 +1681,69 @@ function buildGamePicker() {
 function syncGamePicker() {
   document.querySelectorAll('#gamePicker .gp-item').forEach(b => b.setAttribute('aria-checked', String(b.dataset.g === currentGame)));
 }
+
+// ===== Каталог =====
+const CAT_ORDER = ['mlbb','freefire','pubg','genshin','hok','wuwa','hsr','zzz','bloodstrike','mchess','deltaforce','marvel','arena'];
+const CAT_SERVICES = ['roblox'];
+const CAT_ALIAS = { mlbb:'млбб мобайл легенд легендс mobile legends ml алмазы', pubg:'пубг пабг pubg mobile uc', freefire:'фри фаер фф free fire ff алмазы', hok:'хок хонор honor of kings токены', genshin:'геншин импакт genshin impact примогемы кристаллы', wuwa:'вува вутеринг wuthering waves lunite', hsr:'хср хонкай стар рейл honkai star rail', zzz:'зенлесс зона zenless zone zero монохромы', bloodstrike:'блад страйк blood strike', mchess:'меджик чесс магик чесс magic chess go go', deltaforce:'дельта форс delta force', marvel:'марвел риваль marvel rivals', arena:'арена брейкаут arena breakout', roblox:'роблокс roblox робукс робуксы robux' };
+const CAT_SUB = { mlbb:'Алмазы', pubg:'UC', freefire:'Алмазы', hok:'Токены', genshin:'Кристаллы', wuwa:'Lunite', hsr:'Oneiric Shard', zzz:'Monochrome', bloodstrike:'BC', mchess:'Алмазы', deltaforce:'Delta Coins', marvel:'Lattices', arena:'Bonds', roblox:'Robux, код активации' };
+function catName(g) { return g === 'mlbb' ? 'Mobile Legends' : (GAME_TILES[g] ? GAME_TILES[g][0] : g); }
+function catMinPrice(g) {
+  try {
+    if (g === 'mlbb') return Math.min(...packagesData.global.map(p => p.price));
+    return Math.min(...gamesData[g].packs.map(p => p.price));
+  } catch (e) { return 0; }
+}
+function catRow(g) {
+  const nm = catName(g), pr = catMinPrice(g);
+  return `<button type="button" class="cat-row" onclick="openGame('${g}')"><img src="/img/games/${g}.webp" width="56" height="56" alt="" loading="lazy" decoding="async"><span class="cr-tx"><span class="cr-nm">${esc(nm)}</span><span class="cr-sub">${esc(CAT_SUB[g] || '')}</span></span><span class="cr-pr">${pr ? 'от <b>' + pr.toLocaleString('ru-RU') + '</b> с' : ''}</span></button>`;
+}
+function renderCatalog() {
+  const box = document.getElementById('catList'); if (!box) return;
+  const q = (document.getElementById('catSearch').value || '').trim().toLowerCase();
+  const match = g => !q || (catName(g) + ' ' + (CAT_ALIAS[g] || '') + ' ' + g).toLowerCase().includes(q);
+  const games = CAT_ORDER.filter(match), serv = CAT_SERVICES.filter(match);
+  let html = '';
+  if (games.length) html += '<h2 class="cat-h">Игры</h2><div class="cat-list">' + games.map(catRow).join('') + '</div>';
+  if (serv.length) html += '<h2 class="cat-h">Сервисы</h2><div class="cat-list">' + serv.map(catRow).join('') + '</div>';
+  if (!html) html = '<div class="orders-empty"><p>Ничего не нашли по запросу «' + esc(q) + '».</p><p>Нужной игры нет? Напишите в поддержку, добавим.</p><button type="button" class="btn-primary" onclick="showPage(\'support\')">💬 Поддержка</button></div>';
+  box.innerHTML = html;
+}
+function openGame(g) {
+  changeGame(g); showPage('topup'); restoreLastId();
+}
+
+// ===== «Что за игра и как пополнить» внизу страницы игры =====
+const GAME_ABOUT = {
+  mlbb: ['Mobile Legends: Bang Bang', 'Mobile Legends: Bang Bang — мобильная MOBA, в которой две команды по пять игроков сражаются за базу соперника. Игру разработала студия Moonton. Алмазы — внутриигровая валюта: на них покупают скины героев, эмблемы, пропуска и другие предметы. Также доступны Weekly Diamond Pass и Twilight Pass.', 'Укажите ID игрока и Zone ID из профиля: ID — первые цифры, Zone ID — число в скобках рядом с ним. Если у вас российский аккаунт, выберите регион «Россия».'],
+  pubg: ['PUBG Mobile', 'PUBG Mobile — мобильная игра в жанре «королевская битва»: большая группа игроков высаживается на карту, собирает снаряжение и сражается, пока не останется один игрок или одна команда. UC (Unknown Cash) — игровая валюта для скинов, Royale Pass, Prime и других предметов.', 'Укажите ID персонажа: профиль (аватар) → ID. Только цифры, пароль от аккаунта не нужен.'],
+  freefire: ['Free Fire', 'Free Fire — мобильная королевская битва от Garena. Матч длится около десяти минут, поэтому игра подходит для коротких сессий. Алмазы тратятся на скины, персонажей и подписки. Также доступны Weekly и Monthly Membership, Level Up Package и Evo Access.', 'Укажите ID игрока: профиль (аватар) → ID. Только цифры, пароль от аккаунта не нужен.'],
+  hok: ['Honor of Kings', 'Honor of Kings — мобильная MOBA от студии TiMi Studio Group (Tencent), в которой две команды по пять игроков сражаются на карте с тремя линиями. Токены (Tokens) — донатная валюта для скинов и других предметов. Также доступны Weekly Card и Weekly Card Plus.', 'Укажите ID игрока: профиль → ID. Только цифры, пароль от аккаунта не нужен.'],
+  genshin: ['Genshin Impact', 'Genshin Impact — action-RPG с открытым миром от студии HoYoverse. Вы исследуете мир Тейват, собираете команду персонажей и проходите сюжет. Кристаллы Genesis можно обменять на Примогемы, а на них получить персонажей и оружие. Благословение полой луны (Welkin Moon) даёт ежедневные награды в течение 30 дней.', 'Укажите UID (9 цифр): откройте меню Паймон, UID находится внизу справа. Затем выберите свой сервер.'],
+  wuwa: ['Wuthering Waves', 'Wuthering Waves — action-RPG с открытым миром от студии Kuro Games. Боевая система построена на быстрых комбинациях и уклонениях. Lunite — платная валюта, её обменивают на Astrite для призывов. Также доступна подписка Lunite Subscription.', 'Укажите UID (9 цифр): меню → вкладка «Профиль». Затем выберите свой сервер.'],
+  hsr: ['Honkai: Star Rail', 'Honkai: Star Rail — пошаговая RPG от студии HoYoverse: вы путешествуете между мирами на космическом поезде и собираете команду из персонажей. Oneiric Shard можно обменять на Stellar Jade для призывов. Также доступен Express Supply Pass.', 'Укажите UID (9 цифр): меню → «Настройки», UID находится внизу справа. Затем выберите свой сервер.'],
+  zzz: ['Zenless Zone Zero', 'Zenless Zone Zero — action-RPG от студии HoYoverse с быстрыми боями в городе будущего. Monochrome можно обменять на Polychrome для призывов. Также доступно Inter-Knot Membership.', 'Укажите UID: меню → «Настройки». Затем выберите свой сервер.'],
+  bloodstrike: ['Blood Strike', 'Blood Strike — бесплатный мобильный шутер от NetEase Games с режимом королевской битвы и быстрыми командными матчами. BC — внутриигровая валюта, на неё покупают скины, пропуска и другие предметы. Также доступны Level Up Pass и Strike Pass.', 'Укажите ID игрока: профиль (аватар) → ID. Только цифры, пароль от аккаунта не нужен.'],
+  mchess: ['Magic Chess Go Go', 'Magic Chess: Go Go — мобильный автобаттлер от студии Moonton. Вы собираете команду героев, улучшаете её между раундами и сражаетесь с другими игроками. Алмазы тратятся на скины, пропуска и другие предметы. Также доступна Weekly Card.', 'Укажите ID игрока и Server ID: ID — первые цифры в профиле, Server ID — число в скобках рядом. Вводятся в два отдельных поля.'],
+  deltaforce: ['Delta Force', 'Delta Force — тактический шутер от Team Jade (Tencent) с командными режимами и режимом эвакуации. Delta Coins — донатная валюта для скинов оружия, операторов и сезонных пропусков. Также доступны сезонные пропуска.', 'Укажите ID игрока из профиля. Только цифры, пароль от аккаунта не нужен.'],
+  marvel: ['Marvel Rivals', 'Marvel Rivals — командный геройский шутер 6 на 6 от NetEase Games по вселенной Marvel. Вы выбираете героя или злодея и сражаетесь за цели на карте. Lattices — внутриигровая валюта для боевых пропусков, скинов и других предметов.', 'Укажите ID игрока (UID) из профиля. Только цифры, пароль от аккаунта не нужен.'],
+  arena: ['Arena Breakout', 'Arena Breakout — тактический шутер с механикой эвакуации от Morefun Studios (Tencent): вы выходите на задание за добычей и должны добраться до точки эвакуации, не потеряв снаряжение. Bonds — донатная валюта. Также доступны Battle Pass и наборы привилегий. Пополнение рассчитано на мобильную версию игры.', 'Укажите ID игрока из профиля. Только цифры, пароль от аккаунта не нужен.'],
+  roblox: ['Roblox', 'Roblox — платформа, где игроки создают игры и играют в игры других людей. Robux — внутренняя валюта: на неё покупают предметы, улучшения и одежду для аватара. Мы продаём коды пополнения Robux.', 'Ничего вводить не нужно: после оплаты вы получите код и активируете его на roblox.com/redeem.']
+};
+function renderGameAbout() {
+  const box = document.getElementById('gameAbout'); if (!box) return;
+  const a = GAME_ABOUT[currentGame];
+  if (!a) { box.innerHTML = ''; return; }
+  const isCode = currentGame === 'roblox';
+  const steps = [
+    'Выберите пакет: окно данных откроется сразу.',
+    isCode ? a[2] : a[2],
+    isCode ? 'Нажмите «Оплатить» и переведите сумму через Mbank или O!Банк по реквизитам на странице.' : 'Проверьте введённые данные и отметьте галочку «Проверил(а)». Ошибочный ID вернуть нельзя.',
+    isCode ? 'Приложите чек. Код придёт на странице заказа, когда оплата будет подтверждена.' : 'Оплатите через Mbank или O!Банк и приложите чек.',
+    isCode ? 'Активируйте код на roblox.com/redeem.' : 'Пополнение приходит на аккаунт за 5–10 минут. С 00:00 до 08:00 по Бишкеку заказы зачисляются утром.'
+  ];
+  box.innerHTML = '<h2>Что такое ' + esc(a[0]) + '</h2><p>' + esc(a[1]) + '</p><h2>Как пополнить ' + esc(a[0]) + ' в Кыргызстане</h2><ol class="ga-steps">' + steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol><p class="ga-note">Пароль от игрового аккаунта не нужен. Если что-то пошло не так, напишите в <a href="#" onclick="showPage(\'support\');return false">поддержку</a>.</p>';
+}
 function changeGame(g) {
   const sel = document.getElementById('gameSelect');
   if (typeof g === 'string') sel.value = g;
@@ -1703,6 +1778,7 @@ function changeGame(g) {
   showDataStep(false);
   renderPackages();
   updateBuyBtn();
+  renderGameAbout();
 }
 // Что считается «ID игрока»: для Telegram — @username, для Roblox ничего не вводится, для остальных — числовой ID
 function getPlayerValue() {
@@ -2289,12 +2365,13 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(`page-${name}`).classList.add('active');
   document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-  const navLink = document.getElementById(`nav-${name}`);
+  const navLink = document.getElementById(`nav-${name === 'topup' || name === 'payment' ? 'catalog' : name}`);
   if (navLink) navLink.classList.add('active');
   document.body.dataset.page = name;
-  { const map = { home:'home', topup:'topup', payment:'topup', orders:'orders', status:'orders' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
+  { const map = { home:'home', catalog:'topup', topup:'topup', payment:'topup', orders:'orders', status:'orders' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
   window.scrollTo(0,0);
   if (name === 'topup') renderPackages();
+  if (name === 'catalog') renderCatalog();
   if (name === 'orders') renderOrders();
   if (name === 'accounts' && window.DKAccounts) DKAccounts.load();
   if (window.DKAccounts && name !== 'accounts') DKAccounts.close();
@@ -2558,6 +2635,7 @@ renderPackages();
 updateUserUI();
 document.addEventListener('DOMContentLoaded', loadLiveReviews); document.addEventListener('DOMContentLoaded', loadRecentOrders); // api-config.js подключён ниже
 restoreLastId();
+renderGameAbout();
 (function(){ try {
   const g = new URLSearchParams(location.search).get('game');
   if (g && g !== 'tgstars' && g !== 'tgpremium' && (g === 'mlbb' || gamesData[g])) { changeGame(g); showPage('topup'); restoreLastId(); }

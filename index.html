@@ -1397,8 +1397,8 @@
       <a class="game-card" href="/honkai-star-rail-oneiric-shard/"><div class="gc-i"><img src="/img/games/hsr.webp" width="56" height="56" alt="Honkai: Star Rail" loading="lazy" decoding="async"></div><h3>Honkai: Star Rail</h3><p>Oneiric Shard, Express Pass</p></a>
       <a class="game-card" href="/zenless-zone-zero-monochrome/"><div class="gc-i"><img src="/img/games/zzz.webp" width="56" height="56" alt="Zenless Zone Zero" loading="lazy" decoding="async"></div><h3>Zenless Zone Zero</h3><p>Monochrome, Inter-Knot</p></a>
       <a class="game-card" href="/blood-strike-bc/"><div class="gc-i"><img src="/img/games/bloodstrike.webp" width="56" height="56" alt="Blood Strike" loading="lazy" decoding="async"></div><h3>Blood Strike</h3><p>BC и пассы</p></a>
-      <a class="game-card" href="/telegram-stars-kyrgyzstan/"><div class="gc-i"><img src="/img/games/tgstars.webp" width="56" height="56" alt="Telegram Stars" loading="lazy" decoding="async"></div><h3>Telegram Stars</h3><p>Звёзды за сомы</p></a>
-      <a class="game-card" href="/telegram-premium-kyrgyzstan/"><div class="gc-i"><img src="/img/games/tgpremium.webp" width="56" height="56" alt="Telegram Premium" loading="lazy" decoding="async"></div><h3>Telegram Premium</h3><p>Подписка 3, 6, 12 месяцев</p></a>
+      <a class="game-card" href="/telegram-stars-kyrgyzstan/" style="display:none"><div class="gc-i"><img src="/img/games/tgstars.webp" width="56" height="56" alt="Telegram Stars" loading="lazy" decoding="async"></div><h3>Telegram Stars</h3><p>Звёзды за сомы</p></a>
+      <a class="game-card" href="/telegram-premium-kyrgyzstan/" style="display:none"><div class="gc-i"><img src="/img/games/tgpremium.webp" width="56" height="56" alt="Telegram Premium" loading="lazy" decoding="async"></div><h3>Telegram Premium</h3><p>Подписка 3, 6, 12 месяцев</p></a>
       <a class="game-card" href="/roblox-robux-kyrgyzstan/"><div class="gc-i"><img src="/img/games/roblox.webp" width="56" height="56" alt="Roblox" loading="lazy" decoding="async"></div><h3>Roblox</h3><p>Robux: код на пополнение</p></a>
     </div></section>
   <div class="disclaimer">⚠️ Неофициальный сервис. Не связан с разработчиками игр, все названия принадлежат их владельцам.</div>
@@ -1439,8 +1439,8 @@
         <option value="hsr">Honkai: Star Rail</option>
         <option value="zzz">Zenless Zone Zero</option>
         <option value="bloodstrike">Blood Strike</option>
-        <option value="tgstars">Telegram Stars</option>
-        <option value="tgpremium">Telegram Premium</option>
+        <option value="tgstars" disabled>Telegram Stars — временно недоступно</option>
+        <option value="tgpremium" disabled>Telegram Premium — временно недоступно</option>
         <option value="roblox">Roblox (Robux)</option>
       </select>
       <div id="regionRow">
@@ -2459,7 +2459,7 @@ document.addEventListener('DOMContentLoaded', loadLiveReviews); // api-config.js
 restoreLastId();
 (function(){ try {
   const g = new URLSearchParams(location.search).get('game');
-  if (g && (g === 'mlbb' || gamesData[g])) { changeGame(g); showPage('topup'); restoreLastId(); }
+  if (g && g !== 'tgstars' && g !== 'tgpremium' && (g === 'mlbb' || gamesData[g])) { changeGame(g); showPage('topup'); restoreLastId(); }
 } catch (e) {} })();
 
 // Закрытие мобильного меню при клике вне

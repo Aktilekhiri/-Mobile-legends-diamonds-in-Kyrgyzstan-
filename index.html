@@ -1676,6 +1676,7 @@ function getPlayerValue() {
 }
 // Картинки пакетов (пока только Mobile Legends): уровень по количеству алмазов, пассы по названию
 const MLBB_TIERS = [[50,'gem1'],[120,'gem3'],[300,'gem7'],[800,'sack-spill'],[1700,'sack'],[3100,'sacks'],[6100,'chest'],[1e9,'chests']];
+const GS_TIERS = [[200,'gs-1'],[500,'gs-3'],[1500,'gs-pouch'],[3000,'gs-bag'],[5000,'gs-sacks'],[1e9,'gs-chest']];
 const FF_TIERS = [[200,'ff-gem1'],[450,'ff-gem3'],[800,'ff-tray'],[1500,'ff-case'],[3500,'ff-crate'],[1e9,'ff-crates']];
 const PUBG_TIERS = [[200,'uc-1'],[500,'uc-3'],[1000,'uc-stack'],[2500,'uc-crate'],[5000,'uc-crate-big'],[1e9,'uc-crates']];
 function pkgImg(p) {
@@ -1692,6 +1693,10 @@ function pkgImg(p) {
     dir = 'freefire';
     if (p.type === 'pass') { const n = p.name || ''; f = /monthly/i.test(n) ? 'ff-monthly' : /lite/i.test(n) ? 'ff-lite' : 'ff-weekly'; }
     else { const t = p.totalDiamonds || p.diam || 0; f = (FF_TIERS.find(x => t < x[0]) || FF_TIERS[FF_TIERS.length - 1])[1]; }
+  } else if (currentGame === 'genshin') {
+    dir = 'genshin';
+    if (p.type === 'pass') f = 'gs-moon';
+    else { const t = p.totalDiamonds || p.diam || 0; f = (GS_TIERS.find(x => t < x[0]) || GS_TIERS[GS_TIERS.length - 1])[1]; }
   } else return '';
   return `<img class="pkg-img" src="/img/packs/${dir}/${f}.webp" width="120" height="120" alt="" loading="lazy" decoding="async">`;
 }

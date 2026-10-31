@@ -1813,6 +1813,10 @@ function pkgImg(p) {
     dir = 'freefire';
     if (p.type === 'pass') { const n = p.name || ''; f = /evo/i.test(n) ? (/30d/i.test(n) ? 'ff-evo30' : 'ff-evo7') : /level/i.test(n) ? 'ff-level' : /monthly/i.test(n) ? 'ff-monthly' : /lite/i.test(n) ? 'ff-lite' : 'ff-weekly'; }
     else { const t = p.totalDiamonds || p.diam || 0; f = (FF_TIERS.find(x => t < x[0]) || FF_TIERS[FF_TIERS.length - 1])[1]; }
+  } else if (currentGame === 'arena') {
+    dir = 'arena';
+    if (p.type === 'pass') { const n = p.name || ''; f = /beginner/i.test(n) ? 'ab-begin' : /bulletproof|case/i.test(n) ? 'ab-case' : /premium/i.test(n) ? 'ab-prem' : 'ab-adv'; }
+    else { const t = p.totalDiamonds || p.diam || 0; f = t < 100 ? 'ab-66' : t < 500 ? 'ab-335' : t < 1000 ? 'ab-675' : t < 2500 ? 'ab-1690' : 'ab-3400'; }
   } else if (currentGame === 'bloodstrike') {
     dir = 'bloodstrike';
     if (p.type === 'pass') { const n = p.name || ''; f = /level/i.test(n) ? 'bs-level' : /premium/i.test(n) ? 'bs-premium' : 'bs-elite'; }

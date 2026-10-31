@@ -2,6 +2,7 @@
 import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS } from './catalog.js';
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { notify, notifyPhoto } from './notify.js';
+import { sendOrderMail } from './mail.js';
 
 const clean = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
 const digits = (v, n) => String(v == null ? '' : v).replace(/\D+/g, '').slice(0, n);
@@ -110,6 +111,7 @@ export async function createOrder(env, ip, b, userId = null) {
   try { await env.DB.prepare('UPDATE orders SET secret = ? WHERE id = ?').bind(secret, id).run(); } catch (e) {}
   // Заказ «с чеком на сайте» (deferNotify): уведомляем позже, когда придёт чек, одним сообщением с фото.
   if (!b.deferNotify) await notify(env, alertText({ id, region, pkg, pkg_label: clean(b.pkgLabel || pkg, 100), price_kgs: price, method: clean(b.method, 30), player_id: player, server_id: server }, cat, auto));
+  if (userId) await sendOrderMail(env, id, 'created', gameTitle);
   return { id, status: auto ? 'new' : 'manual', secret };
 }
 
@@ -182,6 +184,7 @@ export async function syncFromFz(env, o, fz) {
     }
     await setStatus(env, o.id, { status: 'delivered', fz_status: st, fz_order_id: fz.id || o.fz_order_id, finished_at: Date.now(), fail_reason: '', ...(isCode ? { delivery: codes.join('\n') } : {}) });
     await notify(env, `✅ Заказ ${o.id} выдан (${o.pkg_label}, ${o.price_kgs} сом).${isCode ? ' Код показан клиенту на сайте.' : ''}`);
+    await sendOrderMail(env, o.id, 'delivered', gameTitle);
   } else if (st === 'partial') {
     // составной пакет: часть выдана, часть возвращена — разбирать вручную
     await setStatus(env, o.id, { status: 'manual', fz_status: st, fz_order_id: fz.id || o.fz_order_id, fail_reason: 'Частично выдан: ' + String(fz.fail_reason || '').slice(0, 200), finished_at: Date.now() });
@@ -251,6 +254,7 @@ export async function markManualDone(env, id) {
   if (!o) return { error: 'Заказ не найден', status: 404 };
   if (!['manual', 'new'].includes(o.status)) return { error: 'Нельзя (статус: ' + o.status + ')', status: 409 };
   await setStatus(env, id, { status: 'delivered', finished_at: Date.now() });
+  await sendOrderMail(env, id, 'delivered', gameTitle);
   return { ok: true };
 }
 export async function cancelOrder(env, id) {

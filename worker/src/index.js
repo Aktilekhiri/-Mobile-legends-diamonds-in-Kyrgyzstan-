@@ -8,7 +8,7 @@ const MAX_PHOTO_BYTES = 450 * 1024;
 const TOKEN_DAYS = 30;
 const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
-import { loginWithGoogle, getMe, listMyOrders, userFromRequest } from './auth.js';
+import { loginWithGoogle, getMe, listMyOrders, userFromRequest, adminListUsers } from './auth.js';
 import { maybeSendReport } from './report.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
@@ -208,6 +208,7 @@ export default {
         if (path === '/api/admin/orders' && m === 'GET') {
           return json(req, { orders: await listOrders(env, url.searchParams.get('status') || 'all') });
         }
+        if (path === '/api/admin/users' && m === 'GET') return json(req, await adminListUsers(env));
         if (path === '/api/admin/reviews' && m === 'GET') return json(req, await adminListReviews(env, url.searchParams.get('status') || 'all'));
         mm = path.match(/^\/api\/admin\/reviews\/([A-Za-z0-9]{4,40})\/(approve|hide|pending)$/);
         if (mm && m === 'POST') {

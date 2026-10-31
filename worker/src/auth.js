@@ -113,3 +113,15 @@ export async function listMyOrders(env, sub) {
   ).bind(sub).all();
   return { orders: results };
 }
+
+// Админка: список зарегистрированных клиентов (почта, имя, число заказов, сумма).
+export async function adminListUsers(env) {
+  await ensureUsersTable(env);
+  const { results } = await env.DB.prepare(
+    `SELECT u.id, u.email, u.name, u.created_at, u.last_login,
+            (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id) AS orders,
+            (SELECT COALESCE(SUM(price_kgs),0) FROM orders o WHERE o.user_id = u.id AND o.status = 'delivered') AS spent
+     FROM users u ORDER BY u.created_at DESC LIMIT 1000`
+  ).all();
+  return { users: results };
+}

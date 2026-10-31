@@ -365,3 +365,14 @@ body.v2 .pkg-card.popular{padding-top:10px}
   .bn-item.on .bn-ic{background:rgba(91,99,240,.14);color:var(--indigo)}
   .bn-ava{width:26px;height:26px;border-radius:50%;background:var(--grad);color:#fff;font-size:.8rem;font-weight:800;display:flex;align-items:center;justify-content:center}
 }
+
+/* ---------- game picker (replaces native select) ---------- */
+.game-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.gp-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:104px;padding:12px 6px;
+  border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--text);font:inherit;cursor:pointer;
+  transition:border-color .15s,background .15s,box-shadow .15s}
+.gp-item img{width:48px;height:48px;border-radius:12px;object-fit:cover;display:block}
+.gp-tx{font-size:.8rem;font-weight:700;line-height:1.2;text-align:center;overflow-wrap:anywhere}
+.gp-item:hover{border-color:var(--line-strong)}
+.gp-item[aria-checked="true"]{border-color:var(--indigo);background:rgba(91,99,240,.08);box-shadow:0 0 0 2px rgba(91,99,240,.25)}
+@media (min-width:640px){.game-picker{grid-template-columns:repeat(5,minmax(0,1fr))}}

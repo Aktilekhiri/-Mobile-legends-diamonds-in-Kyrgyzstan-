@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=14">
+<link rel="stylesheet" href="theme.css?v=15">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1451,8 +1451,8 @@
   <div class="topup-layout">
     <div class="form-card step-card" id="stepGame">
       <div class="card-title"><span class="step-n">1</span> Выберите игру</div>
-      <label>ИГРА</label>
-      <select class="input-field" id="gameSelect" onchange="changeGame()">
+      <div class="game-picker" id="gamePicker" role="radiogroup" aria-label="Игра"></div>
+      <select class="input-field" id="gameSelect" onchange="changeGame()" hidden aria-hidden="true" tabindex="-1">
         <option value="mlbb">Mobile Legends: Bang Bang</option>
         <option value="pubg">PUBG Mobile (UC)</option>
         <option value="freefire">Free Fire</option>
@@ -1653,10 +1653,23 @@ let selectedMethod = null;
 let currentOrder = null; // для хранения данных перед отправкой
 
 let currentGame = 'mlbb';
+const GAME_TILES = { mlbb:['Mobile Legends','mlbb'], pubg:['PUBG Mobile','pubg'], freefire:['Free Fire','freefire'], hok:['Honor of Kings','hok'], genshin:['Genshin Impact','genshin'], wuwa:['Wuthering Waves','wuwa'], hsr:['Honkai: Star Rail','hsr'], zzz:['Zenless Zone Zero','zzz'], bloodstrike:['Blood Strike','bloodstrike'], roblox:['Roblox','roblox'] };
+function buildGamePicker() {
+  const box = document.getElementById('gamePicker'), sel = document.getElementById('gameSelect');
+  if (!box || !sel) return;
+  box.innerHTML = [...sel.options].filter(o => !o.disabled && GAME_TILES[o.value]).map(o => {
+    const t = GAME_TILES[o.value];
+    return `<button type="button" class="gp-item" role="radio" aria-checked="false" data-g="${o.value}" onclick="changeGame('${o.value}')"><img src="/img/games/${t[1]}.webp" width="48" height="48" alt="" loading="lazy" decoding="async"><span class="gp-tx">${t[0]}</span></button>`;
+  }).join('');
+}
+function syncGamePicker() {
+  document.querySelectorAll('#gamePicker .gp-item').forEach(b => b.setAttribute('aria-checked', String(b.dataset.g === currentGame)));
+}
 function changeGame(g) {
   const sel = document.getElementById('gameSelect');
   if (typeof g === 'string') sel.value = g;
   currentGame = sel.value;
+  syncGamePicker();
   const gd = gamesData[currentGame];
   document.getElementById('regionRow').style.display = gd ? 'none' : '';
   const kind = gd && gd.kind;
@@ -2499,6 +2512,8 @@ function restoreLastId() {
 }
 
 // Инициализация
+buildGamePicker();
+syncGamePicker();
 renderMethods();
 renderPackages();
 updateUserUI();

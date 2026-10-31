@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=13">
+<link rel="stylesheet" href="theme.css?v=14">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1345,6 +1345,25 @@
   <a href="#" id="mobileUserLink" onclick="toggleAuthModal();toggleMenu();return false">👤 Войти</a>
 </div>
 
+<div class="bottom-nav" id="bottomNav" role="navigation" aria-label="Основное меню">
+  <button type="button" class="bn-item" id="bn-home" onclick="showPage('home')">
+    <span class="bn-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span>
+    <span class="bn-tx">Главная</span>
+  </button>
+  <button type="button" class="bn-item" id="bn-topup" onclick="showPage('topup')">
+    <span class="bn-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20"/></svg></span>
+    <span class="bn-tx">Пополнить</span>
+  </button>
+  <button type="button" class="bn-item" id="bn-orders" onclick="showPage('orders')">
+    <span class="bn-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span>
+    <span class="bn-tx">Заказы</span>
+  </button>
+  <button type="button" class="bn-item" id="bn-profile" onclick="toggleAuthModal()">
+    <span class="bn-ic" id="bnProfileIc"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span>
+    <span class="bn-tx">Профиль</span>
+  </button>
+</div>
+
 <!-- Auth Modal -->
 <div id="authModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="authTitle" onclick="if(event.target===this)closeAuthModal()">
   <div class="auth-card">
@@ -1359,6 +1378,10 @@
       <div class="auth-profile"><img id="authAvatar" alt="" width="56" height="56" referrerpolicy="no-referrer"><div><strong id="authName"></strong><div id="authEmail" class="auth-sub"></div></div></div>
       <button type="button" class="btn-primary btn-full" onclick="closeAuthModal();showPage('orders')">📋 История заказов</button>
       <button type="button" class="btn-secondary btn-full" style="margin-top:10px" onclick="logout()">Выйти</button>
+    </div>
+    <div class="auth-links">
+      <button type="button" onclick="closeAuthModal();showPage('support')">💬 Поддержка</button>
+      <button type="button" onclick="closeAuthModal();showPage('accounts')">🎮 Аккаунты</button>
     </div>
   </div>
 </div>
@@ -2241,6 +2264,7 @@ function showPage(name) {
   const navLink = document.getElementById(`nav-${name}`);
   if (navLink) navLink.classList.add('active');
   document.body.dataset.page = name;
+  { const map = { home:'home', topup:'topup', payment:'topup', orders:'orders', status:'orders' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
   window.scrollTo(0,0);
   if (name === 'topup') renderPackages();
   if (name === 'orders') renderOrders();
@@ -2271,6 +2295,11 @@ function updateUserUI() {
   const label = user ? '👤 ' + (first || 'Профиль') : '👤 Войти';
   const span = document.getElementById('userNameDisplay');
   if (span) span.textContent = label;
+  const bi = document.getElementById('bnProfileIc');
+  if (bi) {
+    if (!bi.dataset.guest) bi.dataset.guest = bi.innerHTML;
+    bi.innerHTML = user ? '<span class="bn-ava">' + esc((first || 'P').charAt(0).toUpperCase()) + '</span>' : bi.dataset.guest;
+  }
   const m = document.getElementById('mobileUserLink');
   if (m) m.textContent = label;
 }

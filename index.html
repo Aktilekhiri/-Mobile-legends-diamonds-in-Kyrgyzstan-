@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=19">
+<link rel="stylesheet" href="theme.css?v=20">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1811,6 +1811,10 @@ function pkgImg(p) {
     dir = 'freefire';
     if (p.type === 'pass') { const n = p.name || ''; f = /evo/i.test(n) ? (/30d/i.test(n) ? 'ff-evo30' : 'ff-evo7') : /level/i.test(n) ? 'ff-level' : /monthly/i.test(n) ? 'ff-monthly' : /lite/i.test(n) ? 'ff-lite' : 'ff-weekly'; }
     else { const t = p.totalDiamonds || p.diam || 0; f = (FF_TIERS.find(x => t < x[0]) || FF_TIERS[FF_TIERS.length - 1])[1]; }
+  } else if (currentGame === 'wuwa') {
+    dir = 'wuwa';
+    if (p.type === 'pass') f = 'ww-sub';
+    else { const t = p.totalDiamonds || p.diam || 0; f = t < 200 ? 'ww-1' : t < 700 ? 'ww-3' : t < 1500 ? 'ww-4' : t < 3000 ? 'ww-4b' : t < 5000 ? 'ww-5' : 'ww-5b'; }
   } else if (currentGame === 'roblox') {
     dir = 'roblox';
     { const t = p.totalDiamonds || p.diam || 0; f = t < 100 ? 'rb-1' : t < 2500 ? 'rb-3' : 'rb-many'; }
@@ -1866,6 +1870,32 @@ function pkgCat(p) {
   return 'Пассы';
 }
 function setPkgTab(t) { pkgTab = t; renderPackages(); }
+
+// ===== Пометка «!» у пакетов с ограничениями =====
+const SUB_NOTE = (a, b) => 'Подписка на 30 дней. ' + a + ' + ' + b + ' ежедневно за вход в игру. Награду нужно забирать каждый день.';
+const PKG_NOTES = {
+  'wuwa:lunite_subscription': ['Подписка на Lunite', ['(30 дней)', 'Сразу 300 лунитов + ежедневно за вход 90 Astrite. Пропущенный день сгорает.', 'Продлить можно, только если до конца подписки осталось меньше 179 дней.']],
+  'genshin:blessing_of_the_welkin_moon': ['Благословение полой луны', ['(30 дней)', 'Сразу 300 кристаллов Genesis + ежедневно за вход 90 Примогемов. Награду нужно забирать в игре каждый день.']],
+  'hsr:express_supply_pass': ['Express Supply Pass', ['(30 дней)', 'Сразу 300 Oneiric Shard + ежедневно за вход 90 Stellar Jade. Награду нужно забирать в игре каждый день.']],
+  'zzz:inter_knot_membership': ['Inter-Knot Membership', ['(30 дней)', 'Сразу 300 Monochrome + ежедневно за вход 90 Polychrome. Награду нужно забирать в игре каждый день.']]
+};
+const FIRST_NOTE = ['Только на первое пополнение', ['Бонус даётся один раз на аккаунт.', 'Если вы уже пополняли этот аккаунт в Mobile Legends, выберите другой пакет: иначе заказ может обрабатываться очень долго и в итоге будет возвращён.']];
+const ROBUX_NOTE = ['Код пополнения Robux', ['Вы получите код, а не пополнение по ID.', 'Активируйте его на roblox.com/redeem. Использованный код вернуть нельзя.']];
+function pkgNote(p) {
+  if (!p) return null;
+  if (p.firstOnly) return FIRST_NOTE;
+  if (currentGame === 'roblox') return ROBUX_NOTE;
+  return PKG_NOTES[currentGame + ':' + p.key] || null;
+}
+function showPkgNote(id) {
+  const p = packages.find(x => x.id === id), n = pkgNote(p); if (!n) return;
+  let m = document.getElementById('pkgNoteModal');
+  if (!m) { m = document.createElement('div'); m.id = 'pkgNoteModal'; m.className = 'pn-modal'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m) closePkgNote(); }); document.addEventListener('keydown', e => { if (e.key === 'Escape') closePkgNote(); }); }
+  const title = p.type === 'pass' ? p.name : p.totalDiamonds + ' ' + (p.unit || '');
+  m.innerHTML = '<div class="pn-sheet"><div class="pn-head"><div class="pn-ti"><strong>' + esc(n[0] || title) + '</strong><span class="pn-warn"><i>!</i> Внимание</span></div><button type="button" class="pn-x" aria-label="Закрыть" onclick="closePkgNote()">✕</button></div><div class="pn-body">' + n[1].map(t => '<p>' + esc(t) + '</p>').join('') + '</div><button type="button" class="btn-primary btn-full" onclick="closePkgNote()">Понятно</button></div>';
+  m.classList.add('open'); document.body.style.overflow = 'hidden';
+}
+function closePkgNote() { const m = document.getElementById('pkgNoteModal'); if (m) m.classList.remove('open'); document.body.style.overflow = ''; }
 function renderPackages() {
   const grid = document.getElementById('packagesGrid'), tabsEl = document.getElementById('pkgTabs');
   const cats = [...new Set(packages.map(pkgCat))];
@@ -1882,6 +1912,7 @@ function renderPackages() {
     lastType = p.type; lastOut = !!p.out;
     return head + `
     <div class="pkg-card ${p.popular && !p.out ? 'popular' : ''} ${p.out ? 'out' : ''} ${selectedPkg?.id === p.id ? 'selected' : ''}" ${p.out ? 'aria-disabled="true"' : `onclick="selectPackage('${p.id}')"`}>
+      ${pkgNote(p) ? `<button type="button" class="pkg-warn" aria-label="Внимание: условия пакета" onclick="event.stopPropagation();showPkgNote('${p.id}')">!</button>` : ''}
       <div class="pkg-diamond">${pkgImg(p) || pkgIcon(p)}</div>
       ${p.type === 'pass'
         ? `<div class="pkg-amount" style="font-size:0.92rem; line-height:1.25">${p.name}</div>`

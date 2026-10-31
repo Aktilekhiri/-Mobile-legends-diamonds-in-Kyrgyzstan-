@@ -411,3 +411,12 @@ body.v2 .pkg-card.popular{padding-top:10px}
 .ga-steps{margin:0;padding-left:22px;line-height:1.65}.ga-steps li{margin:8px 0}.game-about .ga-note{margin-top:16px;font-size:.92rem}
 .game-picker[hidden]{display:none}
 @media (max-width:900px){.game-about{padding-bottom:90px}.catalog-wrap{padding-bottom:100px}}
+
+.pkg-card{position:relative}.pkg-warn{position:absolute;top:8px;right:8px;z-index:2;width:30px;height:30px;border-radius:50%;border:0;background:#f5a623;color:#fff;font-weight:900;font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(245,166,35,.45)}
+.pn-modal{position:fixed;inset:0;z-index:1000;background:rgba(10,14,30,.5);display:none;align-items:flex-end;justify-content:center}.pn-modal.open{display:flex}
+.pn-sheet{width:100%;max-width:560px;background:#fff;border-radius:26px 26px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.2)}
+.pn-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line,#e3e7f1)}.pn-ti{display:flex;flex-direction:column;gap:6px}.pn-ti strong{font-size:1.35rem}
+.pn-warn{display:inline-flex;align-items:center;gap:8px;color:#b45309;font-weight:800}.pn-warn i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#f5a623;color:#fff;font-size:.8rem}
+.pn-x{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:#eef0f6;cursor:pointer;font-size:1rem}
+.pn-body{padding:16px 0 20px;line-height:1.55;font-size:1.02rem}.pn-body p{margin:0 0 10px}
+@media (min-width:700px){.pn-modal{align-items:center}.pn-sheet{border-radius:22px}}

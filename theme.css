@@ -392,3 +392,5 @@ body.v2 .pkg-card.popular{padding-top:10px}
 #liveFeed .lf-meta em{display:block;font-style:normal;font-weight:700;color:#0a7a4b}
 
 .id-ok{font-weight:500;display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--surface,#f4f6fb);border:1px solid rgba(120,130,160,.35);font-size:.9rem;line-height:1.45;cursor:pointer;text-transform:none;letter-spacing:0}.id-ok[hidden]{display:none}.id-ok input{width:20px;height:20px;flex:none;margin-top:1px}.gp-item .gp-em{width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:30px;line-height:1}
+
+.code-check{margin:0 0 26px;padding:16px;border:1px solid var(--border,#e3e7f1);border-radius:16px;background:#fff}.code-check label{display:block;margin-bottom:10px;font-weight:800}.code-check .cc-row{display:flex;gap:10px}.code-check .cc-row .input-field{flex:1;min-width:0}.code-check .cc-row .btn-primary{flex:none;padding:0 18px}#statusResult:not(:empty){margin-top:14px}

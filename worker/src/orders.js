@@ -3,6 +3,7 @@ import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS } from './catalog.js';
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { notify, notifyPhoto, defer } from './notify.js';
 import { sendOrderMail } from './mail.js';
+import { tgNotifyOrder } from './tgapi.js';
 
 const clean = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
 const digits = (v, n) => String(v == null ? '' : v).replace(/\D+/g, '').slice(0, n);
@@ -41,7 +42,7 @@ function profitText(price, cat) {
 const GAME_TITLE = { mchess: 'Magic Chess Go Go', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', bloodstrike: 'Blood Strike', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', global: 'Mobile Legends' };
 const gameTitle = region => GAME_TITLE[region] || 'Mobile Legends';
 
-function alertText(o, cat, auto, withReceipt) {
+export function alertText(o, cat, auto, withReceipt) {
   return `🆕 Новый заказ ${o.id}\n🎮 ${gameTitle(o.region)}\n${o.pkg_label} · ${o.price_kgs} сом${profitText(o.price_kgs, cat)} · ${o.method}\nID ${o.player_id}${o.server_id === '-' ? '' : ' (' + o.server_id + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}${withReceipt ? '\n📎 Чек приложен' : ''}\nПроверьте оплату и подтвердите в админке.`;
 }
 
@@ -184,6 +185,7 @@ export async function syncFromFz(env, o, fz) {
     }
     await setStatus(env, o.id, { status: 'delivered', fz_status: st, fz_order_id: fz.id || o.fz_order_id, finished_at: Date.now(), fail_reason: '', ...(isCode ? { delivery: codes.join('\n') } : {}) });
     await sendOrderMail(env, o.id, 'delivered', gameTitle);
+    await tgNotifyOrder(env, o.id, 'delivered');
     await notify(env, `✅ Заказ ${o.id} выдан (${o.pkg_label}, ${o.price_kgs} сом).${isCode ? ' Код показан клиенту на сайте.' : ''}`);
   } else if (st === 'partial') {
     // составной пакет: часть выдана, часть возвращена — разбирать вручную
@@ -194,6 +196,7 @@ export async function syncFromFz(env, o, fz) {
     if (st === 'refund') {
       await setStatus(env, o.id, { status: 'refund_due', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
       await notify(env, `↩️ Заказ ${o.id} не выполнен (FazerCards вернул деньги на баланс).\nВерните клиенту ${o.price_kgs} сом (${o.method}, тел. ${o.phone || '—'}) и нажмите «Деньги возвращены» в админке.\nПричина: ${String(fz.fail_reason || '—').slice(0, 150)}`);
+      await tgNotifyOrder(env, o.id, 'refund');
     } else {
       await setStatus(env, o.id, { fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300) });
       await notify(env, `⚠️ Заказ ${o.id}: FazerCards вернул failed. Ждём финальный статус (refund/completed), клиенту пока ничего не возвращайте.`);
@@ -255,6 +258,7 @@ export async function markManualDone(env, id) {
   if (!['manual', 'new'].includes(o.status)) return { error: 'Нельзя (статус: ' + o.status + ')', status: 409 };
   await setStatus(env, id, { status: 'delivered', finished_at: Date.now() });
   await sendOrderMail(env, id, 'delivered', gameTitle);
+  await tgNotifyOrder(env, id, 'delivered');
   return { ok: true };
 }
 export async function cancelOrder(env, id) {
@@ -262,6 +266,7 @@ export async function cancelOrder(env, id) {
   if (!o) return { error: 'Заказ не найден', status: 404 };
   if (!['new', 'manual'].includes(o.status)) return { error: 'Нельзя отменить (статус: ' + o.status + ')', status: 409 };
   await setStatus(env, id, { status: 'cancelled', finished_at: Date.now() });
+  await tgNotifyOrder(env, id, 'cancelled');
   return { ok: true };
 }
 
@@ -299,7 +304,7 @@ function b64(u8) { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += 
 function unb64(str) { const s = atob(str); const out = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i); return out; }
 
 // POST /api/orders/:id/receipt — публично, тело = картинка (jpeg/png/webp)
-export async function saveReceipt(env, id, buf) {
+export async function saveReceipt(env, id, buf, opts = {}) {
   const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(clean(id, 20)).first();
   if (!o) return { error: 'Заказ не найден', status: 404 };
   if (!['new', 'manual'].includes(o.status)) return { error: 'Заказ уже обработан', status: 409 };
@@ -317,7 +322,7 @@ export async function saveReceipt(env, id, buf) {
   const cat = (CATALOGS[o.region] || {})[o.pkg] || null;
   const auto = !!(cat && cat.cost <= MAX_AUTO_COST_USD) && o.status === 'new';
   const text = alertText(o, cat, auto, true);
-  if (first) { // повторная загрузка чека не плодит уведомления
+  if (first && !opts.silent) { // повторная загрузка чека не плодит уведомления
     await defer(env, (async () => {
       const sent = await notifyPhoto(env, u8, mime, text);
       if (!sent) await notify(env, text + '\n(фото не ушло в Telegram — смотрите чек в админке)');

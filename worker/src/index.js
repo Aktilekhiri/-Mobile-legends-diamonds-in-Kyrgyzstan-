@@ -10,6 +10,9 @@ const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
 import { loginWithGoogle, getMe, listMyOrders, userFromRequest, adminListUsers } from './auth.js';
 import { maybeSendReport } from './report.js';
+import { handleTgUpdate } from './tgbot.js';
+import { tgApi, webhookSecret } from './tgapi.js';
+import { defer } from './notify.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
 
@@ -193,6 +196,14 @@ export default {
         return r.error ? err(req, r.error, r.status || 400) : json(req, { ok: true });
       }
 
+      // вебхук Telegram-бота магазина (секрет проверяется по заголовку)
+      if (path === '/api/tg/webhook' && m === 'POST') {
+        if (!env.TG_SHOP_BOT_TOKEN || !safeEqual(req.headers.get('X-Telegram-Bot-Api-Secret-Token') || '', await webhookSecret(env))) return new Response('forbidden', { status: 403 });
+        const u = await req.json().catch(() => null);
+        if (u) await defer(env, handleTgUpdate(env, u));
+        return new Response('ok');
+      }
+
       // публичный список
       if (path === '/api/accounts' && m === 'GET') {
         const { results } = await env.DB.prepare(
@@ -208,6 +219,21 @@ export default {
         // заказы
         if (path === '/api/admin/orders' && m === 'GET') {
           return json(req, { orders: await listOrders(env, url.searchParams.get('status') || 'all') });
+        }
+        if (path === '/api/admin/tg' && m === 'GET') {
+          if (!env.TG_SHOP_BOT_TOKEN) return json(req, { configured: false });
+          const me = await tgApi(env, 'getMe'), wh = await tgApi(env, 'getWebhookInfo');
+          return json(req, { configured: true, bot: me && me.result && me.result.username, webhook: wh && wh.result && wh.result.url || '', pending: wh && wh.result && wh.result.pending_update_count, lastError: wh && wh.result && wh.result.last_error_message || '' });
+        }
+        if (path === '/api/admin/tg/setup' && m === 'POST') {
+          if (!env.TG_SHOP_BOT_TOKEN) return err(req, 'Секрет TG_SHOP_BOT_TOKEN не задан в Cloudflare', 400);
+          const r = await tgApi(env, 'setWebhook', { url: url.origin + '/api/tg/webhook', secret_token: await webhookSecret(env), allowed_updates: ['message', 'callback_query'], drop_pending_updates: false });
+          await tgApi(env, 'setMyCommands', { commands: [{ command: 'start', description: 'Меню' }, { command: 'orders', description: 'Мои заказы' }, { command: 'help', description: 'Поддержка' }] });
+          return r && r.ok ? json(req, { ok: true }) : err(req, (r && r.description) || 'Не удалось подключить', 400);
+        }
+        if (path === '/api/admin/tg/remove' && m === 'POST') {
+          const r = await tgApi(env, 'deleteWebhook', {});
+          return r && r.ok ? json(req, { ok: true }) : err(req, (r && r.description) || 'Не удалось отключить', 400);
         }
         if (path === '/api/admin/users' && m === 'GET') return json(req, await adminListUsers(env));
         if (path === '/api/admin/reviews' && m === 'GET') return json(req, await adminListReviews(env, url.searchParams.get('status') || 'all'));

@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=20">
+<link rel="stylesheet" href="theme.css?v=21">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1684,10 +1684,11 @@ function syncGamePicker() {
 
 // ===== Каталог =====
 const CAT_ORDER = ['mlbb','freefire','pubg','genshin','hok','wuwa','hsr','zzz','bloodstrike','mchess','deltaforce','marvel','arena'];
-const CAT_SERVICES = ['roblox'];
-const CAT_ALIAS = { mlbb:'млбб мобайл легенд легендс mobile legends ml алмазы', pubg:'пубг пабг pubg mobile uc', freefire:'фри фаер фф free fire ff алмазы', hok:'хок хонор honor of kings токены', genshin:'геншин импакт genshin impact примогемы кристаллы', wuwa:'вува вутеринг wuthering waves lunite', hsr:'хср хонкай стар рейл honkai star rail', zzz:'зенлесс зона zenless zone zero монохромы', bloodstrike:'блад страйк blood strike', mchess:'меджик чесс магик чесс magic chess go go', deltaforce:'дельта форс delta force', marvel:'марвел риваль marvel rivals', arena:'арена брейкаут arena breakout', roblox:'роблокс roblox робукс робуксы robux' };
-const CAT_SUB = { mlbb:'Алмазы', pubg:'UC', freefire:'Алмазы', hok:'Токены', genshin:'Кристаллы', wuwa:'Lunite', hsr:'Oneiric Shard', zzz:'Monochrome', bloodstrike:'BC', mchess:'Алмазы', deltaforce:'Delta Coins', marvel:'Lattices', arena:'Bonds', roblox:'Robux, код активации' };
-function catName(g) { return g === 'mlbb' ? 'Mobile Legends' : (GAME_TILES[g] ? GAME_TILES[g][0] : g); }
+const CAT_SERVICES = ['roblox', 'tgstars', 'tgpremium'];
+const CAT_DISABLED = ['tgstars', 'tgpremium'];
+const CAT_ALIAS = { mlbb:'млбб мобайл легенд легендс mobile legends ml алмазы', pubg:'пубг пабг pubg mobile uc', freefire:'фри фаер фф free fire ff алмазы', hok:'хок хонор honor of kings токены', genshin:'геншин импакт genshin impact примогемы кристаллы', wuwa:'вува вутеринг wuthering waves lunite', hsr:'хср хонкай стар рейл honkai star rail', zzz:'зенлесс зона zenless zone zero монохромы', bloodstrike:'блад страйк blood strike', mchess:'меджик чесс магик чесс magic chess go go', deltaforce:'дельта форс delta force', marvel:'марвел риваль marvel rivals', arena:'арена брейкаут arena breakout', roblox:'роблокс roblox робукс робуксы robux', tgstars:'телеграм телега звезды старс telegram stars', tgpremium:'телеграм телега премиум telegram premium' };
+const CAT_SUB = { mlbb:'Алмазы', pubg:'UC', freefire:'Алмазы', hok:'Токены', genshin:'Кристаллы', wuwa:'Lunite', hsr:'Oneiric Shard', zzz:'Monochrome', bloodstrike:'BC', mchess:'Алмазы', deltaforce:'Delta Coins', marvel:'Lattices', arena:'Bonds', roblox:'Robux, код активации', tgstars:'Звёзды', tgpremium:'Подписка' };
+function catName(g) { return g === 'mlbb' ? 'Mobile Legends' : (GAME_TILES[g] ? GAME_TILES[g][0] : (gamesData[g] ? gamesData[g].name : g)); }
 function catMinPrice(g) {
   try {
     if (g === 'mlbb') return Math.min(...packagesData.global.map(p => p.price));
@@ -1695,8 +1696,8 @@ function catMinPrice(g) {
   } catch (e) { return 0; }
 }
 function catRow(g) {
-  const nm = catName(g), pr = catMinPrice(g);
-  return `<button type="button" class="cat-row" onclick="openGame('${g}')"><img src="/img/games/${g}.webp" width="56" height="56" alt="" loading="lazy" decoding="async"><span class="cr-tx"><span class="cr-nm">${esc(nm)}</span><span class="cr-sub">${esc(CAT_SUB[g] || '')}</span></span><span class="cr-pr">${pr ? 'от <b>' + pr.toLocaleString('ru-RU') + '</b> с' : ''}</span></button>`;
+  const nm = catName(g), pr = catMinPrice(g), off = CAT_DISABLED.includes(g);
+  return `<button type="button" class="cat-row${off ? ' off' : ''}" onclick="openGame('${g}')"><img src="/img/games/${g}.webp" width="56" height="56" alt="" loading="lazy" decoding="async"><span class="cr-tx"><span class="cr-nm">${esc(nm)}</span><span class="cr-sub">${esc(CAT_SUB[g] || '')}</span></span><span class="cr-pr">${pr ? 'от <b>' + pr.toLocaleString('ru-RU') + '</b> с' : ''}</span></button>`;
 }
 function renderCatalog() {
   const box = document.getElementById('catList'); if (!box) return;
@@ -1710,6 +1711,7 @@ function renderCatalog() {
   box.innerHTML = html;
 }
 function openGame(g) {
+  if (CAT_DISABLED.includes(g)) { showNotice('Пополнение временно недоступно по техническим причинам. Пожалуйста, попробуйте позже.'); return; }
   changeGame(g); showPage('topup'); restoreLastId();
 }
 
@@ -1811,6 +1813,10 @@ function pkgImg(p) {
     dir = 'freefire';
     if (p.type === 'pass') { const n = p.name || ''; f = /evo/i.test(n) ? (/30d/i.test(n) ? 'ff-evo30' : 'ff-evo7') : /level/i.test(n) ? 'ff-level' : /monthly/i.test(n) ? 'ff-monthly' : /lite/i.test(n) ? 'ff-lite' : 'ff-weekly'; }
     else { const t = p.totalDiamonds || p.diam || 0; f = (FF_TIERS.find(x => t < x[0]) || FF_TIERS[FF_TIERS.length - 1])[1]; }
+  } else if (currentGame === 'zzz') {
+    dir = 'zzz';
+    if (p.type === 'pass') f = 'zz-pass';
+    else { const t = p.totalDiamonds || p.diam || 0; f = t < 200 ? 'zz-60' : t < 700 ? 'zz-330' : t < 1500 ? 'zz-1090' : t < 3000 ? 'zz-2240' : t < 5000 ? 'zz-3880' : 'zz-8080'; }
   } else if (currentGame === 'wuwa') {
     dir = 'wuwa';
     if (p.type === 'pass') f = 'ww-sub';
@@ -1893,6 +1899,13 @@ function showPkgNote(id) {
   if (!m) { m = document.createElement('div'); m.id = 'pkgNoteModal'; m.className = 'pn-modal'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m) closePkgNote(); }); document.addEventListener('keydown', e => { if (e.key === 'Escape') closePkgNote(); }); }
   const title = p.type === 'pass' ? p.name : p.totalDiamonds + ' ' + (p.unit || '');
   m.innerHTML = '<div class="pn-sheet"><div class="pn-head"><div class="pn-ti"><strong>' + esc(n[0] || title) + '</strong><span class="pn-warn"><i>!</i> Внимание</span></div><button type="button" class="pn-x" aria-label="Закрыть" onclick="closePkgNote()">✕</button></div><div class="pn-body">' + n[1].map(t => '<p>' + esc(t) + '</p>').join('') + '</div><button type="button" class="btn-primary btn-full" onclick="closePkgNote()">Понятно</button></div>';
+  m.classList.add('open'); document.body.style.overflow = 'hidden';
+}
+function showNotice(text) {
+  let m = document.getElementById('pkgNoteModal');
+  if (!m) { showPkgNote('__none__'); m = document.getElementById('pkgNoteModal'); }
+  if (!m) { m = document.createElement('div'); m.id = 'pkgNoteModal'; m.className = 'pn-modal'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m) closePkgNote(); }); document.addEventListener('keydown', e => { if (e.key === 'Escape') closePkgNote(); }); }
+  m.innerHTML = '<div class="pn-sheet pn-center"><span class="pn-bang">!</span><p class="pn-big">' + esc(text) + '</p><button type="button" class="btn-primary btn-full" onclick="closePkgNote()">Понятно</button></div>';
   m.classList.add('open'); document.body.style.overflow = 'hidden';
 }
 function closePkgNote() { const m = document.getElementById('pkgNoteModal'); if (m) m.classList.remove('open'); document.body.style.overflow = ''; }

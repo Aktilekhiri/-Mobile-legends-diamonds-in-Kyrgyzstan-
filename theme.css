@@ -420,3 +420,6 @@ body.v2 .pkg-card.popular{padding-top:10px}
 .pn-x{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:#eef0f6;cursor:pointer;font-size:1rem}
 .pn-body{padding:16px 0 20px;line-height:1.55;font-size:1.02rem}.pn-body p{margin:0 0 10px}
 @media (min-width:700px){.pn-modal{align-items:center}.pn-sheet{border-radius:22px}}
+
+.cat-row.off{opacity:.55;filter:grayscale(1);cursor:pointer}.cat-row.off:hover{border-color:var(--line,#dfe3ee)}
+.pn-center{text-align:center}.pn-bang{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:#f5a623;color:#fff;font-weight:900;font-size:1.7rem;margin:4px 0 12px}.pn-big{font-size:1.2rem;font-weight:800;line-height:1.4;margin:0 0 20px}

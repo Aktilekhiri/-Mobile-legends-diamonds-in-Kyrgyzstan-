@@ -465,3 +465,13 @@ html[data-theme="dark"] .pkg-card.selected,html[data-theme="blue"] .pkg-card.sel
 .tp-sw.l{background:linear-gradient(135deg,#fff 50%,#F4F7FB 50%)}.tp-sw.d{background:linear-gradient(135deg,#141A26 50%,#0B0F17 50%)}.tp-sw.b{background:linear-gradient(135deg,#2563EB 50%,#0A1E4A 50%)}
 
 #liveFeed .lf-main span.lf-who{font-size:.78rem;opacity:.85}
+
+/* Баннер розыгрыша */
+.giveaway{display:flex;align-items:center;gap:14px;margin:14px 0 6px;padding:14px 16px;border-radius:18px;text-decoration:none;color:var(--text,#0f172a);background:var(--surface,#fff);border:1px solid var(--border,rgba(15,23,42,.1));box-shadow:0 6px 20px rgba(15,23,42,.06)}
+.giveaway .gw-ico{flex:0 0 44px;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:26px;background:linear-gradient(135deg,#32D9F5,#7C83FF)}
+.giveaway .gw-ico img{width:30px;height:30px;object-fit:contain}
+.giveaway .gw-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.giveaway .gw-txt b{font-size:1rem}
+.giveaway .gw-txt small{font-size:.82rem;line-height:1.35;opacity:.75}
+.giveaway .gw-btn{flex:0 0 auto;font-weight:800;font-size:.85rem;padding:10px 14px;border-radius:12px;background:linear-gradient(135deg,#32D9F5,#7C83FF);color:#0B1020;white-space:nowrap}
+@media (max-width:520px){.giveaway{flex-wrap:wrap}.giveaway .gw-btn{width:100%;text-align:center}}

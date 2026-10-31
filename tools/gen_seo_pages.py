@@ -146,7 +146,7 @@ CSS = """*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Nunito',sy
 .logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.4rem;color:#101828;text-decoration:none}.logo b{color:#0E7490}
 nav .links a{margin-left:14px;text-decoration:none;font-size:.9rem;color:#566377}h1 .gic{width:48px;height:48px;border-radius:12px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.18)}h1{display:flex;align-items:center;gap:12px;font-family:'Rajdhani',sans-serif;font-size:clamp(1.7rem,5vw,2.5rem);line-height:1.15;margin:28px 0 10px}
 h2{font-family:'Rajdhani',sans-serif;font-size:1.5rem;margin:30px 0 10px;color:#0E7490}p{margin:8px 0;color:#344054}.lead{font-size:1.05rem}
-.btn{display:inline-block;background:#0E7490;color:#fff;font-weight:800;padding:13px 24px;border-radius:12px;text-decoration:none;margin:14px 10px 6px 0}.btn.s{background:transparent;color:#101828;border:1px solid #5B63F0}
+.oi{width:22px;height:22px;border-radius:6px;vertical-align:-5px;margin-right:4px}.btn{display:inline-block;background:#0E7490;color:#fff;font-weight:800;padding:13px 24px;border-radius:12px;text-decoration:none;margin:14px 10px 6px 0}.btn.s{background:transparent;color:#101828;border:1px solid #5B63F0}
 table{width:100%;border-collapse:collapse;margin:10px 0;background:#fff;border-radius:12px;overflow:hidden}td,th{padding:10px 14px;text-align:left;border-bottom:1px solid rgba(16,24,40,.12)}th{color:#566377;font-size:.8rem;text-transform:uppercase}td.p{color:#0E7490;font-weight:800;white-space:nowrap}
 ol{margin:8px 0 8px 22px;color:#344054}li{margin:6px 0}details{background:#fff;border-radius:12px;padding:12px 16px;margin:8px 0}summary{cursor:pointer;font-weight:700}details p{margin-top:8px}
 .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:10px 0}.games a{background:#fff;border:1px solid rgba(16,24,40,.12);border-radius:12px;padding:12px;text-decoration:none;color:#101828;font-weight:700}
@@ -169,7 +169,7 @@ def page(g):
         {"@type": "ListItem", "position": 1, "name": "Diamond.kg", "item": BASE + "/"},
         {"@type": "ListItem", "position": 2, "name": d['name'], "item": url}]},
     ]
-    others = ''.join(f"<a href='/{SLUG[k]}/'>{G[k]['icon']} {e(G[k]['name'])}</a>" for k in G if k != g)
+    others = ''.join(f"<a href='/{SLUG[k]}/'><img class='oi' src='/img/games/{k}.webp' width='22' height='22' alt=''> {e(G[k]['name'])}</a>" for k in G if k != g)
     intro = (f"Нужно пополнить {d['name']} в Кыргызстане и не хочется возиться с зарубежными картами? Здесь можно купить {d['cur']} за сомы: "
              f"переводом через Mbank или O!Банк. Пополнение идёт по {d['needs']}, пароль от аккаунта не нужен. {d['extra']}")
     if d.get('code'):
@@ -191,7 +191,7 @@ def page(g):
         h2steps = f"Как пополнить {d['name']}: 4 шага"
     body = f"""<h1><img class="gic" src="/img/games/{g}.webp" width="48" height="48" alt="{e(d['short'])}"> {e(d['h1'])}</h1>
 <p class="lead">{e(intro)}</p>
-<a class="btn" href="/?game={g}">{d['icon']} {cta} {e(d['short'])}</a><a class="btn s" href="https://wa.me/996555920204" rel="noopener">💬 Вопрос в WhatsApp</a>
+<a class="btn" href="/?game={g}"><img class="oi" src="/img/games/{g}.webp" width="22" height="22" alt=""> {cta} {e(d['short'])}</a><a class="btn s" href="https://wa.me/996555920204" rel="noopener">💬 Вопрос в WhatsApp</a>
 <h2>{e(h2price)}</h2>
 <table><tr><th>Пакет</th><th>Цена</th></tr>{rows}</table>
 <p class="note">Цены в сомах, без дополнительных комиссий. Актуальные цены всегда на странице оформления заказа.</p>

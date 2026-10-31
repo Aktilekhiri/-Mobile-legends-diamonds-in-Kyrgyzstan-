@@ -1,3 +1,4 @@
+import { defer } from './notify.js';
 // Письма клиенту о заказе через Resend. Работает, только если задан секрет RESEND_API_KEY.
 // Необязательно: MAIL_FROM (по умолчанию "diamond.kg <orders@diamond.kg>"), MAIL_REPLY_TO (по умолчанию не задан).
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -14,16 +15,22 @@ export async function sendMail(env, to, subject, html) {
   if (!env.RESEND_API_KEY || !to || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return false;
   try {
     const r = await fetch('https://api.resend.com/emails', {
+      signal: AbortSignal.timeout(10000),
       method: 'POST',
       headers: { Authorization: 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: env.MAIL_FROM || 'diamond.kg <orders@diamond.kg>', to: [to], ...(env.MAIL_REPLY_TO ? { reply_to: env.MAIL_REPLY_TO } : {}), subject, html }),
     });
+    if (!r.ok) console.log('mail failed', r.status, (await r.text().catch(() => '')).slice(0, 300));
     return r.ok;
-  } catch (e) { return false; }
+  } catch (e) { console.log('mail error', String(e && e.message || e)); return false; }
 }
 
 // kind: 'created' | 'delivered'. Сбой письма никогда не ломает заказ.
-export async function sendOrderMail(env, orderId, kind, titleOf) {
+export function sendOrderMail(env, orderId, kind, titleOf) {
+  if (!env.RESEND_API_KEY) return;
+  return defer(env, sendOrderMailNow(env, orderId, kind, titleOf));
+}
+async function sendOrderMailNow(env, orderId, kind, titleOf) {
   try {
     if (!env.RESEND_API_KEY) return;
     const o = await env.DB.prepare('SELECT o.id, o.region, o.pkg_label, o.price_kgs, o.player_id, o.user_id, u.email AS email FROM orders o JOIN users u ON u.id = o.user_id WHERE o.id = ?').bind(orderId).first();

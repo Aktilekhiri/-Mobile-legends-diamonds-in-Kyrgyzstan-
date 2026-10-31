@@ -105,7 +105,8 @@ function fromBase64(str) {
 
 // ---------- роутер ----------
 export default {
-  async fetch(req, env) {
+  async fetch(req, env0, ctx) {
+    const env = Object.create(env0); env.ctx = ctx; // ctx нужен для фоновой отправки уведомлений
     const url = new URL(req.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const m = req.method;

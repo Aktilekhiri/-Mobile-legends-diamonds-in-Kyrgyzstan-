@@ -1657,13 +1657,13 @@ let selectedMethod = null;
 let currentOrder = null; // для хранения данных перед отправкой
 
 let currentGame = 'mlbb';
-const GAME_TILES = { mlbb:['Mobile Legends','mlbb'], pubg:['PUBG Mobile','pubg'], freefire:['Free Fire','freefire'], hok:['Honor of Kings','hok'], genshin:['Genshin Impact','genshin'], wuwa:['Wuthering Waves','wuwa'], hsr:['Honkai: Star Rail','hsr'], zzz:['Zenless Zone Zero','zzz'], bloodstrike:['Blood Strike','bloodstrike'], roblox:['Roblox','roblox'], mchess:['Magic Chess Go Go','mchess','♟️'], deltaforce:['Delta Force','deltaforce','🪖'], marvel:['Marvel Rivals','marvel','🦸'], arena:['Arena Breakout','arena','🛡️'] };
+const GAME_TILES = { mlbb:['Mobile Legends','mlbb'], pubg:['PUBG Mobile','pubg'], freefire:['Free Fire','freefire'], hok:['Honor of Kings','hok'], genshin:['Genshin Impact','genshin'], wuwa:['Wuthering Waves','wuwa'], hsr:['Honkai: Star Rail','hsr'], zzz:['Zenless Zone Zero','zzz'], bloodstrike:['Blood Strike','bloodstrike'], roblox:['Roblox','roblox'], mchess:['Magic Chess Go Go','mchess'], deltaforce:['Delta Force','deltaforce'], marvel:['Marvel Rivals','marvel'], arena:['Arena Breakout','arena'] };
 function buildGamePicker() {
   const box = document.getElementById('gamePicker'), sel = document.getElementById('gameSelect');
   if (!box || !sel) return;
   box.innerHTML = [...sel.options].filter(o => !o.disabled && GAME_TILES[o.value]).map(o => {
     const t = GAME_TILES[o.value];
-    return `<button type="button" class="gp-item" role="radio" aria-checked="false" data-g="${o.value}" onclick="changeGame('${o.value}')">${t[2] ? `<span class="gp-em" aria-hidden="true">${t[2]}</span>` : `<img src="/img/games/${t[1]}.webp" width="48" height="48" alt="" loading="lazy" decoding="async">`}<span class="gp-tx">${t[0]}</span></button>`;
+    return `<button type="button" class="gp-item" role="radio" aria-checked="false" data-g="${o.value}" onclick="changeGame('${o.value}')">${t[2] ? `<span class="gp-em" aria-hidden="true">${t[2]}</span>` : `<img src="/img/games/${t[1]}.webp?v=2" width="48" height="48" alt="" loading="lazy" decoding="async">`}<span class="gp-tx">${t[0]}</span></button>`;
   }).join('');
 }
 function syncGamePicker() {

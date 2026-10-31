@@ -1697,7 +1697,7 @@ function pkgImg(p) {
     else { const t = p.totalDiamonds || p.diam || 0; f = (FF_TIERS.find(x => t < x[0]) || FF_TIERS[FF_TIERS.length - 1])[1]; }
   } else if (currentGame === 'roblox') {
     dir = 'roblox';
-    { const t = p.totalDiamonds || p.diam || 0; f = t < 100 ? 'rb-1' : t < 2000 ? 'rb-3' : 'rb-many'; }
+    { const t = p.totalDiamonds || p.diam || 0; f = t < 100 ? 'rb-1' : t < 2500 ? 'rb-3' : 'rb-many'; }
   } else if (currentGame === 'hok') {
     dir = 'hok';
     if (p.type === 'pass') f = /plus/i.test(p.name || '') ? 'hk-weekly-plus' : 'hk-weekly';

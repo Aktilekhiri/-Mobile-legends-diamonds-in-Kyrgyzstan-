@@ -4,7 +4,7 @@ import { notify } from './notify.js';
 
 const clean = (v, n) => String(v == null ? '' : v).replace(/<[^>]*>/g, '').replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
 const GAME_TITLE = { mlbb: 'Mobile Legends', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves',
-  hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', bloodstrike: 'Blood Strike', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox' };
+  mchess: 'Magic Chess Go Go', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', bloodstrike: 'Blood Strike', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox' };
 const gameOf = region => (region === 'global' || region === 'russia' || !region) ? 'mlbb' : region;
 
 function safeEq(a, b) {

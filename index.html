@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=16">
+<link rel="stylesheet" href="theme.css?v=17">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1465,6 +1465,10 @@
         <option value="hsr">Honkai: Star Rail</option>
         <option value="zzz">Zenless Zone Zero</option>
         <option value="bloodstrike">Blood Strike</option>
+        <option value="mchess">Magic Chess Go Go</option>
+        <option value="deltaforce">Delta Force</option>
+        <option value="marvel">Marvel Rivals</option>
+        <option value="arena">Arena Breakout</option>
         <option value="tgstars" disabled>Telegram Stars — временно недоступно</option>
         <option value="tgpremium" disabled>Telegram Premium — временно недоступно</option>
         <option value="roblox">Roblox (Robux)</option>
@@ -1506,6 +1510,7 @@
       </div>
       <div class="id-guide" id="idGuide" style="background:rgba(255,186,8,.06); padding:13px; border-radius:12px;"><strong>📖 Как найти ID?</strong><br>Профиль → ваш ID (123456789) и сервер в скобках (1234)</div>
       <div class="first-warn" id="firstWarn" hidden><strong>⚠️ Пакет только для первого пополнения</strong><p>Бонус даётся один раз на аккаунт. Если вы уже пополняли этот аккаунт в Mobile Legends, выберите другой пакет: иначе заказ может обрабатываться очень долго и в итоге будет возвращён.</p><label class="first-ok"><input type="checkbox" id="firstOk" onchange="updateBuyBtn()"> Я ещё ни разу не пополнял этот аккаунт</label></div>
+      <label class="id-ok" id="idOkRow" hidden><input type="checkbox" id="idOk" onchange="updateBuyBtn()"><span id="idOkText"></span></label>
       <button class="btn-primary btn-full" onclick="proceedToPayment()" id="buyBtn" disabled style="margin-top:14px; opacity:0.5">Перейти к оплате →</button>
     </div>
   </div>
@@ -1610,7 +1615,7 @@ const packagesData = {
 };
 const regionLabels = { global: '🌍 Глобальный', russia: '🇷🇺 Россия' };
 // Другие игры (цены в Сом). k = offer_id у поставщика. amt+bonus = сколько получает игрок; name = пасс/подписка.
-const gamesData = {"pubg":{"name":"PUBG Mobile","unit":"UC","servers":null,"packs":[{"k":"60_uc","price":118,"amt":60},{"k":"325_uc","price":580,"amt":325},{"k":"660_uc","price":920,"amt":660},{"k":"1800_uc","price":2295,"amt":1800},{"k":"3850_uc","price":4590,"amt":3850},{"k":"8100_uc","price":9540,"amt":8100},{"k":"prime_1_month","price":118,"name":"Prime (1 мес)"},{"k":"elite_pass_lv1_50","price":700,"name":"Elite Pass LV1-50"},{"k":"elite_pass_lv1_100","price":1120,"name":"Elite Pass LV1-100"}],"icon":"🔫"},"freefire":{"name":"Free Fire","unit":"алмазов","servers":null,"packs":[{"k":"110_diamonds","price":108,"amt":110},{"k":"341_diamonds","price":315,"amt":341},{"k":"572_diamonds","price":510,"amt":572},{"k":"1166_diamonds","price":845,"amt":1166},{"k":"2398_diamonds","price":1695,"amt":2398},{"k":"6160_diamonds","price":4285,"amt":6160},{"k":"level_up_package_30","price":100,"name":"Level Up Package 30"},{"k":"evo_access_7d","price":95,"name":"Evo Access 7d"},{"k":"evo_access_30d","price":280,"name":"Evo Access 30d"},{"k":"weekly_lite","price":50,"name":"Weekly Lite"},{"k":"weekly_membership","price":210,"name":"Weekly Membership"},{"k":"monthly_membership","price":610,"name":"Monthly Membership"}],"icon":"🔥"},"hok":{"name":"Honor of Kings","unit":"токенов","servers":null,"packs":[{"k":"16_tokens","price":30,"amt":16},{"k":"80_tokens","price":113,"amt":80},{"k":"240_tokens","price":330,"amt":240},{"k":"400_tokens","price":460,"amt":400},{"k":"560_tokens","price":645,"amt":560},{"k":"830_tokens","price":920,"amt":830},{"k":"1245_tokens","price":1380,"amt":1245},{"k":"2508_tokens","price":2745,"amt":2508},{"k":"4180_tokens","price":4600,"amt":4180},{"k":"8360_tokens","price":9140,"amt":8360},{"k":"weekly_card","price":128,"name":"Weekly Card"},{"k":"weekly_card_plus","price":380,"name":"Weekly Card Plus"}],"icon":"👑"},"genshin":{"name":"Genshin Impact","unit":"кристаллов","servers":[{"v":"america","l":"America"},{"v":"asia","l":"Asia"},{"v":"europe","l":"Europe"},{"v":"tw_hk_mo","l":"TW, HK, MO"}],"packs":[{"k":"60_genesis_crystals","price":138,"amt":60},{"k":"300_30_genesis_crystals","price":665,"amt":300,"bonus":30},{"k":"980_110_genesis_crystals","price":1645,"amt":980,"bonus":110},{"k":"1980_260_genesis_crystals","price":3290,"amt":1980,"bonus":260},{"k":"3280_600_genesis_crystals","price":5475,"amt":3280,"bonus":600},{"k":"6480_1600_genesis_crystals","price":10950,"amt":6480,"bonus":1600},{"k":"blessing_of_the_welkin_moon","price":665,"name":"Blessing of the Welkin Moon"}],"icon":"✨"},"wuwa":{"name":"Wuthering Waves","unit":"Lunite","servers":[{"v":"os_asia","l":"Asia"},{"v":"os_usa","l":"America"},{"v":"os_euro","l":"Europe"},{"v":"os_sea","l":"SEA"},{"v":"os_cht","l":"TW, HK, MO"}],"packs":[{"k":"60_lunite","price":113,"amt":60},{"k":"330_lunite","price":545,"amt":330},{"k":"1090_lunite","price":1360,"amt":1090},{"k":"2240_lunite","price":2725,"amt":2240},{"k":"3880_lunite","price":4510,"amt":3880},{"k":"8080_lunite","price":8870,"amt":8080},{"k":"lunite_subscription","price":545,"name":"Lunite Subscription"}],"icon":"🌊"},"bloodstrike":{"name":"Blood Strike","unit":"BC","servers":null,"packs":[{"k":"51_bc","price":51,"amt":51},{"k":"105_bc","price":101,"amt":105},{"k":"320_bc","price":300,"amt":320},{"k":"540_bc","price":495,"amt":540},{"k":"1100_bc","price":990,"amt":1100},{"k":"2260_bc","price":1765,"amt":2260},{"k":"5800_bc","price":4385,"amt":5800},{"k":"level_up_pass","price":210,"name":"Level Up Pass"},{"k":"strike_pass_elite","price":415,"name":"Strike Pass Elite"},{"k":"strike_pass_premium","price":930,"name":"Strike Pass Premium"}],"icon":"🎯","pk":"🎯"},"hsr":{"name":"Honkai: Star Rail","unit":"Oneiric Shard","servers":[{"v":"america","l":"America"},{"v":"asia","l":"Asia"},{"v":"europe","l":"Europe"},{"v":"tw_hk_mo","l":"TW, HK, MO"}],"packs":[{"k":"60_oneiric_shard","price":118,"amt":60},{"k":"300_30_oneiric_shard","price":570,"amt":300,"bonus":30},{"k":"980_110_oneiric_shard","price":1610,"amt":980,"bonus":110},{"k":"1980_260_oneiric_shard","price":3090,"amt":1980,"bonus":260},{"k":"3280_600_oneiric_shard","price":5155,"amt":3280,"bonus":600},{"k":"6480_1600_oneiric_shard","price":10235,"amt":6480,"bonus":1600},{"k":"express_supply_pass","price":570,"name":"Express Supply Pass"}],"icon":"🚂","pk":"🚂"},"zzz":{"name":"Zenless Zone Zero","unit":"Monochrome","servers":[{"v":"america","l":"America"},{"v":"asia","l":"Asia"},{"v":"europe","l":"Europe"},{"v":"tw_hk_mo","l":"TW, HK, MO"}],"packs":[{"k":"60_monochromes","price":133,"amt":60},{"k":"300_30_monochromes","price":650,"amt":300,"bonus":30},{"k":"980_110_monochromes","price":1745,"amt":980,"bonus":110},{"k":"1980_260_monochromes","price":3490,"amt":1980,"bonus":260},{"k":"3280_600_monochromes","price":5810,"amt":3280,"bonus":600},{"k":"6480_1600_monochromes","price":11620,"amt":6480,"bonus":1600},{"k":"inter_knot_membership","price":650,"name":"Inter-Knot Membership"}],"icon":"📺","pk":"📺"},"tgstars":{"name":"Telegram Stars","unit":"звёзд","servers":null,"packs":[{"k":"50","price":86,"amt":50},{"k":"100","price":175,"amt":100},{"k":"250","price":430,"amt":250},{"k":"500","price":850,"amt":500},{"k":"1000","price":1705,"amt":1000},{"k":"2500","price":4250,"amt":2500},{"k":"5000","price":8495,"amt":5000}],"icon":"⭐","kind":"username","pk":"⭐"},"tgpremium":{"name":"Telegram Premium","unit":"мес.","servers":null,"packs":[{"k":"3m","price":1285,"name":"Premium 3 месяца"},{"k":"6m","price":1710,"name":"Premium 6 месяцев"},{"k":"12m","price":3095,"name":"Premium 12 месяцев"}],"icon":"✈️","kind":"username","pk":"✈️"},"roblox":{"name":"Roblox","unit":"Robux","servers":null,"packs":[{"k":"50_robux","price":180,"amt":50},{"k":"800_robux","price":995,"amt":800},{"k":"1000_robux","price":1215,"amt":1000},{"k":"2000_robux","price":2460,"amt":2000},{"k":"2500_robux","price":3200,"amt":2500},{"k":"3000_robux","price":3850,"amt":3000},{"k":"4500_robux","price":5415,"amt":4500},{"k":"10000_robux","price":10700,"amt":10000}],"icon":"🧱","kind":"none","pk":"🧱","redeem":{"t":"Введите код на roblox.com/redeem — Robux придут на ваш аккаунт Roblox.","u":"https://www.roblox.com/redeem","b":"Активировать"}}};
+const gamesData = {"pubg":{"name":"PUBG Mobile","unit":"UC","servers":null,"packs":[{"k":"60_uc","price":118,"amt":60},{"k":"325_uc","price":580,"amt":325},{"k":"660_uc","price":920,"amt":660},{"k":"1800_uc","price":2295,"amt":1800},{"k":"3850_uc","price":4590,"amt":3850},{"k":"8100_uc","price":9540,"amt":8100},{"k":"prime_1_month","price":118,"name":"Prime (1 мес)"},{"k":"elite_pass_lv1_50","price":700,"name":"Elite Pass LV1-50"},{"k":"elite_pass_lv1_100","price":1120,"name":"Elite Pass LV1-100"}],"icon":"🔫"},"freefire":{"name":"Free Fire","unit":"алмазов","servers":null,"packs":[{"k":"110_diamonds","price":108,"amt":110},{"k":"341_diamonds","price":315,"amt":341},{"k":"572_diamonds","price":510,"amt":572},{"k":"1166_diamonds","price":845,"amt":1166},{"k":"2398_diamonds","price":1695,"amt":2398},{"k":"6160_diamonds","price":4285,"amt":6160},{"k":"level_up_package_30","price":100,"name":"Level Up Package 30"},{"k":"evo_access_7d","price":95,"name":"Evo Access 7d"},{"k":"evo_access_30d","price":280,"name":"Evo Access 30d"},{"k":"weekly_lite","price":50,"name":"Weekly Lite"},{"k":"weekly_membership","price":210,"name":"Weekly Membership"},{"k":"monthly_membership","price":610,"name":"Monthly Membership"}],"icon":"🔥"},"hok":{"name":"Honor of Kings","unit":"токенов","servers":null,"packs":[{"k":"16_tokens","price":30,"amt":16},{"k":"80_tokens","price":113,"amt":80},{"k":"240_tokens","price":330,"amt":240},{"k":"400_tokens","price":460,"amt":400},{"k":"560_tokens","price":645,"amt":560},{"k":"830_tokens","price":920,"amt":830},{"k":"1245_tokens","price":1380,"amt":1245},{"k":"2508_tokens","price":2745,"amt":2508},{"k":"4180_tokens","price":4600,"amt":4180},{"k":"8360_tokens","price":9140,"amt":8360},{"k":"weekly_card","price":128,"name":"Weekly Card"},{"k":"weekly_card_plus","price":380,"name":"Weekly Card Plus"}],"icon":"👑"},"genshin":{"name":"Genshin Impact","unit":"кристаллов","servers":[{"v":"america","l":"America"},{"v":"asia","l":"Asia"},{"v":"europe","l":"Europe"},{"v":"tw_hk_mo","l":"TW, HK, MO"}],"packs":[{"k":"60_genesis_crystals","price":138,"amt":60},{"k":"300_30_genesis_crystals","price":665,"amt":300,"bonus":30},{"k":"980_110_genesis_crystals","price":1645,"amt":980,"bonus":110},{"k":"1980_260_genesis_crystals","price":3290,"amt":1980,"bonus":260},{"k":"3280_600_genesis_crystals","price":5475,"amt":3280,"bonus":600},{"k":"6480_1600_genesis_crystals","price":10950,"amt":6480,"bonus":1600},{"k":"blessing_of_the_welkin_moon","price":665,"name":"Blessing of the Welkin Moon"}],"icon":"✨"},"wuwa":{"name":"Wuthering Waves","unit":"Lunite","servers":[{"v":"os_asia","l":"Asia"},{"v":"os_usa","l":"America"},{"v":"os_euro","l":"Europe"},{"v":"os_sea","l":"SEA"},{"v":"os_cht","l":"TW, HK, MO"}],"packs":[{"k":"60_lunite","price":113,"amt":60},{"k":"330_lunite","price":545,"amt":330},{"k":"1090_lunite","price":1360,"amt":1090},{"k":"2240_lunite","price":2725,"amt":2240},{"k":"3880_lunite","price":4510,"amt":3880},{"k":"8080_lunite","price":8870,"amt":8080},{"k":"lunite_subscription","price":545,"name":"Lunite Subscription"}],"icon":"🌊"},"bloodstrike":{"name":"Blood Strike","unit":"BC","servers":null,"packs":[{"k":"51_bc","price":51,"amt":51},{"k":"105_bc","price":101,"amt":105},{"k":"320_bc","price":300,"amt":320},{"k":"540_bc","price":495,"amt":540},{"k":"1100_bc","price":990,"amt":1100},{"k":"2260_bc","price":1765,"amt":2260},{"k":"5800_bc","price":4385,"amt":5800},{"k":"level_up_pass","price":210,"name":"Level Up Pass"},{"k":"strike_pass_elite","price":415,"name":"Strike Pass Elite"},{"k":"strike_pass_premium","price":930,"name":"Strike Pass Premium"}],"icon":"🎯","pk":"🎯"},"hsr":{"name":"Honkai: Star Rail","unit":"Oneiric Shard","servers":[{"v":"america","l":"America"},{"v":"asia","l":"Asia"},{"v":"europe","l":"Europe"},{"v":"tw_hk_mo","l":"TW, HK, MO"}],"packs":[{"k":"60_oneiric_shard","price":118,"amt":60},{"k":"300_30_oneiric_shard","price":570,"amt":300,"bonus":30},{"k":"980_110_oneiric_shard","price":1610,"amt":980,"bonus":110},{"k":"1980_260_oneiric_shard","price":3090,"amt":1980,"bonus":260},{"k":"3280_600_oneiric_shard","price":5155,"amt":3280,"bonus":600},{"k":"6480_1600_oneiric_shard","price":10235,"amt":6480,"bonus":1600},{"k":"express_supply_pass","price":570,"name":"Express Supply Pass"}],"icon":"🚂","pk":"🚂"},"zzz":{"name":"Zenless Zone Zero","unit":"Monochrome","servers":[{"v":"america","l":"America"},{"v":"asia","l":"Asia"},{"v":"europe","l":"Europe"},{"v":"tw_hk_mo","l":"TW, HK, MO"}],"packs":[{"k":"60_monochromes","price":133,"amt":60},{"k":"300_30_monochromes","price":650,"amt":300,"bonus":30},{"k":"980_110_monochromes","price":1745,"amt":980,"bonus":110},{"k":"1980_260_monochromes","price":3490,"amt":1980,"bonus":260},{"k":"3280_600_monochromes","price":5810,"amt":3280,"bonus":600},{"k":"6480_1600_monochromes","price":11620,"amt":6480,"bonus":1600},{"k":"inter_knot_membership","price":650,"name":"Inter-Knot Membership"}],"icon":"📺","pk":"📺"},"tgstars":{"name":"Telegram Stars","unit":"звёзд","servers":null,"packs":[{"k":"50","price":86,"amt":50},{"k":"100","price":175,"amt":100},{"k":"250","price":430,"amt":250},{"k":"500","price":850,"amt":500},{"k":"1000","price":1705,"amt":1000},{"k":"2500","price":4250,"amt":2500},{"k":"5000","price":8495,"amt":5000}],"icon":"⭐","kind":"username","pk":"⭐"},"tgpremium":{"name":"Telegram Premium","unit":"мес.","servers":null,"packs":[{"k":"3m","price":1285,"name":"Premium 3 месяца"},{"k":"6m","price":1710,"name":"Premium 6 месяцев"},{"k":"12m","price":3095,"name":"Premium 12 месяцев"}],"icon":"✈️","kind":"username","pk":"✈️"},"roblox":{"name":"Roblox","unit":"Robux","servers":null,"packs":[{"k":"50_robux","price":180,"amt":50},{"k":"800_robux","price":995,"amt":800},{"k":"1000_robux","price":1215,"amt":1000},{"k":"2000_robux","price":2460,"amt":2000},{"k":"2500_robux","price":3200,"amt":2500},{"k":"3000_robux","price":3850,"amt":3000},{"k":"4500_robux","price":5415,"amt":4500},{"k":"10000_robux","price":10700,"amt":10000}],"icon":"🧱","kind":"none","pk":"🧱","redeem":{"t":"Введите код на roblox.com/redeem — Robux придут на ваш аккаунт Roblox.","u":"https://www.roblox.com/redeem","b":"Активировать"}},"mchess":{"name":"Magic Chess Go Go","unit":"алмазов","servers":null,"icon":"♟️","pk":"♟️","zone":true,"packs":[{"k":"86_diamonds","price":160,"amt":86},{"k":"172_diamonds","price":310,"amt":172},{"k":"257_diamonds","price":420,"amt":257},{"k":"344_diamonds","price":555,"amt":344},{"k":"516_diamonds","price":835,"amt":516},{"k":"706_diamonds","price":1115,"amt":706},{"k":"1060_diamonds","price":1530,"amt":1060},{"k":"2195_diamonds","price":3010,"amt":2195},{"k":"weekly_card","price":235,"name":"Weekly Card"}]},"deltaforce":{"name":"Delta Force","unit":"Delta Coins","servers":null,"icon":"🪖","pk":"🪖","packs":[{"k":"60_delta_coins","price":105,"amt":60},{"k":"320_delta_coins","price":465,"amt":320},{"k":"750_delta_coins","price":925,"amt":750},{"k":"1480_delta_coins","price":1665,"amt":1480},{"k":"3950_delta_coins","price":4160,"amt":3950},{"k":"season_pass_operations_special","price":515,"name":"Season Pass Operations Special"},{"k":"season_pass_warfare_special","price":515,"name":"Season Pass Warfare Special"},{"k":"season_pass_delta_force_deluxe","price":715,"name":"Season Pass Deluxe"}]},"marvel":{"name":"Marvel Rivals","unit":"Lattices","servers":null,"icon":"🦸","pk":"🦸","packs":[{"k":"100_lattices","price":115,"amt":100},{"k":"500_lattices","price":515,"amt":500},{"k":"1000_lattices","price":1030,"amt":1000},{"k":"2180_lattices","price":1860,"amt":2180},{"k":"5680_lattices","price":4645,"amt":5680}]},"arena":{"name":"Arena Breakout","unit":"Bonds","servers":null,"icon":"🛡️","pk":"🛡️","packs":[{"k":"66_bonds","price":110,"amt":66},{"k":"335_bonds","price":480,"amt":335},{"k":"675_bonds","price":955,"amt":675},{"k":"1690_bonds","price":2150,"amt":1690},{"k":"3400_bonds","price":4275,"amt":3400},{"k":"beginner_select","price":100,"name":"Beginner Select"},{"k":"monthly_advanced_battle_pass_activation_pass","price":120,"name":"Monthly Advanced Battle Pass"},{"k":"monthly_premium_battle_pass_activation_pass","price":425,"name":"Monthly Premium Battle Pass"},{"k":"bulletproof_case_30d","price":290,"name":"Bulletproof Case (30d)"}]}};
 const gameIds = {
   mlbb: 'Введите ID игрока и Zone ID из профиля Mobile Legends',
   pubg: 'PUBG Mobile → профиль (аватар) → ID персонажа. Только цифры, пароль не нужен.',
@@ -1621,6 +1626,10 @@ const gameIds = {
   bloodstrike: 'Blood Strike → профиль (аватар) → ID игрока. Только цифры, пароль не нужен.',
   hsr: 'Honkai: Star Rail → меню → «Настройки» → UID (9 цифр) внизу справа. Выберите свой сервер.',
   zzz: 'Zenless Zone Zero → меню → «Настройки» → UID (8–10 цифр). Выберите свой сервер.',
+  mchess: 'Magic Chess Go Go → профиль → ID игрока и Server ID (число в скобках рядом с ID). Вводятся в два отдельных поля. Пароль не нужен.',
+  deltaforce: 'Delta Force → профиль (аватар) → ID игрока. Только цифры, пароль не нужен.',
+  marvel: 'Marvel Rivals → профиль → ID игрока (UID). Только цифры, пароль не нужен.',
+  arena: 'Arena Breakout → профиль → ID игрока. Только цифры, пароль не нужен. Версия для мобильных.',
   tgstars: 'Введите ваш Telegram @username (Настройки → Имя пользователя). Звёзды/подписка придут прямо на этот аккаунт, пароль не нужен.',
   tgpremium: 'Введите ваш Telegram @username (Настройки → Имя пользователя). Звёзды/подписка придут прямо на этот аккаунт, пароль не нужен.',
   roblox: 'Ничего вводить не нужно: после оплаты вы получите код и активируете его на roblox.com/redeem.'
@@ -1656,13 +1665,13 @@ let selectedMethod = null;
 let currentOrder = null; // для хранения данных перед отправкой
 
 let currentGame = 'mlbb';
-const GAME_TILES = { mlbb:['Mobile Legends','mlbb'], pubg:['PUBG Mobile','pubg'], freefire:['Free Fire','freefire'], hok:['Honor of Kings','hok'], genshin:['Genshin Impact','genshin'], wuwa:['Wuthering Waves','wuwa'], hsr:['Honkai: Star Rail','hsr'], zzz:['Zenless Zone Zero','zzz'], bloodstrike:['Blood Strike','bloodstrike'], roblox:['Roblox','roblox'] };
+const GAME_TILES = { mlbb:['Mobile Legends','mlbb'], pubg:['PUBG Mobile','pubg'], freefire:['Free Fire','freefire'], hok:['Honor of Kings','hok'], genshin:['Genshin Impact','genshin'], wuwa:['Wuthering Waves','wuwa'], hsr:['Honkai: Star Rail','hsr'], zzz:['Zenless Zone Zero','zzz'], bloodstrike:['Blood Strike','bloodstrike'], roblox:['Roblox','roblox'], mchess:['Magic Chess Go Go','mchess','♟️'], deltaforce:['Delta Force','deltaforce','🪖'], marvel:['Marvel Rivals','marvel','🦸'], arena:['Arena Breakout','arena','🛡️'] };
 function buildGamePicker() {
   const box = document.getElementById('gamePicker'), sel = document.getElementById('gameSelect');
   if (!box || !sel) return;
   box.innerHTML = [...sel.options].filter(o => !o.disabled && GAME_TILES[o.value]).map(o => {
     const t = GAME_TILES[o.value];
-    return `<button type="button" class="gp-item" role="radio" aria-checked="false" data-g="${o.value}" onclick="changeGame('${o.value}')"><img src="/img/games/${t[1]}.webp" width="48" height="48" alt="" loading="lazy" decoding="async"><span class="gp-tx">${t[0]}</span></button>`;
+    return `<button type="button" class="gp-item" role="radio" aria-checked="false" data-g="${o.value}" onclick="changeGame('${o.value}')">${t[2] ? `<span class="gp-em" aria-hidden="true">${t[2]}</span>` : `<img src="/img/games/${t[1]}.webp" width="48" height="48" alt="" loading="lazy" decoding="async">`}<span class="gp-tx">${t[0]}</span></button>`;
   }).join('');
 }
 function syncGamePicker() {
@@ -1679,7 +1688,7 @@ function changeGame(g) {
   document.getElementById('idRow').style.display = kind ? 'none' : '';
   document.getElementById('userRow').style.display = kind === 'username' ? '' : 'none';
   const srvRow = document.getElementById('serverRow'), srvIn = document.getElementById('serverId'), srvSel = document.getElementById('serverSelect');
-  if (!gd) { srvRow.style.display = ''; srvIn.style.display = ''; srvSel.style.display = 'none'; document.getElementById('serverLabel').textContent = 'ZONE ID (СЕРВЕР)'; document.getElementById('serverId').placeholder = '8403'; }
+  if (!gd || gd.zone) { srvRow.style.display = ''; srvIn.style.display = ''; srvSel.style.display = 'none'; document.getElementById('serverLabel').textContent = gd ? 'SERVER ID' : 'ZONE ID (СЕРВЕР)'; document.getElementById('serverId').placeholder = '8403'; }
   else if (gd.servers) {
     srvRow.style.display = ''; srvIn.style.display = 'none'; srvSel.style.display = '';
     document.getElementById('serverLabel').textContent = 'СЕРВЕР';
@@ -1693,7 +1702,7 @@ function changeGame(g) {
     tt.prepend(im); }
   document.getElementById('playerId').placeholder = gd ? '123456789' : '598505997';
   document.getElementById('idHint').textContent = gd ? 'Только цифры, без пробелов и букв.' : 'User ID: только цифры, без скобок. Пример: 598505997';
-  document.getElementById('serverHint').textContent = !gd ? 'Zone ID: цифры в скобках рядом с ID в профиле. Пример: (8403) → введите 8403' : (gd.servers ? 'Выберите сервер, как указано в игре рядом с UID.' : '');
+  document.getElementById('serverHint').textContent = (gd && gd.zone) ? 'Server ID: число в скобках рядом с ID в профиле.' : !gd ? 'Zone ID: цифры в скобках рядом с ID в профиле. Пример: (8403) → введите 8403' : (gd.servers ? 'Выберите сервер, как указано в игре рядом с UID.' : '');
   currentRegion = gd ? currentGame : document.getElementById('regionSelect').value;
   updateRegionHint();
   packages = buildPackages(currentRegion);
@@ -1758,7 +1767,7 @@ function pkgIcon(p) {
 }
 function getServerValue() {
   const gd = gamesData[currentGame];
-  if (!gd) return document.getElementById('serverId').value.trim();
+  if (!gd || gd.zone) return document.getElementById('serverId').value.trim();
   if (gd.servers) return document.getElementById('serverSelect').value;
   return '-';
 }
@@ -1897,7 +1906,17 @@ function updateBuyBtn() {
   }
   const zw = document.getElementById('zoneWarn'); if (zw) zw.hidden = !zoneBad;
   const firstOk = !(selectedPkg && selectedPkg.firstOnly) || !!(document.getElementById('firstOk') && document.getElementById('firstOk').checked);
-  const ok = pid && sid && selectedPkg && !zoneBad && !prob && firstOk;
+  const gdk = gamesData[currentGame], needIdOk = !(gdk && gdk.kind === 'none');
+  const ready = !!(pid && sid && selectedPkg && !zoneBad && !prob && firstOk);
+  const ior = document.getElementById('idOkRow'), iok = document.getElementById('idOk');
+  if (ior && iok) {
+    const sig = pid + '|' + sid + '|' + (selectedPkg ? selectedPkg.key || selectedPkg.id : '');
+    if (iok.dataset.sig !== sig) { iok.checked = false; iok.dataset.sig = sig; }
+    ior.hidden = !(ready && needIdOk);
+    if (ready) { const sl = gdk && gdk.servers ? ((gdk.servers.find(x => x.v === sid) || {}).l || sid) : sid; document.getElementById('idOkText').innerHTML = 'Проверил(а): ID <b>' + esc(pid) + '</b>' + (sid && sid !== '-' ? ', сервер <b>' + esc(sl) + '</b>' : '') + '. Пополнение придёт именно на этот аккаунт, а ошибочный ID вернуть нельзя.'; }
+  }
+  const idOkPass = !needIdOk || !!(iok && iok.checked);
+  const ok = ready && idOkPass;
   btn.disabled = !ok;
   btn.style.opacity = ok ? '1' : '0.5';
   btn.textContent = (ok && selectedPkg) ? `Оплатить ${selectedPkg.price.toLocaleString()} Сом →` : 'Перейти к оплате →';
@@ -1908,6 +1927,7 @@ function proceedToPayment() {
   const sid = getServerValue();
   if (!pid || !sid || !selectedPkg || isRuZoneOnGlobal(sid) || mlbbIdProblem(pid, sid)) return;
   if (selectedPkg.firstOnly && !(document.getElementById('firstOk') || {}).checked) return;
+  { const g0 = gamesData[currentGame]; if (!(g0 && g0.kind === 'none') && !(document.getElementById('idOk') || {}).checked) return; }
   currentOrder = {
     playerId: pid,
     serverId: sid,
@@ -1930,7 +1950,7 @@ function proceedToPayment() {
   const srvShown = gdPay && gdPay.servers ? ((gdPay.servers.find(x => x.v === sid) || {}).l || sid) : sid;
   currentOrder.serverLabel = srvShown;
   document.getElementById('payServerId').innerText = srvShown;
-  document.getElementById('payServerRow').style.display = (gdPay && !gdPay.servers) ? 'none' : '';
+  document.getElementById('payServerRow').style.display = (gdPay && !gdPay.servers && !gdPay.zone) ? 'none' : '';
   document.getElementById('payProduct').textContent = gdPay ? (payKind ? gdPay.name + ' — код активации' : gdPay.name + ' — ' + gdPay.unit) : 'Mobile Legends — Алмазы';
   document.getElementById('payPackage').innerHTML = pkgIcon(selectedPkg) + ' ' + currentOrder.label;
   document.getElementById('payTotal').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;
@@ -2532,7 +2552,7 @@ function restoreLastId() {
     pid.value = v.p || '';
     const gd = gamesData[currentGame];
     if (gd && gd.servers) { if (v.s) document.getElementById('serverSelect').value = v.s; }
-    else if (!gd) document.getElementById('serverId').value = v.s || '';
+    else if (!gd || gd.zone) document.getElementById('serverId').value = v.s || '';
     if (!gd && v.r && document.getElementById('regionSelect').value !== v.r) { document.getElementById('regionSelect').value = v.r; changeRegion(); }
     updateBuyBtn();
   } catch (e) {}

@@ -83,6 +83,7 @@ export async function fzCreateOrder(env, { region, offerId, playerId, serverId, 
   }
   const fields = { player_id: String(playerId) };
   if (!g) fields.server_id = String(serverId);              // MLBB
+  else if (g.serverText) fields.server_id = String(serverId);
   else if (g.serverField) fields[g.serverField] = String(serverId); // Genshin / WuWa: значение из списка серверов
   const offers = String(offerId).split('|');
   const parts = [];

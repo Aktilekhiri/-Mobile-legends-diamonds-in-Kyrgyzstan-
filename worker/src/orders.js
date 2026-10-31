@@ -37,7 +37,7 @@ function profitText(price, cat) {
   return ` (${p >= 0 ? '+' : '−'}${Math.abs(p)} сом прибыль)`;
 }
 
-const GAME_TITLE = { bloodstrike: 'Blood Strike', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', global: 'Mobile Legends' };
+const GAME_TITLE = { mchess: 'Magic Chess Go Go', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', bloodstrike: 'Blood Strike', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', global: 'Mobile Legends' };
 const gameTitle = region => GAME_TITLE[region] || 'Mobile Legends';
 
 function alertText(o, cat, auto, withReceipt) {
@@ -73,11 +73,12 @@ export async function createOrder(env, ip, b, userId = null) {
   } else {
     player = digits(b.playerId, 14);
     if (!game) server = digits(b.serverId, 8);
+    else if (game.serverText) server = digits(b.serverId, 8);
     else if (game.servers) server = game.servers.includes(String(b.serverId)) ? String(b.serverId) : '';
     else server = '-';
     if (!game && region === 'global' && /^6\d{3}$/.test(server)) return { error: 'Сервер 6xxx — российский. Выберите регион «Россия»' };
     if (!game && (player.length < 6 || player.length > 10 || server.length < 3 || server.length > 5)) return { error: 'Проверьте ID (6–10 цифр) и Zone ID (4–5 цифр) — вводите их в отдельные поля' };
-    if (player.length < 5 || !server) return { error: game ? 'Проверьте ID и сервер' : 'Проверьте ID и Zone ID' };
+    if (player.length < 5 || !server || (game && game.serverText && server.length < 3)) return { error: game ? 'Проверьте ID и сервер' : 'Проверьте ID и Zone ID' };
   }
   const pkg = clean(b.pkg, 60);
   const price = Math.max(0, Math.min(10000000, Math.floor(Number(b.price) || 0)));

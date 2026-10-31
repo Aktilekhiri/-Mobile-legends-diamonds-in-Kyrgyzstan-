@@ -46,14 +46,16 @@ function alertText(o, cat, auto, withReceipt) {
 
 // GET /api/recent — публично: последние выданные заказы без персональных данных (игра, пакет, время) + счётчики
 export async function listRecentDeliveries(env) {
-  const rows = (await env.DB.prepare("SELECT region, pkg_label, confirmed_at, finished_at FROM orders WHERE status = 'delivered' AND finished_at > 0 AND region NOT IN ('tgstars','tgpremium') ORDER BY finished_at DESC LIMIT 30").all()).results || [];
+  const rows = (await env.DB.prepare("SELECT region, pkg_label, player_id, confirmed_at, finished_at FROM orders WHERE status = 'delivered' AND finished_at > 0 AND region NOT IN ('tgstars','tgpremium') ORDER BY finished_at DESC LIMIT 30").all()).results || [];
   const total = (await env.DB.prepare("SELECT COUNT(*) AS n FROM orders WHERE status = 'delivered' AND finished_at > 0").first()) || { n: 0 };
   const now = Date.now();
   const took = r => (r.confirmed_at > 0 ? Math.round((r.finished_at - r.confirmed_at) / 1000) : 0);
   const secs = rows.map(took).filter(x => x >= 1 && x <= 600).sort((a, b) => a - b);
   const items = rows.slice(0, 8).map(r => {
     const t = took(r);
-    return { game: (r.region === 'global' || r.region === 'russia') ? 'mlbb' : r.region, title: gameTitle(r.region), pkg: String(r.pkg_label || '').replace(/\s*\(.*\)\s*$/, ''), ago: Math.max(0, Math.round((now - r.finished_at) / 1000)), took: t >= 1 && t <= 600 ? t : 0 };
+    const pid = String(r.player_id || '').replace(/\D/g, ''); // получатель: только 2 первые и 2 последние цифры
+    const who = pid.length >= 6 ? pid.slice(0, 2) + '•••' + pid.slice(-2) : '';
+    return { who, game: (r.region === 'global' || r.region === 'russia') ? 'mlbb' : r.region, title: gameTitle(r.region), pkg: String(r.pkg_label || '').replace(/\s*\(.*\)\s*$/, ''), ago: Math.max(0, Math.round((now - r.finished_at) / 1000)), took: t >= 1 && t <= 600 ? t : 0 };
   });
   return { items, total: total.n, median_sec: secs.length ? secs[Math.floor(secs.length / 2)] : 0 };
 }

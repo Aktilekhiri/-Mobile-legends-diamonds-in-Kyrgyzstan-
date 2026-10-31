@@ -463,3 +463,5 @@ html[data-theme="dark"] .pkg-card.selected,html[data-theme="blue"] .pkg-card.sel
 .tp-btn[aria-pressed="true"]{border-color:var(--indigo);box-shadow:0 0 0 2px rgba(91,99,240,.25)}
 .tp-sw{width:34px;height:34px;border-radius:50%;border:1px solid rgba(128,128,128,.45)}
 .tp-sw.l{background:linear-gradient(135deg,#fff 50%,#F4F7FB 50%)}.tp-sw.d{background:linear-gradient(135deg,#141A26 50%,#0B0F17 50%)}.tp-sw.b{background:linear-gradient(135deg,#2563EB 50%,#0A1E4A 50%)}
+
+#liveFeed .lf-main span.lf-who{font-size:.78rem;opacity:.85}

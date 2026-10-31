@@ -2611,7 +2611,7 @@ async function loadRecentOrders() {
     st.push('<div><strong>24/7</strong><span>заказы принимаем всегда</span></div>');
     document.getElementById('lfStats').innerHTML = st.join('');
     document.getElementById('lfList').innerHTML = d.items.map(i =>
-      `<li class="lf-item"><img src="/img/games/${esc(i.game)}.webp" width="40" height="40" alt="" loading="lazy" decoding="async"><div class="lf-main"><strong>${esc(i.title)}</strong><span>${esc(i.pkg)}</span></div><div class="lf-meta"><span>${agoText(i.ago)}</span>${i.took ? `<em>за ${i.took} сек</em>` : ''}</div></li>`).join('');
+      `<li class="lf-item"><img src="/img/games/${esc(i.game)}.webp" width="40" height="40" alt="" loading="lazy" decoding="async"><div class="lf-main"><strong>${esc(i.title)}</strong><span>${esc(i.pkg)}</span>${i.who ? `<span class="lf-who">Получатель: ID ${esc(i.who)}</span>` : ''}</div><div class="lf-meta"><span>${agoText(i.ago)}</span>${i.took ? `<em>за ${i.took} сек</em>` : ''}</div></li>`).join('');
     box.hidden = false;
   } catch (e) { /* без ленты блок просто скрыт */ }
 }

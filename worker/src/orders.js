@@ -44,6 +44,20 @@ function alertText(o, cat, auto, withReceipt) {
   return `🆕 Новый заказ ${o.id}\n🎮 ${gameTitle(o.region)}\n${o.pkg_label} · ${o.price_kgs} сом${profitText(o.price_kgs, cat)} · ${o.method}\nID ${o.player_id}${o.server_id === '-' ? '' : ' (' + o.server_id + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}${withReceipt ? '\n📎 Чек приложен' : ''}\nПроверьте оплату и подтвердите в админке.`;
 }
 
+// GET /api/recent — публично: последние выданные заказы без персональных данных (игра, пакет, время) + счётчики
+export async function listRecentDeliveries(env) {
+  const rows = (await env.DB.prepare("SELECT region, pkg_label, confirmed_at, finished_at FROM orders WHERE status = 'delivered' AND finished_at > 0 AND region NOT IN ('tgstars','tgpremium') ORDER BY finished_at DESC LIMIT 30").all()).results || [];
+  const total = (await env.DB.prepare("SELECT COUNT(*) AS n FROM orders WHERE status = 'delivered' AND finished_at > 0").first()) || { n: 0 };
+  const now = Date.now();
+  const took = r => (r.confirmed_at > 0 ? Math.round((r.finished_at - r.confirmed_at) / 1000) : 0);
+  const secs = rows.map(took).filter(x => x >= 1 && x <= 600).sort((a, b) => a - b);
+  const items = rows.slice(0, 8).map(r => {
+    const t = took(r);
+    return { game: (r.region === 'global' || r.region === 'russia') ? 'mlbb' : r.region, title: gameTitle(r.region), pkg: String(r.pkg_label || '').replace(/\s*\(.*\)\s*$/, ''), ago: Math.max(0, Math.round((now - r.finished_at) / 1000)), took: t >= 1 && t <= 600 ? t : 0 };
+  });
+  return { items, total: total.n, median_sec: secs.length ? secs[Math.floor(secs.length / 2)] : 0 };
+}
+
 // POST /api/orders — публично (с сайта)
 export async function createOrder(env, ip, b, userId = null) {
   const region = clean(b.region, 20) || 'global';

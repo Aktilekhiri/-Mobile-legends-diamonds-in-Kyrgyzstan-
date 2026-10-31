@@ -1318,7 +1318,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=15">
+<link rel="stylesheet" href="theme.css?v=16">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1425,6 +1425,10 @@
       <a class="game-card" href="/roblox-robux-kyrgyzstan/"><div class="gc-i"><img src="/img/games/roblox.webp" width="56" height="56" alt="Roblox" loading="lazy" decoding="async"></div><h3>Roblox</h3><p>Robux: код на пополнение</p></a>
     </div></section>
   <div class="disclaimer">⚠️ Неофициальный сервис. Не связан с разработчиками игр, все названия принадлежат их владельцам.</div>
+  <section id="liveFeed" hidden><div class="sec-label">Живая лента</div><div class="sec-divider"></div><h2 class="sec-title">Последние <em>заказы</em></h2>
+    <div class="lf-stats" id="lfStats"></div>
+    <ul class="lf-list" id="lfList"></ul>
+  </section>
   <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>24/7 без выходных</h3><p>Заказы принимаем всегда, ночью зачисляем утром.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
   <section id="reviews"><div class="sec-label">Отзывы</div><div class="sec-divider"></div><h2 class="sec-title">Что пишут <em>клиенты</em></h2>
     <div id="liveReviews" class="live-reviews" hidden></div>
@@ -2415,6 +2419,30 @@ function showReviewOnce(id, orderId, secret) {
   if (!el || el.dataset.on) return;
   el.dataset.on = '1'; reviewWidget(el, orderId, secret);
 }
+function agoText(sec) {
+  if (sec < 90) return 'только что';
+  const m = Math.round(sec / 60); if (m < 60) return m + ' мин назад';
+  const h = Math.round(m / 60); if (h < 24) return h + ' ч назад';
+  const d = Math.round(h / 24); return d === 1 ? 'вчера' : d + ' дн. назад';
+}
+async function loadRecentOrders() {
+  const box = document.getElementById('liveFeed');
+  if (!box || !window.DK_API) return;
+  try {
+    const r = await fetch(API_BASE() + '/api/recent');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!(d.items || []).length) return;
+    const st = [];
+    if (d.total) st.push(`<div><strong>${d.total}</strong><span>заказов выдано</span></div>`);
+    if (d.median_sec) st.push(`<div><strong>~${d.median_sec} сек</strong><span>выдача после подтверждения оплаты</span></div>`);
+    st.push('<div><strong>24/7</strong><span>заказы принимаем всегда</span></div>');
+    document.getElementById('lfStats').innerHTML = st.join('');
+    document.getElementById('lfList').innerHTML = d.items.map(i =>
+      `<li class="lf-item"><img src="/img/games/${esc(i.game)}.webp" width="40" height="40" alt="" loading="lazy" decoding="async"><div class="lf-main"><strong>${esc(i.title)}</strong><span>${esc(i.pkg)}</span></div><div class="lf-meta"><span>${agoText(i.ago)}</span>${i.took ? `<em>за ${i.took} сек</em>` : ''}</div></li>`).join('');
+    box.hidden = false;
+  } catch (e) { /* без ленты блок просто скрыт */ }
+}
 async function loadLiveReviews() {
   const box = document.getElementById('liveReviews');
   if (!box || !window.DK_API) return;
@@ -2517,7 +2545,7 @@ syncGamePicker();
 renderMethods();
 renderPackages();
 updateUserUI();
-document.addEventListener('DOMContentLoaded', loadLiveReviews); // api-config.js подключён ниже
+document.addEventListener('DOMContentLoaded', loadLiveReviews); document.addEventListener('DOMContentLoaded', loadRecentOrders); // api-config.js подключён ниже
 restoreLastId();
 (function(){ try {
   const g = new URLSearchParams(location.search).get('game');

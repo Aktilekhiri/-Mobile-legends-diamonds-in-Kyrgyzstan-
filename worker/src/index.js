@@ -11,7 +11,7 @@ import { checkBalance } from './balance.js';
 import { loginWithGoogle, getMe, listMyOrders, userFromRequest } from './auth.js';
 import { maybeSendReport } from './report.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
-import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook } from './orders.js';
+import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
 
 function cors(req) {
   const o = req.headers.get('Origin') || '';
@@ -167,6 +167,9 @@ export default {
         const b = await req.json().catch(() => ({}));
         const r = await submitReview(env, mm[1], b, await userFromRequest(req, env));
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      if (path === '/api/recent' && m === 'GET') {
+        return json(req, await listRecentDeliveries(env), 200, { 'Cache-Control': 'public, max-age=30' });
       }
       if (path === '/api/reviews' && m === 'GET') {
         return json(req, await listPublicReviews(env, url.searchParams.get('game') || '', url.searchParams.get('limit')), 200, { 'Cache-Control': 'public, max-age=60' });

@@ -183,7 +183,11 @@ export async function syncFromFz(env, o, fz) {
       await notify(env, `⚠️ Заказ ${o.id} (${o.pkg_label}): FazerCards выдал заказ ${fz.id || o.fz_order_id}, но код не удалось прочитать автоматически. Откройте заказ в FazerCards, скопируйте код и отправьте клиенту (${o.player_id}), затем нажмите «Выдал вручную».`);
       return;
     }
-    await setStatus(env, o.id, { status: 'delivered', fz_status: st, fz_order_id: fz.id || o.fz_order_id, finished_at: Date.now(), fail_reason: '', ...(isCode ? { delivery: codes.join('\n') } : {}) });
+    // атомарно: уведомления уходят только при первом переходе в «выдан» (вебхук FazerCards и опрос приходят повторно)
+    const patch = { status: 'delivered', fz_status: st, fz_order_id: fz.id || o.fz_order_id, finished_at: Date.now(), fail_reason: '', ...(isCode ? { delivery: codes.join('\n') } : {}) };
+    const keys = Object.keys(patch);
+    const upd = await env.DB.prepare(`UPDATE orders SET ${keys.map(k => k + ' = ?').join(', ')}, updated_at = ? WHERE id = ? AND status != 'delivered'`).bind(...keys.map(k => patch[k]), Date.now(), o.id).run();
+    if (!upd.meta.changes) return;
     await sendOrderMail(env, o.id, 'delivered', gameTitle);
     await tgNotifyOrder(env, o.id, 'delivered');
     await notify(env, `✅ Заказ ${o.id} выдан (${o.pkg_label}, ${o.price_kgs} сом).${isCode ? ' Код показан клиенту на сайте.' : ''}`);

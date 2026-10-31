@@ -38,6 +38,7 @@
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Service", "serviceType": "Пополнение игровой валюты в Кыргызстане", "name": "Diamond.kg", "alternateName": ["MLBBDiamond.kg", "Diamond KG"], "description": "Пополнение игр в Кыргызстане за сомы: алмазы Mobile Legends (MLBB), UC PUBG Mobile, Free Fire, Honor of Kings, Genshin Impact, Wuthering Waves, Honkai: Star Rail, Zenless Zone Zero, Blood Strike, Telegram Stars, Roblox. Оплата через Mbank и O!Банк, зачисление за 5–10 минут, без пароля.", "areaServed": {"@type": "Country", "name": "Kyrgyzstan"}, "provider": {"@type": "Organization", "name": "Diamond.kg", "url": "https://diamond.kg/", "sameAs": ["https://www.tiktok.com/@yujiomlbb", "https://www.youtube.com/@YujioPlays", "https://t.me/topupdiamondskg"]}}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Как оформить заказ?", "acceptedAnswer": {"@type": "Answer", "text": "Выберите игру и пакет, введите ID (и сервер, если он нужен), переведите сумму через Mbank или O!Банк и приложите чек на сайте. После проверки оплаты заказ выдаётся на ваш аккаунт."}}, {"@type": "Question", "name": "Нужен ли пароль от игрового аккаунта?", "acceptedAnswer": {"@type": "Answer", "text": "Нет. Пароль не нужен и мы его никогда не просим: пополнение идёт только по ID игрока (для некоторых игр ещё по серверу)."}}, {"@type": "Question", "name": "Сколько ждать зачисления?", "acceptedAnswer": {"@type": "Answer", "text": "Обычно 5–10 минут после проверки оплаты. Заказы с 00:00 до 08:00 по времени Бишкека выдаются утром: оформить и оплатить можно в любое время."}}, {"@type": "Question", "name": "Какие способы оплаты доступны?", "acceptedAnswer": {"@type": "Answer", "text": "Перевод через Mbank и O!Банк. Цены указаны в сомах, дополнительных комиссий сверх цены пакета нет."}}, {"@type": "Question", "name": "Можно ли пополнить аккаунт друга?", "acceptedAnswer": {"@type": "Answer", "text": "Да. Нужен ID игрока и сервер друга, пароль не нужен. Внимательно проверьте данные до оплаты: заказ выдаётся именно на тот ID, который вы указали."}}, {"@type": "Question", "name": "Можно ли исправить неправильный ID после оплаты?", "acceptedAnswer": {"@type": "Answer", "text": "Если заказ ещё не выдан, сразу напишите в WhatsApp или Telegram с кодом заказа, мы постараемся исправить данные. Уже выданное на указанный ID вернуть нельзя, поэтому проверяйте ID и сервер до оплаты."}}, {"@type": "Question", "name": "Оплата прошла, а статус не обновился. Что делать?", "acceptedAnswer": {"@type": "Answer", "text": "Откройте страницу «Проверить заказ» и введите код заказа (он начинается с DK). Если статус долго не меняется, напишите в поддержку с кодом заказа и чеком."}}, {"@type": "Question", "name": "Как получить Robux, Telegram Stars и Premium?", "acceptedAnswer": {"@type": "Answer", "text": "Для них ID не нужен: после проверки оплаты на странице заказа появляется код активации. Для Telegram нужен ваш @username, чтобы активировать код на своём аккаунте. Код также сохраняется в «Истории» после входа через Google."}}, {"@type": "Question", "name": "Где посмотреть историю заказов?", "acceptedAnswer": {"@type": "Answer", "text": "Войдите через Google и откройте «История»: там все заказы с аккаунта. Без входа статус любого заказа можно проверить по коду на странице «Проверить заказ»."}}, {"@type": "Question", "name": "Вернёте ли вы деньги?", "acceptedAnswer": {"@type": "Answer", "text": "Да, если заказ невозможно выполнить (например, пакет недоступен для региона аккаунта). Мы возвращаем оплату на реквизиты, с которых вы платили."}}, {"@type": "Question", "name": "Как запросить добавление новой игры?", "acceptedAnswer": {"@type": "Answer", "text": "Напишите нам в WhatsApp +996 555 920 204 или Telegram @topupdiamondkg: какую игру и какие пакеты вы хотите. Мы проверим, можем ли мы её добавить."}}]}</script>
 
+<script>try{var t=localStorage.getItem("dk_theme");if(t==="dark"||t==="blue")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -670,7 +671,7 @@
   }
   .faq-a.open { display: block; }
   footer {
-    background: #fff;
+    background: var(--surface);
     border-top: 1px solid var(--border);
     padding: 38px 5% 22px;
     display: grid;
@@ -1317,8 +1318,8 @@
   }
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
-<link rel="stylesheet" href="accounts.css?v=91">
-<link rel="stylesheet" href="theme.css?v=22">
+<link rel="stylesheet" href="accounts.css?v=92">
+<link rel="stylesheet" href="theme.css?v=24">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1382,6 +1383,11 @@
       <button type="button" onclick="closeAuthModal();showPage('support')">💬 Поддержка</button>
       <button type="button" onclick="closeAuthModal();showPage('accounts')">🎮 Аккаунты</button>
     </div>
+    <div class="theme-pick"><div class="tp-t">Тема</div><div class="tp-row" role="group" aria-label="Тема оформления">
+      <button type="button" class="tp-btn" data-t="light" onclick="setTheme('light')"><span class="tp-sw l"></span>Светлая</button>
+      <button type="button" class="tp-btn" data-t="dark" onclick="setTheme('dark')"><span class="tp-sw d"></span>Чёрная</button>
+      <button type="button" class="tp-btn" data-t="blue" onclick="setTheme('blue')"><span class="tp-sw b"></span>Синяя</button>
+    </div></div>
   </div>
 </div>
 
@@ -1682,6 +1688,18 @@ function syncGamePicker() {
   document.querySelectorAll('#gamePicker .gp-item').forEach(b => b.setAttribute('aria-checked', String(b.dataset.g === currentGame)));
 }
 
+
+// ===== Тема оформления =====
+const THEME_COLORS = { light: '#F4F7FB', dark: '#0B0F17', blue: '#0A1E4A' };
+function currentTheme() { const t = document.documentElement.getAttribute('data-theme'); return t === 'dark' || t === 'blue' ? t : 'light'; }
+function setTheme(t) {
+  if (t !== 'dark' && t !== 'blue') t = 'light';
+  if (t === 'light') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem('dk_theme', t); } catch (e) {}
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', THEME_COLORS[t]);
+  syncThemePicker();
+}
+function syncThemePicker() { const c = currentTheme(); document.querySelectorAll('.tp-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === c))); }
 // ===== Каталог =====
 const CAT_ORDER = ['mlbb','freefire','pubg','genshin','hok','wuwa','hsr','zzz','bloodstrike','mchess','deltaforce','marvel','arena'];
 const CAT_SERVICES = ['roblox', 'tgstars', 'tgpremium'];
@@ -2702,6 +2720,7 @@ updateUserUI();
 document.addEventListener('DOMContentLoaded', loadLiveReviews); document.addEventListener('DOMContentLoaded', loadRecentOrders); // api-config.js подключён ниже
 restoreLastId();
 renderGameAbout();
+syncThemePicker(); { const m0 = document.querySelector('meta[name="theme-color"]'); if (m0) m0.setAttribute('content', THEME_COLORS[currentTheme()]); }
 (function(){ try {
   const g = new URLSearchParams(location.search).get('game');
   if (g && g !== 'tgstars' && g !== 'tgpremium' && (g === 'mlbb' || gamesData[g])) { changeGame(g); showPage('topup'); restoreLastId(); }

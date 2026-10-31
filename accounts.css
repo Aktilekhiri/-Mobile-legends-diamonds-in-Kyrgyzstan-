@@ -1,7 +1,7 @@
 /* ===== Каталог аккаунтов ===== */
 #page-accounts .acc-wrap{max-width:1100px;margin:0 auto;padding:22px 5% 56px}
 .acc-filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
-.acc-chip{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:999px;padding:8px 18px;cursor:pointer;min-height:40px;transition:all .2s}
+.acc-chip{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:8px 18px;cursor:pointer;min-height:40px;transition:all .2s}
 .acc-chip.on{color:#fff;background:var(--gold);border-color:var(--gold)}
 .acc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
 .acc-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform .25s,border-color .25s,box-shadow .25s;text-align:left;padding:0;color:inherit;font:inherit}
@@ -28,7 +28,7 @@
 /* окно карточки */
 .acc-modal{position:fixed;inset:0;z-index:1200;background:rgba(2,6,16,.86);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:0;-webkit-overflow-scrolling:touch}
 .acc-modal.open{display:flex}
-.acc-sheet{background:#fff;width:100%;max-width:880px;min-height:100%;position:relative;padding:0 0 28px}
+.acc-sheet{background:var(--surface);color:var(--text);width:100%;max-width:880px;min-height:100%;position:relative;padding:0 0 28px}
 @media(min-width:760px){.acc-modal{padding:32px 16px}.acc-sheet{border-radius:22px;min-height:0;border:1px solid var(--border)}}
 .acc-x{position:sticky;top:8px;display:block;margin:8px 8px -52px auto;z-index:5;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:rgba(5,8,16,.8);color:#fff;font-size:1.3rem;cursor:pointer;line-height:1}
 .acc-gal{position:relative;background:#06101f;width:100%;height:min(62vh,75vw);overflow:hidden;touch-action:pan-y}

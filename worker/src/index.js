@@ -228,6 +228,7 @@ export default {
         if (path === '/api/admin/tg/setup' && m === 'POST') {
           if (!env.TG_SHOP_BOT_TOKEN) return err(req, 'Секрет TG_SHOP_BOT_TOKEN не задан в Cloudflare', 400);
           const r = await tgApi(env, 'setWebhook', { url: url.origin + '/api/tg/webhook', secret_token: await webhookSecret(env), allowed_updates: ['message', 'callback_query'], drop_pending_updates: false });
+          await tgApi(env, 'setChatMenuButton', { menu_button: { type: 'commands' } }); // убираем кнопку «Открыть сайт» старого сервиса
           await tgApi(env, 'setMyCommands', { commands: [{ command: 'start', description: 'Меню' }, { command: 'orders', description: 'Мои заказы' }, { command: 'help', description: 'Поддержка' }] });
           return r && r.ok ? json(req, { ok: true }) : err(req, (r && r.description) || 'Не удалось подключить', 400);
         }

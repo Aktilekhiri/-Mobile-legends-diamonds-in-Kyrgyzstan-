@@ -5,6 +5,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 
 function layout(title, lines, orderId) {
   return `<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;max-width:520px;margin:0 auto;padding:20px;color:#111">
+<div style="margin:0 0 16px"><img src="https://diamond.kg/favicon-180.png" width="40" height="40" alt="" style="vertical-align:middle;border-radius:10px;margin-right:10px"><span style="font-size:20px;font-weight:800;vertical-align:middle">Diamond.kg</span></div>
 <h2 style="margin:0 0 12px">${esc(title)}</h2>
 ${lines.map(l => `<p style="margin:8px 0;font-size:16px;line-height:1.5">${l}</p>`).join('')}
 <p style="margin:16px 0"><a href="https://diamond.kg/" style="background:#32D9F5;color:#0B1020;text-decoration:none;font-weight:700;padding:12px 18px;border-radius:10px;display:inline-block">Мои заказы на diamond.kg</a></p>

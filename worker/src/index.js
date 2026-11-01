@@ -13,6 +13,7 @@ import { maybeSendReport } from './report.js';
 import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
+import { createOffer, addOfferPhoto, submitOfferReceipt } from './market.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
 
@@ -111,6 +112,7 @@ export default {
   async fetch(req, env0, ctx) {
     const env = Object.create(env0); env.ctx = ctx; // ctx нужен для фоновой отправки уведомлений
     const url = new URL(req.url);
+    env.origin = url.origin; // нужен для публикации фото в канал
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const m = req.method;
     if (m === 'OPTIONS') return new Response(null, { status: 204, headers: cors(req) });
@@ -210,6 +212,22 @@ export default {
         const u = await req.json().catch(() => null);
         if (u) await defer(env, handleOrdersBotUpdate(env, u));
         return new Response('ok');
+      }
+
+      // продажа аккаунтов через гаранта (публично; доступ к своему объявлению по секрету)
+      if (path === '/api/market/offers' && m === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const r = await createOffer(env, { ip: req.headers.get('CF-Connecting-IP') || '' }, b);
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      mm = path.match(/^\/api\/market\/offers\/(AC[A-Z0-9]{8})\/(photos|receipt)$/);
+      if (mm && m === 'POST') {
+        const len = Number(req.headers.get('Content-Length') || 0);
+        if (len > 1600 * 1024) return err(req, 'Файл слишком большой', 413);
+        const mime = (req.headers.get('Content-Type') || '').split(';')[0];
+        const buf = await req.arrayBuffer(), sec = url.searchParams.get('s') || '';
+        const r = mm[2] === 'photos' ? await addOfferPhoto(env, mm[1], sec, mime, buf) : await submitOfferReceipt(env, mm[1], sec, mime, buf);
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
       }
 
       // публичный список

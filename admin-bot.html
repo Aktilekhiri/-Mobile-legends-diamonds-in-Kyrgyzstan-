@@ -94,7 +94,13 @@ button:disabled{opacity:.5;cursor:default}
           +'<div class="acts"><button class="pri" id="bOn">'+(on?'Переподключить':'Подключить')+'</button>'+(on?'<button class="dng" id="bOff">Отключить</button>':'')+'</div></div>'
           +'<div class="card hint">Подключение переключает бота на этот сайт. Если на этом боте работал другой сервис, он перестанет отвечать.</div>';
       }
+      if(d.orders){var o=d.orders,oon=!!o.webhook;
+        h+='<div class="card"><div class="o-head"><b>@'+esc(o.bot||'?')+' (заказы)</b><span class="st '+(oon?'delivered':'new')+'">'+(oon?'кнопки включены':'кнопки выключены')+'</span></div>'
+          +'<div class="o-meta">Под уведомлениями о заказах появятся кнопки «Подтвердить и выдать» и «Отказать».'+(o.lastError?'<br>Ошибка Telegram: '+esc(o.lastError):'')+'</div>'
+          +'<div class="acts"><button class="pri" id="oOn">'+(oon?'Переподключить':'Включить кнопки')+'</button>'+(oon?'<button class="dng" id="oOff">Выключить</button>':'')+'</div></div>'}
       $('list').innerHTML=h;
+      if($('oOn'))$('oOn').onclick=function(){act('/api/admin/tg/orders-setup','Включить кнопки под заказами?')};
+      if($('oOff'))$('oOff').onclick=function(){act('/api/admin/tg/orders-remove','Выключить кнопки?')};
       if($('bOn'))$('bOn').onclick=function(){act('/api/admin/tg/setup','Подключить бота к сайту?')};
       if($('bOff'))$('bOff').onclick=function(){act('/api/admin/tg/remove','Отключить бота?')};
     }catch(e){msg(e.message,'err')}

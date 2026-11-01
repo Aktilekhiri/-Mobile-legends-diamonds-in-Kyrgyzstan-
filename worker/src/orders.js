@@ -42,6 +42,12 @@ function profitText(price, cat) {
 const GAME_TITLE = { mchess: 'Magic Chess Go Go', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', bloodstrike: 'Blood Strike', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', global: 'Mobile Legends' };
 const gameTitle = region => GAME_TITLE[region] || 'Mobile Legends';
 
+// Кнопки под уведомлением: подтверждение/отказ прямо в Telegram (обрабатывает /api/tg/orders-webhook)
+export function adminButtons(o) {
+  const row = o.status === 'new' ? [{ text: '✅ Подтвердить и выдать', callback_data: 'ok:' + o.id }, { text: '❌ Отказать', callback_data: 'no:' + o.id }] : o.status === 'manual' ? [{ text: '✅ Выдано вручную', callback_data: 'mn:' + o.id }, { text: '❌ Отказать', callback_data: 'no:' + o.id }] : null;
+  return row ? { inline_keyboard: [row] } : undefined;
+}
+
 export function alertText(o, cat, auto, withReceipt) {
   return `🆕 Новый заказ ${o.id}\n🎮 ${gameTitle(o.region)}\n${o.pkg_label} · ${o.price_kgs} сом${profitText(o.price_kgs, cat)} · ${o.method}\nID ${o.player_id}${o.server_id === '-' ? '' : ' (' + o.server_id + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}${withReceipt ? '\n📎 Чек приложен' : ''}\nПроверьте оплату и подтвердите в админке.`;
 }
@@ -327,8 +333,8 @@ export async function saveReceipt(env, id, buf, opts = {}) {
   const text = alertText(o, cat, auto, true);
   if (first && !opts.silent) { // повторная загрузка чека не плодит уведомления
     await defer(env, (async () => {
-      const sent = await notifyPhoto(env, u8, mime, text);
-      if (!sent) await notify(env, text + '\n(фото не ушло в Telegram — смотрите чек в админке)');
+      const sent = await notifyPhoto(env, u8, mime, text, adminButtons(o));
+      if (!sent) await notify(env, text + '\n(фото не ушло в Telegram — смотрите чек в админке)', adminButtons(o));
     })());
   }
   return { ok: true };
@@ -348,6 +354,6 @@ export async function notifyWithoutReceipt(env, id) {
   if (!['new', 'manual'].includes(o.status) || o.receipt_at) return { ok: true };
   await env.DB.prepare('UPDATE orders SET receipt_at = -1, updated_at = ? WHERE id = ?').bind(Date.now(), o.id).run();
   const cat = (CATALOGS[o.region] || {})[o.pkg] || null;
-  await notify(env, alertText(o, cat, !!(cat && cat.cost <= MAX_AUTO_COST_USD) && o.status === 'new', false));
+  await notify(env, alertText(o, cat, !!(cat && cat.cost <= MAX_AUTO_COST_USD) && o.status === 'new', false), adminButtons(o));
   return { ok: true };
 }

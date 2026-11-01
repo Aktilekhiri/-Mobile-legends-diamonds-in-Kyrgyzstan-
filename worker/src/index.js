@@ -10,7 +10,7 @@ const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
 import { loginWithGoogle, getMe, listMyOrders, userFromRequest, adminListUsers } from './auth.js';
 import { maybeSendReport } from './report.js';
-import { handleTgUpdate } from './tgbot.js';
+import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
@@ -204,6 +204,14 @@ export default {
         return new Response('ok');
       }
 
+      // вебхук бота уведомлений (кнопки «Подтвердить/Отказать» под заказами)
+      if (path === '/api/tg/orders-webhook' && m === 'POST') {
+        if (!env.TELEGRAM_BOT_TOKEN || !safeEqual(req.headers.get('X-Telegram-Bot-Api-Secret-Token') || '', await webhookSecret(env))) return new Response('forbidden', { status: 403 });
+        const u = await req.json().catch(() => null);
+        if (u) await defer(env, handleOrdersBotUpdate(env, u));
+        return new Response('ok');
+      }
+
       // публичный список
       if (path === '/api/accounts' && m === 'GET') {
         const { results } = await env.DB.prepare(
@@ -221,9 +229,14 @@ export default {
           return json(req, { orders: await listOrders(env, url.searchParams.get('status') || 'all') });
         }
         if (path === '/api/admin/tg' && m === 'GET') {
-          if (!env.TG_SHOP_BOT_TOKEN) return json(req, { configured: false });
+          let orders = null;
+          if (env.TELEGRAM_BOT_TOKEN) {
+            const om = await tgApi(env, 'getMe', {}, 10000, env.TELEGRAM_BOT_TOKEN), ow = await tgApi(env, 'getWebhookInfo', {}, 10000, env.TELEGRAM_BOT_TOKEN);
+            orders = { bot: om && om.result && om.result.username, webhook: ow && ow.result && ow.result.url || '', lastError: ow && ow.result && ow.result.last_error_message || '' };
+          }
+          if (!env.TG_SHOP_BOT_TOKEN) return json(req, { configured: false, orders });
           const me = await tgApi(env, 'getMe'), wh = await tgApi(env, 'getWebhookInfo');
-          return json(req, { configured: true, bot: me && me.result && me.result.username, webhook: wh && wh.result && wh.result.url || '', pending: wh && wh.result && wh.result.pending_update_count, lastError: wh && wh.result && wh.result.last_error_message || '' });
+          return json(req, { orders, configured: true, bot: me && me.result && me.result.username, webhook: wh && wh.result && wh.result.url || '', pending: wh && wh.result && wh.result.pending_update_count, lastError: wh && wh.result && wh.result.last_error_message || '' });
         }
         if (path === '/api/admin/tg/setup' && m === 'POST') {
           if (!env.TG_SHOP_BOT_TOKEN) return err(req, 'Секрет TG_SHOP_BOT_TOKEN не задан в Cloudflare', 400);
@@ -231,6 +244,15 @@ export default {
           await tgApi(env, 'setChatMenuButton', { menu_button: { type: 'commands' } }); // убираем кнопку «Открыть сайт» старого сервиса
           await tgApi(env, 'setMyCommands', { commands: [{ command: 'start', description: 'Меню' }, { command: 'orders', description: 'Мои заказы' }, { command: 'help', description: 'Поддержка' }] });
           return r && r.ok ? json(req, { ok: true }) : err(req, (r && r.description) || 'Не удалось подключить', 400);
+        }
+        if (path === '/api/admin/tg/orders-setup' && m === 'POST') {
+          if (!env.TELEGRAM_BOT_TOKEN) return err(req, 'Секрет TELEGRAM_BOT_TOKEN не задан', 400);
+          const r = await tgApi(env, 'setWebhook', { url: url.origin + '/api/tg/orders-webhook', secret_token: await webhookSecret(env), allowed_updates: ['callback_query'] }, 10000, env.TELEGRAM_BOT_TOKEN);
+          return r && r.ok ? json(req, { ok: true }) : err(req, (r && r.description) || 'Не удалось подключить', 400);
+        }
+        if (path === '/api/admin/tg/orders-remove' && m === 'POST') {
+          const r = await tgApi(env, 'deleteWebhook', {}, 10000, env.TELEGRAM_BOT_TOKEN);
+          return r && r.ok ? json(req, { ok: true }) : err(req, (r && r.description) || 'Не удалось отключить', 400);
         }
         if (path === '/api/admin/tg/remove' && m === 'POST') {
           const r = await tgApi(env, 'deleteWebhook', {});

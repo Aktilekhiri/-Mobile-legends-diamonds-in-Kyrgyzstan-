@@ -2,10 +2,11 @@
 // Работает, только если задан секрет TG_SHOP_BOT_TOKEN. Админ-уведомления уходят в TELEGRAM_CHAT_ID.
 import { defer } from './notify.js';
 
-export async function tgApi(env, method, body, timeoutMs = 10000) {
-  if (!env.TG_SHOP_BOT_TOKEN) return null;
+export async function tgApi(env, method, body, timeoutMs = 10000, token) {
+  token = token || env.TG_SHOP_BOT_TOKEN;
+  if (!token) return null;
   try {
-    const r = await fetch(`https://api.telegram.org/bot${env.TG_SHOP_BOT_TOKEN}/${method}`, {
+    const r = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}), signal: AbortSignal.timeout(timeoutMs),
     });
     const d = await r.json().catch(() => null);

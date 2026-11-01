@@ -134,16 +134,31 @@ async function finishReceipt(env, chat, from, msg, st) {
 }
 
 // ---------- кнопки админа под чеком ----------
-async function adminAction(env, cq, act, id) {
+async function adminAction(env, cq, act, id, token) {
   const chat = cq.message && cq.message.chat.id, mid = cq.message && cq.message.message_id;
+  const call = (m, body) => tgApi(env, m, body, 10000, token);
   let r;
   if (act === 'ok') r = await confirmOrder(env, id);
   else if (act === 'mn') r = await markManualDone(env, id);
   else r = await cancelOrder(env, id);
-  if (r.error) { await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id, text: String(r.error).slice(0, 190), show_alert: true }); return; }
-  await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id, text: 'Готово' });
+  if (r.error) { await call('answerCallbackQuery', { callback_query_id: cq.id, text: String(r.error).slice(0, 190), show_alert: true }); return; }
+  await call('answerCallbackQuery', { callback_query_id: cq.id, text: 'Готово' });
   const mark = act === 'ok' ? '\n\n✅ Отправлено на выдачу' : act === 'mn' ? '\n\n✅ Отмечено как выданное' : '\n\n❌ Отказано';
-  if (chat) await tgApi(env, 'editMessageCaption', { chat_id: chat, message_id: mid, caption: ((cq.message.caption || '') + mark).slice(0, 1000), reply_markup: { inline_keyboard: [] } });
+  if (!chat) return;
+  const m = cq.message;
+  if (m.caption !== undefined || m.photo) await call('editMessageCaption', { chat_id: chat, message_id: mid, caption: ((m.caption || '') + mark).slice(0, 1000), reply_markup: { inline_keyboard: [] } });
+  else await call('editMessageText', { chat_id: chat, message_id: mid, text: ((m.text || '') + mark).slice(0, 3900), reply_markup: { inline_keyboard: [] } });
+}
+
+// Бот «Diamond KG Заказы» (уведомления владельцу): только нажатия кнопок под заказами
+export async function handleOrdersBotUpdate(env, u) {
+  try {
+    const cq = u && u.callback_query; if (!cq) return;
+    const token = env.TELEGRAM_BOT_TOKEN, adm = String(env.TELEGRAM_CHAT_ID || '');
+    const m = String(cq.data || '').match(/^(ok|mn|no):([A-Z0-9]{4,20})$/);
+    if (!m || !adm || String(cq.from.id) !== adm) { await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id }, 10000, token); return; }
+    await adminAction(env, cq, m[1], m[2], token);
+  } catch (e) { console.log('orders bot error', String(e && e.stack || e).slice(0, 300)); }
 }
 
 // ---------- точки входа ----------

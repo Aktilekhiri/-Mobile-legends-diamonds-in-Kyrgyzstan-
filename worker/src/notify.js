@@ -9,13 +9,13 @@ export function defer(env, p) {
   return safe;
 }
 
-export function notify(env, text) {
+export function notify(env, text, markup) {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return;
   return defer(env, (async () => {
     try {
       await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: String(text).slice(0, 3900) }),
+        body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: String(text).slice(0, 3900), ...(markup ? { reply_markup: markup } : {}) }),
         signal: AbortSignal.timeout(10000),
       });
     } catch (e) { /* уведомление не критично */ }
@@ -23,12 +23,13 @@ export function notify(env, text) {
 }
 
 // Фото в Telegram (чек клиента). true — отправлено.
-export async function notifyPhoto(env, bytes, mime, caption) {
+export async function notifyPhoto(env, bytes, mime, caption, markup) {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return false;
   try {
     const fd = new FormData();
     fd.append('chat_id', String(env.TELEGRAM_CHAT_ID));
     fd.append('caption', String(caption).slice(0, 1000));
+    if (markup) fd.append('reply_markup', JSON.stringify(markup));
     fd.append('photo', new Blob([bytes], { type: mime }), mime === 'image/png' ? 'receipt.png' : 'receipt.jpg');
     const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd, signal: AbortSignal.timeout(15000) });
     return r.ok;

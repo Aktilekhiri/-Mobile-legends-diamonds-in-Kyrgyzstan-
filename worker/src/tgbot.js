@@ -65,7 +65,7 @@ async function askId(env, chat, msgId, st) {
   await show(env, chat, msgId, `<b>${esc(g.name)}</b>: ${esc(p.l)} · ${money(p.p)} сом\n\n${esc(g.hint || 'Введите ID игрока')}\n\n${g.user ? 'Отправьте ваш Telegram <b>@username</b> (Настройки → Имя пользователя):' : g.mlbb ? 'Отправьте <b>ID и Zone ID</b> одним сообщением через пробел, например: <code>123456789 1234</code>' : 'Отправьте ID игрока (только цифры):'}`, kb([CANCEL]));
 }
 
-function validId(g, s) { const d = String(s).replace(/\D/g, ''); return g.mlbb ? (d.length >= 6 && d.length <= 10 ? d : '') : (d.length >= 5 && d.length <= 14 ? d : ''); }
+function validId(g, s) { const d = String(s).replace(/\D/g, ''); return g.mlbb ? (d.length >= 6 && d.length <= 10 ? d : '') : (d.length >= 5 && d.length <= 25 ? d : ''); }
 function validZone(s) { const d = String(s).replace(/\D/g, ''); return d.length >= 3 && d.length <= 5 ? d : ''; }
 
 async function showSummary(env, chat, msgId, st) {
@@ -316,7 +316,7 @@ async function onMessage(env, msg) {
   if (g && st.step === 'id' && text) {
     const parts = text.match(/\d+/g) || [];
     const pid = validId(g, parts[0] || '');
-    if (!pid) return send(env, chat, g.mlbb ? '⚠️ Проверьте ID (6–10 цифр). Отправьте ID и Zone ID через пробел.' : '⚠️ Проверьте ID: нужны только цифры (5–14).');
+    if (!pid) return send(env, chat, g.mlbb ? '⚠️ Проверьте ID (6–10 цифр). Отправьте ID и Zone ID через пробел.' : '⚠️ Проверьте ID: нужны только цифры (от 5 до 25).');
     st.pid = pid;
     if (g.mlbb) { const z = validZone(parts[1] || ''); if (z) { st.srv = z; return showSummary(env, chat, 0, st); } st.step = 'zone'; await setSt(env, chat, st); return send(env, chat, 'Теперь отправьте <b>Zone ID</b> (в скобках рядом с ID, 3–5 цифр).', { reply_markup: kb([CANCEL]) }); }
     if (g.zone) { st.step = 'zone'; await setSt(env, chat, st); return send(env, chat, 'Теперь отправьте <b>Server ID</b> (3–5 цифр).', { reply_markup: kb([CANCEL]) }); }

@@ -1867,6 +1867,10 @@ function pkgImg(p) {
     dir = 'wuwa';
     if (p.type === 'pass') f = 'ww-sub';
     else { const t = p.totalDiamonds || p.diam || 0; f = t < 200 ? 'ww-1' : t < 700 ? 'ww-3' : t < 1500 ? 'ww-4' : t < 3000 ? 'ww-4b' : t < 5000 ? 'ww-5' : 'ww-5b'; }
+  } else if (currentGame === 'tgpremium') {
+    dir = 'telegram'; const n = p.name || ''; f = /12/.test(n) ? 'tg-prem-12' : /6/.test(n) ? 'tg-prem-6' : 'tg-prem-3';
+  } else if (currentGame === 'tgstars') {
+    dir = 'telegram'; f = 'tg-stars';
   } else if (currentGame === 'roblox') {
     dir = 'roblox';
     { const t = p.totalDiamonds || p.diam || 0; f = t < 100 ? 'rb-1' : t < 2500 ? 'rb-3' : 'rb-many'; }

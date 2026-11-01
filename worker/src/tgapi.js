@@ -29,10 +29,10 @@ export function tgNotifyOrder(env, orderId, kind) {
   if (!env.TG_SHOP_BOT_TOKEN) return;
   return defer(env, (async () => {
     try {
-      const o = await env.DB.prepare('SELECT id, pkg_label, price_kgs, tg_chat FROM orders WHERE id = ?').bind(orderId).first();
+      const o = await env.DB.prepare('SELECT id, pkg_label, price_kgs, tg_chat, delivery FROM orders WHERE id = ?').bind(orderId).first();
       if (!o || !o.tg_chat) return;
       const t = {
-        delivered: `✅ <b>Заказ ${esc(o.id)} выдан</b>\n${esc(o.pkg_label)}. Проверьте аккаунт в игре.\n\nЕсли что-то не пришло, напишите в WhatsApp: +996 555 920 204`,
+        delivered: `✅ <b>Заказ ${esc(o.id)} выдан</b>\n${esc(o.pkg_label)}. ${o.delivery ? 'Ваш код:\n<code>' + esc(o.delivery) + '</code>\n\nАктивируйте его в игре и никому не показывайте.' : 'Проверьте аккаунт в игре.'}\n\nЕсли что-то не пришло, напишите в WhatsApp: +996 555 920 204`,
         cancelled: `❌ <b>Заказ ${esc(o.id)} отменён</b>\nЕсли вы уже оплатили, напишите нам в WhatsApp +996 555 920 204, мы вернём деньги.`,
         refund: `↩️ <b>Заказ ${esc(o.id)} не удалось выполнить</b>\nВернём ${esc(o.price_kgs)} сом на ваш счёт. Если вопросы, WhatsApp +996 555 920 204.`,
       }[kind];

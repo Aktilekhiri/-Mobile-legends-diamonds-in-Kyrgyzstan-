@@ -1319,7 +1319,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=92">
-<link rel="stylesheet" href="theme.css?v=25">
+<link rel="stylesheet" href="theme.css?v=26">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1430,8 +1430,8 @@
       <a class="game-card" href="/honkai-star-rail-oneiric-shard/"><div class="gc-i"><img src="/img/games/hsr.webp" width="56" height="56" alt="Honkai: Star Rail" loading="lazy" decoding="async"></div><h3>Honkai: Star Rail</h3><p>Oneiric Shard, Express Pass</p></a>
       <a class="game-card" href="/zenless-zone-zero-monochrome/"><div class="gc-i"><img src="/img/games/zzz.webp" width="56" height="56" alt="Zenless Zone Zero" loading="lazy" decoding="async"></div><h3>Zenless Zone Zero</h3><p>Monochrome, Inter-Knot</p></a>
       <a class="game-card" href="/blood-strike-bc/"><div class="gc-i"><img src="/img/games/bloodstrike.webp" width="56" height="56" alt="Blood Strike" loading="lazy" decoding="async"></div><h3>Blood Strike</h3><p>BC и пассы</p></a>
-      <a class="game-card" href="/telegram-stars-kyrgyzstan/" style="display:none"><div class="gc-i"><img src="/img/games/tgstars.webp" width="56" height="56" alt="Telegram Stars" loading="lazy" decoding="async"></div><h3>Telegram Stars</h3><p>Звёзды за сомы</p></a>
-      <a class="game-card" href="/telegram-premium-kyrgyzstan/" style="display:none"><div class="gc-i"><img src="/img/games/tgpremium.webp" width="56" height="56" alt="Telegram Premium" loading="lazy" decoding="async"></div><h3>Telegram Premium</h3><p>Подписка 3, 6, 12 месяцев</p></a>
+      <a class="game-card" href="/telegram-stars-kyrgyzstan/"><div class="gc-i"><img src="/img/games/tgstars.webp" width="56" height="56" alt="Telegram Stars" loading="lazy" decoding="async"></div><h3>Telegram Stars</h3><p>Звёзды за сомы</p></a>
+      <a class="game-card" href="/telegram-premium-kyrgyzstan/"><div class="gc-i"><img src="/img/games/tgpremium.webp" width="56" height="56" alt="Telegram Premium" loading="lazy" decoding="async"></div><h3>Telegram Premium</h3><p>Подписка 3, 6, 12 месяцев</p></a>
       <a class="game-card" href="/roblox-robux-kyrgyzstan/"><div class="gc-i"><img src="/img/games/roblox.webp" width="56" height="56" alt="Roblox" loading="lazy" decoding="async"></div><h3>Roblox</h3><p>Robux: код на пополнение</p></a>
     </div></section>
   <div class="disclaimer">⚠️ Неофициальный сервис. Не связан с разработчиками игр, все названия принадлежат их владельцам.</div>
@@ -1490,8 +1490,8 @@
         <option value="deltaforce">Delta Force</option>
         <option value="marvel">Marvel Rivals</option>
         <option value="arena">Arena Breakout</option>
-        <option value="tgstars" disabled>Telegram Stars — временно недоступно</option>
-        <option value="tgpremium" disabled>Telegram Premium — временно недоступно</option>
+        <option value="tgstars">Telegram Stars</option>
+        <option value="tgpremium">Telegram Premium</option>
         <option value="roblox">Roblox (Robux)</option>
       </select>
       <div id="regionRow">
@@ -1709,7 +1709,7 @@ function syncThemePicker() { const c = currentTheme(); document.querySelectorAll
 // ===== Каталог =====
 const CAT_ORDER = ['mlbb','freefire','pubg','genshin','hok','wuwa','hsr','zzz','bloodstrike','mchess','deltaforce','marvel','arena'];
 const CAT_SERVICES = ['roblox', 'tgstars', 'tgpremium'];
-const CAT_DISABLED = ['tgstars', 'tgpremium'];
+const CAT_DISABLED = [];
 const CAT_ALIAS = { mlbb:'млбб мобайл легенд легендс mobile legends ml алмазы', pubg:'пубг пабг pubg mobile uc', freefire:'фри фаер фф free fire ff алмазы', hok:'хок хонор honor of kings токены', genshin:'геншин импакт genshin impact примогемы кристаллы', wuwa:'вува вутеринг wuthering waves lunite', hsr:'хср хонкай стар рейл honkai star rail', zzz:'зенлесс зона zenless zone zero монохромы', bloodstrike:'блад страйк blood strike', mchess:'меджик чесс магик чесс magic chess go go', deltaforce:'дельта форс delta force', marvel:'марвел риваль marvel rivals', arena:'арена брейкаут arena breakout', roblox:'роблокс roblox робукс робуксы robux', tgstars:'телеграм телега звезды старс telegram stars', tgpremium:'телеграм телега премиум telegram premium' };
 const CAT_SUB = { mlbb:'Алмазы', pubg:'UC', freefire:'Алмазы', hok:'Токены', genshin:'Кристаллы', wuwa:'Lunite', hsr:'Oneiric Shard', zzz:'Monochrome', bloodstrike:'BC', mchess:'Алмазы', deltaforce:'Delta Coins', marvel:'Lattices', arena:'Bonds', roblox:'Robux, код активации', tgstars:'Звёзды', tgpremium:'Подписка' };
 function catName(g) { return g === 'mlbb' ? 'Mobile Legends' : (GAME_TILES[g] ? GAME_TILES[g][0] : (gamesData[g] ? gamesData[g].name : g)); }
@@ -2729,7 +2729,7 @@ renderGameAbout();
 syncThemePicker(); { const m0 = document.querySelector('meta[name="theme-color"]'); if (m0) m0.setAttribute('content', THEME_COLORS[currentTheme()]); }
 (function(){ try {
   const g = new URLSearchParams(location.search).get('game');
-  if (g && g !== 'tgstars' && g !== 'tgpremium' && (g === 'mlbb' || gamesData[g])) { changeGame(g); showPage('topup'); restoreLastId(); }
+  if (g && (g === 'mlbb' || gamesData[g])) { changeGame(g); showPage('topup'); restoreLastId(); }
 } catch (e) {} })();
 
 // Закрытие мобильного меню при клике вне

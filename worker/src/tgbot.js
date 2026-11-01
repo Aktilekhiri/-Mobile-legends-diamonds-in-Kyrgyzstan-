@@ -59,7 +59,7 @@ async function showPacks(env, chat, msgId, gid, page) {
 async function askId(env, chat, msgId, st) {
   const g = SHOP.find(x => x.id === st.g), p = g.packs[st.i];
   st.step = 'id'; await setSt(env, chat, st);
-  await show(env, chat, msgId, `<b>${esc(g.name)}</b>: ${esc(p.l)} · ${money(p.p)} сом\n\n${esc(g.hint || 'Введите ID игрока')}\n\n${g.mlbb ? 'Отправьте <b>ID и Zone ID</b> одним сообщением через пробел, например: <code>123456789 1234</code>' : 'Отправьте ID игрока (только цифры):'}`, kb([CANCEL]));
+  await show(env, chat, msgId, `<b>${esc(g.name)}</b>: ${esc(p.l)} · ${money(p.p)} сом\n\n${esc(g.hint || 'Введите ID игрока')}\n\n${g.user ? 'Отправьте ваш Telegram <b>@username</b> (Настройки → Имя пользователя):' : g.mlbb ? 'Отправьте <b>ID и Zone ID</b> одним сообщением через пробел, например: <code>123456789 1234</code>' : 'Отправьте ID игрока (только цифры):'}`, kb([CANCEL]));
 }
 
 function validId(g, s) { const d = String(s).replace(/\D/g, ''); return g.mlbb ? (d.length >= 6 && d.length <= 10 ? d : '') : (d.length >= 5 && d.length <= 14 ? d : ''); }
@@ -69,7 +69,7 @@ async function showSummary(env, chat, msgId, st) {
   const g = SHOP.find(x => x.id === st.g), p = g.packs[st.i];
   st.step = 'confirm'; await setSt(env, chat, st);
   const srv = st.srv ? (g.servers ? ((g.servers.find(x => x.v === st.srv) || {}).l || st.srv) : st.srv) : '';
-  let t = `<b>Проверьте заказ</b>\n\nИгра: ${esc(g.name)}\nПакет: ${esc(p.l)}\n` + (g.none ? '' : `ID: <code>${esc(st.pid)}</code>\n`) + (srv ? `Сервер: ${esc(srv)}\n` : '') + `Сумма: <b>${money(p.p)} сом</b>`;
+  let t = `<b>Проверьте заказ</b>\n\nИгра: ${esc(g.name)}\nПакет: ${esc(p.l)}\n` + (g.none ? '' : `${g.user ? 'Username' : 'ID'}: <code>${esc(g.user ? '@' + st.pid : st.pid)}</code>\n`) + (srv ? `Сервер: ${esc(srv)}\n` : '') + `Сумма: <b>${money(p.p)} сом</b>`;
   if (p.first) t += '\n\n⚠️ Этот пакет только для <b>первого пополнения</b> аккаунта. Если вы уже пополняли этот аккаунт в Mobile Legends, выберите другой пакет: иначе заказ может обрабатываться долго и будет возвращён.';
   await show(env, chat, msgId, t, kb([[btn(p.first ? '✅ Верно, я ещё не пополнял аккаунт' : '✅ Всё верно, к оплате', 'ok')], [btn('✏️ Изменить ID', 'ed')], CANCEL]));
 }
@@ -182,6 +182,11 @@ async function onMessage(env, msg) {
   if (/^\/help/i.test(text)) return showHelp(env, chat, 0);
   const st = await getSt(env, chat); const g = st.g && SHOP.find(x => x.id === st.g);
   if (g && st.step === 'receipt') return finishReceipt(env, chat, msg.from || {}, msg, st);
+  if (g && g.user && st.step === 'id' && text) {
+    const u = text.replace(/^@/, '').trim();
+    if (!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(u)) return send(env, chat, '⚠️ Проверьте @username: 5–32 символа, латиница, цифры и _.');
+    st.pid = u; st.srv = ''; return showSummary(env, chat, 0, st);
+  }
   if (g && st.step === 'id' && text) {
     const parts = text.match(/\d+/g) || [];
     const pid = validId(g, parts[0] || '');

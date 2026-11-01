@@ -65,7 +65,6 @@ export async function listRecentDeliveries(env) {
 // POST /api/orders — публично (с сайта)
 export async function createOrder(env, ip, b, userId = null) {
   const region = clean(b.region, 20) || 'global';
-  if (region === 'tgstars' || region === 'tgpremium') return { error: 'Telegram Stars и Premium временно недоступны. Попробуйте позже.' };
   const game = GAMES[region]; // undefined = Mobile Legends
   const kind = game && game.kind; // 'username' (Telegram) | 'none' (Roblox) | undefined
   let player, server;

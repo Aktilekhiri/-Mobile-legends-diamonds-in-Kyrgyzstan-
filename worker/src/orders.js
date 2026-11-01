@@ -54,7 +54,7 @@ export function alertText(o, cat, auto, withReceipt) {
 
 // GET /api/recent — публично: последние выданные заказы без персональных данных (игра, пакет, время) + счётчики
 export async function listRecentDeliveries(env) {
-  const rows = (await env.DB.prepare("SELECT region, pkg_label, player_id, confirmed_at, finished_at FROM orders WHERE status = 'delivered' AND finished_at > 0 AND region NOT IN ('tgstars','tgpremium') ORDER BY finished_at DESC LIMIT 30").all()).results || [];
+  const rows = (await env.DB.prepare("SELECT region, pkg_label, player_id, confirmed_at, finished_at FROM orders WHERE status = 'delivered' AND finished_at > 0 ORDER BY finished_at DESC LIMIT 30").all()).results || [];
   const total = (await env.DB.prepare("SELECT COUNT(*) AS n FROM orders WHERE status = 'delivered' AND finished_at > 0").first()) || { n: 0 };
   const now = Date.now();
   const took = r => (r.confirmed_at > 0 ? Math.round((r.finished_at - r.confirmed_at) / 1000) : 0);
@@ -80,7 +80,7 @@ export async function createOrder(env, ip, b, userId = null) {
     if (!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(u)) return { error: 'Проверьте Telegram @username (5–32 символа: латиница, цифры, _)' };
     player = '@' + u; server = '-';
   } else {
-    player = digits(b.playerId, 14);
+    player = digits(b.playerId, 25); // у Honor of Kings ID из 20 цифр
     if (!game) server = digits(b.serverId, 8);
     else if (game.serverText) server = digits(b.serverId, 8);
     else if (game.servers) server = game.servers.includes(String(b.serverId)) ? String(b.serverId) : '';

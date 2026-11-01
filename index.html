@@ -1319,7 +1319,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=92">
-<link rel="stylesheet" href="theme.css?v=26">
+<link rel="stylesheet" href="theme.css?v=27">
 </head>
 <body data-page="home" class="v2">
 <nav>
@@ -1434,7 +1434,7 @@
       <a class="game-card" href="/telegram-premium-kyrgyzstan/"><div class="gc-i"><img src="/img/games/tgpremium.webp" width="56" height="56" alt="Telegram Premium" loading="lazy" decoding="async"></div><h3>Telegram Premium</h3><p>Подписка 3, 6, 12 месяцев</p></a>
       <a class="game-card" href="/roblox-robux-kyrgyzstan/"><div class="gc-i"><img src="/img/games/roblox.webp" width="56" height="56" alt="Roblox" loading="lazy" decoding="async"></div><h3>Roblox</h3><p>Robux: код на пополнение</p></a>
     </div></section>
-  <div class="disclaimer">⚠️ Неофициальный сервис. Не связан с разработчиками игр, все названия принадлежат их владельцам.</div>
+  <div class="disclaimer">ℹ️ Неофициальный сервис. Не связан с разработчиками игр, все названия принадлежат их владельцам.</div>
   <section id="liveFeed" hidden><div class="sec-label">Живая лента</div><div class="sec-divider"></div><h2 class="sec-title">Последние <em>заказы</em></h2>
     <div class="lf-stats" id="lfStats"></div>
     <ul class="lf-list" id="lfList"></ul>
@@ -1500,7 +1500,7 @@
         <option value="global">🌍 Глобальный</option>
         <option value="russia">🇷🇺 Россия</option>
       </select>
-      <div class="field-hint" id="regionHint" style="color:var(--gold)">⚠️ Играете из России или у вас российский аккаунт? Выберите «🇷🇺 Россия». «Глобальный» — для Кыргызстана, Казахстана и других стран. Не уверены? Напишите нам в WhatsApp до оплаты.</div>
+      <div class="field-hint" id="regionHint" style="color:var(--gold)">ℹ️ Для Кыргызстана, Казахстана и большинства стран выбирайте «Глобальный». Если аккаунт российский, выберите «🇷🇺 Россия». Не уверены? Напишите нам в WhatsApp, подскажем до оплаты.</div>
       </div>
     </div>
     <div class="packages-card step-card" id="stepPkg">
@@ -1900,7 +1900,7 @@ function getServerValue() {
   return '-';
 }
 const regionHints = {
-  global: '⚠️ Играете из России или у вас российский аккаунт? Выберите «🇷🇺 Россия». «Глобальный» — для Кыргызстана, Казахстана и других стран. Не уверены? Напишите нам в WhatsApp до оплаты.',
+  global: 'ℹ️ Для Кыргызстана, Казахстана и большинства стран выбирайте «Глобальный». Если аккаунт российский, выберите «🇷🇺 Россия». Не уверены? Напишите нам в WhatsApp, подскажем до оплаты.',
   russia: '✅ Для аккаунтов из России. Если вы в Кыргызстане или другой стране, выберите «🌍 Глобальный».'
 };
 function updateRegionHint() { const h = document.getElementById('regionHint'); if (h) h.textContent = regionHints[document.getElementById('regionSelect').value] || ''; }
@@ -3077,6 +3077,10 @@ g.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.ta
 function fix(){g.querySelectorAll('.pkg-card:not([aria-disabled])').forEach(function(c){if(c.tabIndex>=0&&c.getAttribute('role'))return;c.setAttribute('role','button');c.tabIndex=0;});}
 new MutationObserver(fix).observe(g,{childList:true});fix();
 g.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('pkg-card')){e.preventDefault();e.target.click();}});})();
+
+// Ночное предупреждение показываем только ночью по Бишкеку (00:00–08:00)
+function updNightNote() { try { const on = bishkekHour() < 8; document.querySelectorAll('.night-note').forEach(e => e.classList.toggle('on', on)); } catch (e) {} }
+updNightNote(); setInterval(updNightNote, 60000);
 </script>
 </body>
 </html>

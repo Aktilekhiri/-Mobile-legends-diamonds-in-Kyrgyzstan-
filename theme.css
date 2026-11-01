@@ -475,3 +475,5 @@ html[data-theme="dark"] .pkg-card.selected,html[data-theme="blue"] .pkg-card.sel
 .giveaway .gw-txt small{font-size:.82rem;line-height:1.35;opacity:.75}
 .giveaway .gw-btn{flex:0 0 auto;font-weight:800;font-size:.85rem;padding:10px 14px;border-radius:12px;background:linear-gradient(135deg,#32D9F5,#7C83FF);color:#0B1020;white-space:nowrap}
 @media (max-width:520px){.giveaway{flex-wrap:wrap}.giveaway .gw-btn{width:100%;text-align:center}}
+
+body .night-note:not(.on){display:none!important}

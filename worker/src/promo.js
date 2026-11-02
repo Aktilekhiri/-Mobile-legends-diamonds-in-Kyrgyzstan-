@@ -46,6 +46,7 @@ export async function redeemPromo(env, who, b, userId = null, extra = {}) {
   const g = await gate(env, who, b.code);
   if (g.error) return g;
   const { code, row } = g, now = Date.now();
+  if (/^6\d{3}$/.test(String(b.serverId || '').replace(/\D/g, ''))) return { error: 'Промокод работает только для Global-аккаунтов. Российские серверы (начинаются на 6) не подходят.', status: 400 };
 
   // атомарно занимаем код: два одновременных запроса не пройдут оба
   const claim = await env.DB.prepare('UPDATE promo_codes SET used_at = ? WHERE code = ? AND used_at = 0 AND expires_at > ?').bind(now, code, now).run();

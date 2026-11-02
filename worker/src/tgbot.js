@@ -280,7 +280,7 @@ async function onCallback(env, cq) {
   let st = await getSt(env, chat);
   if (d === 'menu') { await setSt(env, chat, {}); return show(env, chat, mid, welcome(), MENU); }
   if (await onSellCallback(env, cq, d, st)) return;
-  if (d === 'promo') { await setSt(env, chat, { step: 'pc' }); return show(env, chat, mid, '<b>🎁 Промокод</b>\nОтправьте ваш промокод одним сообщением (например, <code>DKG-XXXXXX</code>).\nПромокод даёт бесплатный Weekly Diamond Pass для Mobile Legends.', kb([CANCEL])); }
+  if (d === 'promo') { await setSt(env, chat, { step: 'pc' }); return show(env, chat, mid, '<b>🎁 Промокод</b>\nОтправьте ваш промокод одним сообщением (например, <code>DKG-XXXXXX</code>).\nПромокод даёт бесплатный Weekly Diamond Pass для Mobile Legends и работает только для Global-аккаунтов.', kb([CANCEL])); }
   if (d === 'acc') return showAccounts(env, chat, mid);
   { const a = d.match(/^(ac|ab):(\d+)$/); if (a) return a[1] === 'ac' ? showAccount(env, chat, Number(a[2])) : buyAccount(env, cq, Number(a[2])); }
   if (d === 'games') { await setSt(env, chat, {}); return showGames(env, chat, mid); }

@@ -18,17 +18,21 @@ const pad = n => String(n).padStart(2, '0');
 const fmt = n => Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ');
 
 async function sums(env, from, to) {
+  // промо-заказы (бесплатные Weekly Pass) в выручку и прибыль не входят, расход по ним показываем отдельной строкой
+  const NP = "COALESCE(method,'') != 'promo'";
   const r = await env.DB.prepare(
-    `SELECT COUNT(*) AS n, COALESCE(SUM(price_kgs),0) AS rev,
-            COALESCE(SUM(CASE WHEN cost_usd > 0 THEN price_kgs - cost_usd * ? ELSE 0 END),0) AS profit,
-            COALESCE(SUM(CASE WHEN cost_usd > 0 THEN 0 ELSE 1 END),0) AS nocost
+    `SELECT COALESCE(SUM(CASE WHEN ${NP} THEN 1 ELSE 0 END),0) AS n, COALESCE(SUM(CASE WHEN ${NP} THEN price_kgs ELSE 0 END),0) AS rev,
+            COALESCE(SUM(CASE WHEN ${NP} AND cost_usd > 0 THEN price_kgs - cost_usd * ? ELSE 0 END),0) AS profit,
+            COALESCE(SUM(CASE WHEN ${NP} AND NOT cost_usd > 0 THEN 1 ELSE 0 END),0) AS nocost,
+            COALESCE(SUM(CASE WHEN ${NP} THEN 0 ELSE 1 END),0) AS promo_n,
+            COALESCE(SUM(CASE WHEN ${NP} THEN 0 ELSE cost_usd * ? END),0) AS promo_cost
        FROM orders WHERE status = 'delivered'
         AND COALESCE(NULLIF(finished_at,0), created_at) >= ? AND COALESCE(NULLIF(finished_at,0), created_at) < ?`
-  ).bind(USD_KGS, from, to).first();
-  return r || { n: 0, rev: 0, profit: 0, nocost: 0 };
+  ).bind(USD_KGS, USD_KGS, from, to).first();
+  return r || { n: 0, rev: 0, profit: 0, nocost: 0, promo_n: 0, promo_cost: 0 };
 }
 function line(s) {
-  return `${s.n} заказ(ов) · выручка ${fmt(s.rev)} сом · прибыль ${s.profit >= 0 ? '+' : '−'}${fmt(Math.abs(s.profit))} сом` + (s.nocost ? `\n(у ${s.nocost} заказ(ов) нет себестоимости — они не входят в прибыль)` : '');
+  return `${s.n} заказ(ов) · выручка ${fmt(s.rev)} сом · прибыль ${s.profit >= 0 ? '+' : '−'}${fmt(Math.abs(s.profit))} сом` + (s.nocost ? `\n(у ${s.nocost} заказ(ов) нет себестоимости — они не входят в прибыль)` : '') + (s.promo_n ? `\nПромо: ${s.promo_n} шт, расход ${fmt(s.promo_cost)} сом (в прибыль не входит)` : '');
 }
 
 export async function buildReport(env, nowMs) {

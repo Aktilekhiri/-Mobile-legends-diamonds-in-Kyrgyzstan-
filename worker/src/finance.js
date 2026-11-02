@@ -15,28 +15,34 @@ const fmt = n => Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ');
 const pad = n => String(n).padStart(2, '0');
 
 async function sums(env, from, to) {
+  // промо-заказы (method = 'promo', бесплатные Weekly Pass) не входят в выручку и прибыль: их расход считается отдельно
+  const NP = "COALESCE(method,'') != 'promo'";
   const r = await env.DB.prepare(
-    `SELECT COUNT(*) AS n, COALESCE(SUM(price_kgs),0) AS rev,
-            COALESCE(SUM(cost_usd),0) AS cost_usd,
-            COALESCE(SUM(CASE WHEN cost_usd > 0 THEN price_kgs - cost_usd * ? ELSE 0 END),0) AS profit,
-            COALESCE(SUM(CASE WHEN cost_usd > 0 THEN 0 ELSE 1 END),0) AS nocost
+    `SELECT COALESCE(SUM(CASE WHEN ${NP} THEN 1 ELSE 0 END),0) AS n,
+            COALESCE(SUM(CASE WHEN ${NP} THEN price_kgs ELSE 0 END),0) AS rev,
+            COALESCE(SUM(CASE WHEN ${NP} THEN cost_usd ELSE 0 END),0) AS cost_usd,
+            COALESCE(SUM(CASE WHEN ${NP} AND cost_usd > 0 THEN price_kgs - cost_usd * ? ELSE 0 END),0) AS profit,
+            COALESCE(SUM(CASE WHEN ${NP} AND NOT cost_usd > 0 THEN 1 ELSE 0 END),0) AS nocost,
+            COALESCE(SUM(CASE WHEN ${NP} THEN 0 ELSE 1 END),0) AS promo_n,
+            COALESCE(SUM(CASE WHEN ${NP} THEN 0 ELSE cost_usd END),0) AS promo_usd
        FROM orders WHERE status = 'delivered'
         AND COALESCE(NULLIF(finished_at,0), created_at) >= ? AND COALESCE(NULLIF(finished_at,0), created_at) < ?`
   ).bind(USD_KGS, from, to).first();
-  const s = r || { n: 0, rev: 0, cost_usd: 0, profit: 0, nocost: 0 };
-  return { n: s.n, rev: Math.round(s.rev), cost: Math.round(s.cost_usd * USD_KGS), cost_usd: Number(s.cost_usd.toFixed(2)), profit: Math.round(s.profit), nocost: s.nocost };
+  const s = r || { n: 0, rev: 0, cost_usd: 0, profit: 0, nocost: 0, promo_n: 0, promo_usd: 0 };
+  return { n: s.n, rev: Math.round(s.rev), cost: Math.round(s.cost_usd * USD_KGS), cost_usd: Number(s.cost_usd.toFixed(2)), profit: Math.round(s.profit), nocost: s.nocost,
+    promo_n: s.promo_n, promo_cost: Math.round(s.promo_usd * USD_KGS), promo_usd: Number(s.promo_usd.toFixed(2)) };
 }
 
 // План на неделю по её сумме: сколько перевести на «карту-сейф» (Simbank), сколько оставить, сколько USDT докупить
 function plan(week, balanceUsd) {
   const reserve = Math.round(week.rev * RESERVE_PCT);
-  const toSafe = Math.max(0, week.profit - reserve);
+  const toSafe = Math.max(0, week.profit - reserve - (week.promo_cost || 0));   // расход на промо вычитаем: деньги реально потрачены
   const weeklySpend = week.cost_usd;                                 // расход на поставщика за неделю, USD
   const need = weeklySpend + MIN_BALANCE_USD - (balanceUsd == null ? 0 : balanceUsd);
   let buyUsd = 0;
   if (balanceUsd != null && need > 0) buyUsd = Math.max(MIN_DEPOSIT_USD, Math.ceil(need / 10) * 10);
   return {
-    reserve, to_safe: toSafe,
+    reserve, promo_cost: week.promo_cost || 0, to_safe: toSafe,
     keep: Math.max(0, week.rev - toSafe),                            // остаётся на картах приёма (закупка + резерв)
     weekly_spend_usd: Number(weeklySpend.toFixed(2)),
     buy_usd: buyUsd, buy_kgs: Math.round(buyUsd * USD_KGS),
@@ -56,21 +62,21 @@ export async function financeSummary(env, nowMs = Date.now()) {
     sums(env, dayStart, dayEnd), sums(env, weekStart, dayEnd), sums(env, lastWeekStart, weekStart),
     sums(env, monthStart, dayEnd), sums(env, 0, dayEnd), sums(env, dayEnd - 7 * DAY, dayEnd),
   ]);
-  const spend7 = r7.cost_usd;                                        // реальный темп расхода: последние 7 дней
+  const spend7 = r7.cost_usd + r7.promo_usd;                                        // реальный темп расхода: последние 7 дней
   return {
     rate: USD_KGS, balance_usd: balance, balance_kgs: balance == null ? null : Math.round(balance * USD_KGS),
     spend_per_day_usd: Number((spend7 / 7).toFixed(2)), days_left: spend7 > 0 && balance != null ? Number((balance / (spend7 / 7)).toFixed(1)) : null,
     today, week: thisWeek, last_week: lastWeek, month, all,
-    plan_week: plan({ ...thisWeek, cost_usd: Math.max(thisWeek.cost_usd, spend7) }, balance),
-    plan_last: plan({ ...lastWeek, cost_usd: Math.max(lastWeek.cost_usd, spend7) }, balance),
+    plan_week: plan({ ...thisWeek, cost_usd: Math.max(thisWeek.cost_usd + thisWeek.promo_usd, spend7) }, balance),
+    plan_last: plan({ ...lastWeek, cost_usd: Math.max(lastWeek.cost_usd + lastWeek.promo_usd, spend7) }, balance),
     constants: { reserve_pct: RESERVE_PCT, min_balance_usd: MIN_BALANCE_USD, min_deposit_usd: MIN_DEPOSIT_USD },
   };
 }
 
 export function weeklyText(f) {
   const w = f.week, p = f.plan_week;
-  let t = `💰 Итоги недели\n\nВыдано заказов: ${w.n}\nВыручка: ${fmt(w.rev)} сом\nСебестоимость: ${fmt(w.cost)} сом\nПрибыль: ${w.profit >= 0 ? '' : '−'}${fmt(Math.abs(w.profit))} сом`;
-  t += `\n\n📤 Что перевести сейчас\n• На карту-сейф (Simbank): ${fmt(p.to_safe)} сом (прибыль за вычетом резерва ${fmt(p.reserve)} сом)\n• На картах приёма (Mbank, O!Банк) оставьте остальное: это оборотные деньги на закупку`;
+  let t = `💰 Итоги недели\n\nВыдано заказов: ${w.n}\nВыручка: ${fmt(w.rev)} сом\nСебестоимость: ${fmt(w.cost)} сом\nПрибыль: ${w.profit >= 0 ? '' : '−'}${fmt(Math.abs(w.profit))} сом` + (w.promo_n ? `\nПромо (бесплатные Weekly Pass): ${w.promo_n} шт, расход ${fmt(w.promo_cost)} сом (в прибыль не входит)` : '');
+  t += `\n\n📤 Что перевести сейчас\n• На карту-сейф (Simbank): ${fmt(p.to_safe)} сом (прибыль за вычетом резерва ${fmt(p.reserve)} сом${p.promo_cost ? ' и промо ' + fmt(p.promo_cost) + ' сом' : ''})\n• На картах приёма (Mbank, O!Банк) оставьте остальное: это оборотные деньги на закупку`;
   if (f.balance_usd != null) {
     t += `\n\n🏦 FazerCards: баланс $${f.balance_usd.toFixed(2)} (≈ ${fmt(f.balance_kgs)} сом)`;
     if (f.days_left != null) t += `, хватит примерно на ${f.days_left} дн.`;

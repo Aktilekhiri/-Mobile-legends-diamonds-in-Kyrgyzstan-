@@ -7,7 +7,7 @@ export const GLOBAL_CATALOG = {
   '51+5':   { offer: '51_5_diamonds', cost: 1.209 }, // обычный пакет (не только на 1-е пополнение), 56 алмазов
   '64+6':   { offer: '70_diamonds', cost: 1.15 },
   '78+8':   { offer: '78_8_diamonds', cost: 1.189 },
-  '156+16': { offer: '156_16_diamonds', cost: 2.3582 },
+  '156+16': { offer: '156_16_diamonds', cost: 2.2367 },
   '234+23': { offer: '234_23_diamonds', cost: 3.417 },
   // составной пакет: два оффера подряд (234+23 и 78+8 = 343), 'a|b' = несколько заказов FazerCards
   '253+23': { offer: '234_23_diamonds|19_diamonds', cost: 3.754 }, // 276 = 257 + 19

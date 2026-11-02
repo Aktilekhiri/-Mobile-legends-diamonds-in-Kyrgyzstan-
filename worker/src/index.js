@@ -10,6 +10,7 @@ const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
 import { loginWithGoogle, getMe, listMyOrders, userFromRequest, adminListUsers } from './auth.js';
 import { maybeSendReport } from './report.js';
+import { financeSummary, maybeSendWeekly } from './finance.js';
 import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
@@ -253,6 +254,7 @@ export default {
         if (path === '/api/admin/orders' && m === 'GET') {
           return json(req, { orders: await listOrders(env, url.searchParams.get('status') || 'all') });
         }
+        if (path === '/api/admin/finance' && m === 'GET') return json(req, await financeSummary(env));
         if (path === '/api/admin/tg' && m === 'GET') {
           let orders = null;
           if (env.TELEGRAM_BOT_TOKEN) {
@@ -381,5 +383,6 @@ export default {
     ctx.waitUntil(pollProcessing(env).catch(() => {}));
     ctx.waitUntil(checkBalance(env).catch(() => {}));
     ctx.waitUntil(maybeSendReport(env).catch(() => {}));
+    ctx.waitUntil(maybeSendWeekly(env).catch(() => {}));
   },
 };

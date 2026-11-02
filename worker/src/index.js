@@ -14,6 +14,7 @@ import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
 import { createOffer, addOfferPhoto, submitOfferReceipt } from './market.js';
+import { redeemPromo } from './promo.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
 
@@ -159,6 +160,12 @@ export default {
       if (path === '/api/orders' && m === 'POST') {
         const b = await req.json().catch(() => ({}));
         const r = await createOrder(env, req.headers.get('CF-Connecting-IP') || '', b, await userFromRequest(req, env));
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      // промокод розыгрыша: бесплатный Weekly Diamond Pass (одноразовые коды, срок в таблице promo_codes)
+      if (path === '/api/promo/redeem' && m === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const r = await redeemPromo(env, req.headers.get('CF-Connecting-IP') || 'anon', b, await userFromRequest(req, env));
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
       }
       mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/receipt$/);

@@ -1419,6 +1419,21 @@
     <span class="gw-txt"><b>Розыгрыш 3000 алмазов</b><small>Подпишитесь на наш Telegram-канал и нажмите «Принять участие». Разыграем, когда наберём 500 подписчиков.</small></span>
     <span class="gw-btn">Участвовать →</span>
   </a>
+  <details class="promo-box" id="promo">
+    <summary>🎁 У меня есть промокод</summary>
+    <p class="pm-help">Промокод даёт бесплатный Weekly Diamond Pass для Mobile Legends (Global). Один код — одно использование.</p>
+    <form id="promoForm" onsubmit="return redeemPromoForm(event)" novalidate>
+      <label for="pmCode">Промокод</label>
+      <input type="text" class="input-field" id="pmCode" placeholder="DKG-XXXXXX" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <label for="pmId">ID игрока</label>
+      <input type="text" class="input-field" id="pmId" placeholder="598505997" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'')">
+      <label for="pmZone">Zone ID</label>
+      <input type="text" class="input-field" id="pmZone" placeholder="8403" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'')">
+      <button type="submit" class="btn-primary" id="pmBtn">Получить Weekly Pass</button>
+      <div class="pm-msg" id="pmMsg" role="status" aria-live="polite"></div>
+    </form>
+  </details>
+  <style>.promo-box{margin:0 0 22px;border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:0 16px}.promo-box summary{cursor:pointer;font-weight:800;padding:14px 0;min-height:44px;list-style:none}.promo-box summary::-webkit-details-marker{display:none}.promo-box[open] summary{border-bottom:1px solid var(--line)}.promo-box .pm-help{color:var(--muted);font-size:14px;margin:12px 0}.promo-box form{padding-bottom:16px}.promo-box label{display:block;font-weight:700;font-size:14px;margin:6px 0}.promo-box .btn-primary{width:100%;min-height:48px;margin-top:6px}.pm-msg{margin-top:12px;font-size:15px;line-height:1.4}.pm-msg.err{color:#C0392B}.pm-msg.ok{color:#15803D;font-weight:700}</style>
   <section id="games"><div class="sec-label">Игры</div><div class="sec-divider"></div><h2 class="sec-title">Что можно <em>пополнить</em></h2>
     <div class="games-grid">
       <a class="game-card" href="/mobile-legends-almazy/"><div class="gc-i"><img src="/img/games/mlbb.webp" width="56" height="56" alt="Mobile Legends" loading="lazy" decoding="async"></div><h3>Mobile Legends</h3><p>Алмазы, Weekly Pass, Twilight Pass</p></a>
@@ -2379,6 +2394,36 @@ async function sendOrderWithReceipt() {
   document.getElementById('methodNote').innerHTML = '';
   showSuccessInfo();
 }
+
+// Промокод розыгрыша: бесплатный Weekly Diamond Pass (проверка и выдача на сервере)
+async function redeemPromoForm(ev) {
+  if (ev) ev.preventDefault();
+  const msg = document.getElementById('pmMsg'), btn = document.getElementById('pmBtn');
+  const set = (t, k) => { msg.textContent = t || ''; msg.className = 'pm-msg' + (k ? ' ' + k : ''); };
+  const code = document.getElementById('pmCode').value.trim(), pid = document.getElementById('pmId').value.trim(), zone = document.getElementById('pmZone').value.trim();
+  if (code.replace(/[^A-Za-z0-9]/g, '').length < 6) { set('Введите промокод полностью', 'err'); return false; }
+  if (pid.length < 6 || pid.length > 10 || zone.length < 3 || zone.length > 5) { set('Проверьте ID (6–10 цифр) и Zone ID (3–5 цифр)', 'err'); return false; }
+  if (!window.DK_API) { set('Сервис сейчас недоступен, попробуйте позже', 'err'); return false; }
+  btn.disabled = true; set('Проверяем промокод…', '');
+  try {
+    const r = await fetch(API_BASE() + '/api/promo/redeem', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ code, playerId: pid, serverId: zone }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { set(d.error || 'Не удалось применить промокод', 'err'); btn.disabled = false; return false; }
+    set('🎁 Промокод принят! Заказ ' + d.id + ': Weekly Pass выдаётся, обычно 5–10 минут.', 'ok');
+    let n = 0; const sec = d.secret ? '?s=' + encodeURIComponent(d.secret) : '';
+    const tick = async () => {
+      try {
+        const q = await fetch(API_BASE() + '/api/orders/' + encodeURIComponent(d.id) + sec); if (!q.ok) return;
+        const o = await q.json();
+        if (o.status === 'delivered') { set('✅ Готово! Weekly Pass зачислен на аккаунт ' + pid + '. Проверьте игру.', 'ok'); clearInterval(window._pmTimer); }
+        else if (['refunded', 'cancelled', 'refund_due'].includes(o.status)) { set('Возникла проблема с заказом ' + d.id + '. Напишите в поддержку.', 'err'); clearInterval(window._pmTimer); }
+      } catch (e) { /* без статуса */ }
+    };
+    clearInterval(window._pmTimer); window._pmTimer = setInterval(() => { if (++n > 120) { clearInterval(window._pmTimer); return; } tick(); }, 5000);
+  } catch (e) { set('Нет связи с сервером. Попробуйте ещё раз.', 'err'); btn.disabled = false; }
+  return false;
+}
+(function () { try { const c = new URLSearchParams(location.search).get('promo'); if (c) { const el = document.getElementById('pmCode'); if (el) { el.value = c.slice(0, 20); document.getElementById('promo').open = true; } } } catch (e) {} })();
 
 const phoneOk = v => String(v || '').replace(/\D/g, '').length >= 9; // пока нет ИП — телефон обязателен
 async function sendOrderToWhatsApp() {

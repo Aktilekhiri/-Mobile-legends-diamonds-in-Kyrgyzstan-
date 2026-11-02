@@ -6,6 +6,7 @@ import { createOrder, saveReceipt, confirmOrder, markManualDone, cancelOrder, al
 import { CATALOGS, MAX_AUTO_COST_USD } from './catalog.js';
 import { publishOffer, rejectOffer, createOffer, addOfferPhoto, submitOfferReceipt, GAMES as SELL_GAMES, FEE } from './market.js';
 import { notify } from './notify.js';
+import { checkPromo, redeemPromo, normCode } from './promo.js';
 
 const PAY_NUM = '+996 702 097 127', PAY_NAME = 'Актилек К.';
 const METHODS = { M: 'Mbank', O: 'O!Банк' };
@@ -26,7 +27,7 @@ const setSt = (env, chat, st) => env.DB.prepare('INSERT INTO tg_sessions (chat_i
 const btn = (text, data) => ({ text, callback_data: data });
 const kb = rows => ({ inline_keyboard: rows });
 const CHANNEL = 'https://t.me/topupdiamondskg';
-const MENU = kb([[btn('🎮 Пополнить игру', 'games')], [btn('🛒 Купить аккаунт', 'acc'), btn('💼 Продать аккаунт', 'sell')], [btn('📋 Мои заказы', 'orders'), btn('💬 Поддержка', 'help')], [{ text: '📣 Наш канал', url: CHANNEL }]]);
+const MENU = kb([[btn('🎮 Пополнить игру', 'games')], [btn('🛒 Купить аккаунт', 'acc'), btn('💼 Продать аккаунт', 'sell')], [btn('📋 Мои заказы', 'orders'), btn('💬 Поддержка', 'help')], [btn('🎁 Промокод', 'promo')], [{ text: '📣 Наш канал', url: CHANNEL }]]);
 const CANCEL = [btn('❌ Отмена', 'menu')];
 const isNight = () => ((new Date().getUTCHours() + 6) % 24) < 8;
 const NIGHT = '\n\n🌙 Сейчас ночь: заказы с 00:00 до 08:00 по Бишкеку выдаём утром.';
@@ -279,6 +280,7 @@ async function onCallback(env, cq) {
   let st = await getSt(env, chat);
   if (d === 'menu') { await setSt(env, chat, {}); return show(env, chat, mid, welcome(), MENU); }
   if (await onSellCallback(env, cq, d, st)) return;
+  if (d === 'promo') { await setSt(env, chat, { step: 'pc' }); return show(env, chat, mid, '<b>🎁 Промокод</b>\nОтправьте ваш промокод одним сообщением (например, <code>DKG-XXXXXX</code>).\nПромокод даёт бесплатный Weekly Diamond Pass для Mobile Legends.', kb([CANCEL])); }
   if (d === 'acc') return showAccounts(env, chat, mid);
   { const a = d.match(/^(ac|ab):(\d+)$/); if (a) return a[1] === 'ac' ? showAccount(env, chat, Number(a[2])) : buyAccount(env, cq, Number(a[2])); }
   if (d === 'games') { await setSt(env, chat, {}); return showGames(env, chat, mid); }
@@ -307,6 +309,25 @@ async function onMessage(env, msg) {
   if (/^\/help/i.test(text)) return showHelp(env, chat, 0);
   const st = await getSt(env, chat); const g = st.g && SHOP.find(x => x.id === st.g);
   if (SELL_STEPS.includes(st.step)) return onSellMessage(env, chat, msg, st);
+  if (st.step === 'pc' && text) {
+    const c = await checkPromo(env, 'tg:' + chat, text);
+    if (c.error) return send(env, chat, '⚠️ ' + esc(c.error), { reply_markup: kb([CANCEL]) });
+    await setSt(env, chat, { step: 'pi', promo: normCode(text) });
+    return send(env, chat, '✅ Промокод принят.\n\nОтправьте <b>ID и Zone ID</b> вашего аккаунта Mobile Legends одним сообщением через пробел, например: <code>123456789 1234</code>\n⚠️ Только Global-аккаунт: сервер, который начинается на 6, не подходит.', { reply_markup: kb([CANCEL]) });
+  }
+  if (st.step === 'pi' && text) {
+    const parts = text.match(/\d+/g) || [];
+    const pid = validId({ mlbb: true }, parts[0] || ''), zone = validZone(parts[1] || '');
+    if (!pid || !zone) return send(env, chat, '⚠️ Отправьте ID (6–10 цифр) и Zone ID (3–5 цифр) через пробел.', { reply_markup: kb([CANCEL]) });
+    const from = msg.from || {}, who = from.username ? '@' + from.username : (from.first_name || 'клиент');
+    const r = await redeemPromo(env, 'tg:' + chat, { code: st.promo, playerId: pid, serverId: zone }, null, { tgChat: chat, tgUser: who });
+    if (r.error) {
+      if (r.status === 400) return send(env, chat, '⚠️ ' + esc(r.error), { reply_markup: kb([CANCEL]) });
+      await setSt(env, chat, {}); return send(env, chat, '⚠️ ' + esc(r.error), { reply_markup: MENU });
+    }
+    await setSt(env, chat, {});
+    return send(env, chat, `🎁 <b>Промокод активирован!</b>\nЗаказ ${esc(r.id)}: Weekly Diamond Pass для ID <code>${pid}</code> (${zone}). Выдача занимает 5–10 минут, напишем сюда, как только он придёт.`, { reply_markup: kb([[btn('📋 Мои заказы', 'orders')], [btn('« Меню', 'menu')]]) });
+  }
   if (g && st.step === 'receipt') return finishReceipt(env, chat, msg.from || {}, msg, st);
   if (g && g.user && st.step === 'id' && text) {
     const u = text.replace(/^@/, '').trim();

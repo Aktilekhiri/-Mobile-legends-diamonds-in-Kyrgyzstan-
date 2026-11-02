@@ -1359,6 +1359,10 @@
     <span class="bn-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span>
     <span class="bn-tx">Заказы</span>
   </button>
+  <button type="button" class="bn-item" id="bn-accounts" onclick="showPage('accounts')">
+    <span class="bn-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="12" r="2.2"/><path d="M14 10h4M14 14h4"/></svg></span>
+    <span class="bn-tx">Аккаунты</span>
+  </button>
   <button type="button" class="bn-item" id="bn-profile" onclick="toggleAuthModal()">
     <span class="bn-ic" id="bnProfileIc"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span>
     <span class="bn-tx">Профиль</span>
@@ -1381,7 +1385,6 @@
     </div>
     <div class="auth-links">
       <button type="button" onclick="closeAuthModal();showPage('support')">💬 Поддержка</button>
-      <button type="button" onclick="closeAuthModal();showPage('accounts')">🎮 Аккаунты</button>
     </div>
     <div class="theme-pick"><div class="tp-t">Тема</div><div class="tp-row" role="group" aria-label="Тема оформления">
       <button type="button" class="tp-btn" data-t="light" onclick="setTheme('light')"><span class="tp-sw l"></span>Светлая</button>
@@ -2507,7 +2510,7 @@ function showPage(name) {
   const navLink = document.getElementById(`nav-${name === 'topup' || name === 'payment' ? 'catalog' : name}`);
   if (navLink) navLink.classList.add('active');
   document.body.dataset.page = name;
-  { const map = { home:'home', catalog:'topup', topup:'topup', payment:'topup', orders:'orders', status:'orders' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
+  { const map = { home:'home', catalog:'topup', topup:'topup', payment:'topup', orders:'orders', status:'orders', accounts:'accounts' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
   window.scrollTo(0,0);
   if (name === 'topup') renderPackages();
   if (name === 'catalog') renderCatalog();

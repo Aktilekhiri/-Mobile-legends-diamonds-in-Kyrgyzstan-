@@ -94,6 +94,14 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
   if (!pkg || (!price && !opts.promo)) return { error: 'Не указан пакет или сумма' };
   // защита от мусорных заказов: телефон обязателен (до ИП), цена не ниже реальной стоимости пакета
   if (!opts.promo && String(b.phone || '').replace(/\D/g, '').length < 9) return { error: 'Укажите номер телефона' };
+  // чёрный список по номеру телефона (последние 9 цифр)
+  if (!opts.promo) {
+    try {
+      await env.DB.prepare('CREATE TABLE IF NOT EXISTS blacklist (kind TEXT NOT NULL, value TEXT NOT NULL, reason TEXT NOT NULL DEFAULT \'\', created_at INTEGER NOT NULL, PRIMARY KEY (kind, value))').run();
+      const bl = await env.DB.prepare("SELECT 1 AS x FROM blacklist WHERE kind = 'phone' AND value = ?").bind(String(b.phone || '').replace(/\D/g, '').slice(-9)).first();
+      if (bl) return { error: 'Заказ невозможен. Напишите в поддержку.', status: 403 };
+    } catch (e) { /* без проверки не блокируем */ }
+  }
   const cat0 = (CATALOGS[region] || {})[pkg] || null;
   if (!opts.promo && (cat0 ? price < Math.floor(cat0.cost * USD_KGS * 0.9) : price < 20)) return { error: 'Некорректная сумма заказа' };
 

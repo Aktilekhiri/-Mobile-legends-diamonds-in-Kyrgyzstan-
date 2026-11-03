@@ -22,7 +22,7 @@ export function notify(env, text, markup) {
   })());
 }
 
-// Фото в Telegram (чек клиента). true — отправлено.
+// Фото в Telegram (чек клиента). true — отправлено, 'unknown' — таймаут (фото могло дойти позже), false — не отправлено.
 export async function notifyPhoto(env, bytes, mime, caption, markup) {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return false;
   try {
@@ -31,7 +31,11 @@ export async function notifyPhoto(env, bytes, mime, caption, markup) {
     fd.append('caption', String(caption).slice(0, 1000));
     if (markup) fd.append('reply_markup', JSON.stringify(markup));
     fd.append('photo', new Blob([bytes], { type: mime }), mime === 'image/png' ? 'receipt.png' : 'receipt.jpg');
-    const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd, signal: AbortSignal.timeout(15000) });
+    const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd, signal: AbortSignal.timeout(25000) });
     return r.ok;
-  } catch (e) { return false; }
+  } catch (e) {
+    // таймаут: Telegram мог получить фото и доставить его с задержкой, поэтому «не ушло» не утверждаем,
+    // иначе владелец получит два одинаковых сообщения об одном заказе (текст-запасной вариант + фото)
+    return e && (e.name === 'TimeoutError' || e.name === 'AbortError') ? 'unknown' : false;
+  }
 }

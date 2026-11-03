@@ -4,6 +4,7 @@
 // (контакты НЕ в accounts, потому что /api/accounts публичный).
 import { notify, notifyPhoto, defer } from './notify.js';
 import { tgApi, send, esc } from './tgapi.js';
+import { encryptJson } from './crypt.js';
 
 export const FEE = 0;
 // Наценка магазина по ступеням цены продавца
@@ -19,6 +20,7 @@ export async function ensureMarket(env) {
   if (ready) return;
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS market_offers (code TEXT PRIMARY KEY, account_id INTEGER NOT NULL, secret TEXT NOT NULL, contact TEXT NOT NULL, tg_chat INTEGER, tg_user TEXT, ip TEXT, status TEXT NOT NULL DEFAULT 'draft', receipt_at INTEGER, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)").run();
   try { await env.DB.prepare('ALTER TABLE market_offers ADD COLUMN seller_price INTEGER NOT NULL DEFAULT 0').run(); } catch (e) { /* колонка уже есть */ }
+  for (const c of ['creds_enc TEXT', 'payout_to TEXT']) { try { await env.DB.prepare('ALTER TABLE market_offers ADD COLUMN ' + c).run(); } catch (e) { /* уже есть */ } }
   ready = true;
 }
 
@@ -47,6 +49,12 @@ export async function createOffer(env, who, b) {
   if (title.length < 3) return { error: 'Напишите название объявления (например, «Mythic Glory, 120 скинов»)', status: 400 };
   if (price < 100 || price > 10000000) return { error: 'Укажите, сколько хотите получить, в сомах (от 100)', status: 400 };
   if (contact.length < 5) return { error: 'Укажите контакт: номер WhatsApp или @username в Telegram', status: 400 };
+  const cr = { method: clean(b.login_method, 40), login: clean(b.login, 120), password: clean(b.password, 120), bindings: clean(b.bindings, 400) }, payout = clean(b.payout, 120);
+  if (!cr.method || !cr.login) return { error: 'Укажите способ входа и логин аккаунта', status: 400 };
+  if (!cr.password) return { error: 'Укажите пароль (покупатель увидит его только после оплаты)', status: 400 };
+  if (cr.bindings.length < 3) return { error: 'Укажите, что привязано к аккаунту (почта, телефон, соцсети)', status: 400 };
+  if (payout.length < 5) return { error: 'Укажите, куда перевести деньги после сделки (номер Mbank или O!Банк)', status: 400 };
+  let credsEnc; try { credsEnc = await encryptJson(env, cr); } catch (e) { return { error: 'Сервис временно недоступен', status: 503 }; }
   // защита от спама: не больше 5 объявлений в час с одного источника
   const key = who.tg_chat ? ['tg_chat', who.tg_chat] : ['ip', who.ip || 'x'];
   const since = Date.now() - 3600000;
@@ -59,8 +67,8 @@ export async function createOffer(env, who, b) {
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
   ).bind(fullTitle, '', price + markup(price), '', 0, 0, 0, description, '', '', '', 'hidden', now, now, now).run();
   const code = 'AC' + rand(8, 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'), secret = rand(20, 'abcdef0123456789');
-  await env.DB.prepare('INSERT INTO market_offers (code,account_id,secret,contact,tg_chat,tg_user,ip,status,created_at,updated_at,seller_price) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
-    .bind(code, acc.meta.last_row_id, secret, contact, who.tg_chat || null, who.tg_user || null, who.ip || '', 'draft', now, now, price).run();
+  await env.DB.prepare('INSERT INTO market_offers (code,account_id,secret,contact,tg_chat,tg_user,ip,status,created_at,updated_at,seller_price,creds_enc,payout_to) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)')
+    .bind(code, acc.meta.last_row_id, secret, contact, who.tg_chat || null, who.tg_user || null, who.ip || '', 'draft', now, now, price, credsEnc, payout).run();
   return { ok: true, code, secret, seller_price: price, markup: markup(price), price: price + markup(price) };
 }
 

@@ -14,7 +14,8 @@ import { financeSummary, maybeSendWeekly } from './finance.js';
 import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
-import { createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
+import { ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
+import { createDeal, viewDeal, dealPaid, dealConfirm, dealProblem, remindDeals } from './deals.js';
 import { redeemPromo } from './promo.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
@@ -243,11 +244,30 @@ export default {
         return r.error ? err(req, r.error, r.status || 400) : json(req, r);
       }
 
+      // сделки по аккаунтам (покупатель; доступ по секрету)
+      if (path === '/api/market/deals' && m === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const r = await createDeal(env, { ip: req.headers.get('CF-Connecting-IP') || '' }, b);
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      mm = path.match(/^\/api\/market\/deals\/(DL[A-Z0-9]{8})(?:\/(paid|confirm|problem))?$/);
+      if (mm) {
+        const sec = url.searchParams.get('s') || '';
+        let r = null;
+        if (m === 'GET' && !mm[2]) r = await viewDeal(env, mm[1], sec);
+        else if (m === 'POST' && mm[2] === 'paid') r = await dealPaid(env, mm[1], sec);
+        else if (m === 'POST' && mm[2] === 'confirm') r = await dealConfirm(env, mm[1], sec);
+        else if (m === 'POST' && mm[2] === 'problem') r = await dealProblem(env, mm[1], sec);
+        if (r) return r.error ? err(req, r.error, r.status || 400) : json(req, r, 200, { 'Cache-Control': 'no-store' });
+      }
+
       // публичный список
       if (path === '/api/accounts' && m === 'GET') {
         const { results } = await env.DB.prepare(
           "SELECT * FROM accounts WHERE status != 'hidden' ORDER BY (status = 'sold'), sort DESC, id DESC"
         ).all();
+        let gd = new Set(); try { await ensureMarket(env); const g = await env.DB.prepare("SELECT account_id FROM market_offers WHERE creds_enc IS NOT NULL AND creds_enc != '' AND status = 'published'").all(); gd = new Set(g.results.map(x => x.account_id)); } catch (e) { /* без флага */ }
+        for (const a of results) a.gd = gd.has(a.id) ? 1 : 0;
         return json(req, { accounts: await withPhotos(env, results) }, 200, { 'Cache-Control': 'public, max-age=20' });
       }
 
@@ -389,5 +409,6 @@ export default {
     ctx.waitUntil(checkBalance(env).catch(() => {}));
     ctx.waitUntil(maybeSendReport(env).catch(() => {}));
     ctx.waitUntil(maybeSendWeekly(env).catch(() => {}));
+    ctx.waitUntil(remindDeals(env).catch(() => {}));
   },
 };

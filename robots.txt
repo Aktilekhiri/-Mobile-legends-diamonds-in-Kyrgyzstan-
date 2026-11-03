@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /deal.html
 
 Sitemap: https://diamond.kg/sitemap.xml

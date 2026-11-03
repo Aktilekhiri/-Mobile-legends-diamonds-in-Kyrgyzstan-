@@ -76,3 +76,5 @@
 .sf-go:disabled{opacity:.6;cursor:default}
 .sf-err{background:rgba(255,93,93,.12);border:1px solid rgba(255,93,93,.4);color:#ffb4b4;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:.9rem}
 .sell-in h3{padding-right:52px}
+.gform[hidden],.sf-err[hidden]{display:none}
+.gform{margin:10px 0 4px}

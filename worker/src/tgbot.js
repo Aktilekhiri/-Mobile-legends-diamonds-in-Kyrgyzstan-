@@ -4,6 +4,7 @@ import { SHOP } from './shop_data.js';
 import { tgApi, send, esc } from './tgapi.js';
 import { createOrder, saveReceipt, confirmOrder, markManualDone, cancelOrder, alertText } from './orders.js';
 import { CATALOGS, MAX_AUTO_COST_USD } from './catalog.js';
+import { adminDeal, createDeal } from './deals.js';
 import { publishOffer, rejectOffer, createOffer, addOfferPhoto, submitOffer, markup as sellMarkup, GAMES as SELL_GAMES } from './market.js';
 import { notify } from './notify.js';
 import { checkPromo, redeemPromo, normCode } from './promo.js';
@@ -146,10 +147,11 @@ async function adminAction(env, cq, act, id, token) {
   else if (act === 'mn') r = await markManualDone(env, id);
   else if (act === 'mp') r = await publishOffer(env, id);
   else if (act === 'mr') r = await rejectOffer(env, id);
+  else if (/^d[pndr]$/.test(act)) r = await adminDeal(env, act, id);
   else r = await cancelOrder(env, id);
   if (r.error) { await call('answerCallbackQuery', { callback_query_id: cq.id, text: String(r.error).slice(0, 190), show_alert: true }); return; }
   await call('answerCallbackQuery', { callback_query_id: cq.id, text: 'Готово' });
-  const mark = act === 'ok' ? '\n\n✅ Отправлено на выдачу' : act === 'mn' ? '\n\n✅ Отмечено как выданное' : act === 'mp' ? '\n\n✅ Опубликовано' : act === 'mr' ? '\n\n❌ Отклонено' : '\n\n❌ Отказано';
+  const mark = act === 'ok' ? '\n\n✅ Отправлено на выдачу' : act === 'mn' ? '\n\n✅ Отмечено как выданное' : act === 'mp' ? '\n\n✅ Опубликовано' : act === 'mr' ? '\n\n❌ Отклонено' : act === 'dp' ? '\n\n✅ Оплата подтверждена, данные выданы покупателю' : act === 'dn' ? '\n\n❌ Сделка отменена' : act === 'dd' ? '\n\n💸 Выплата продавцу отмечена' : act === 'dr' ? '\n\n↩️ Возврат покупателю (объявление скрыто)' : '\n\n❌ Отказано';
   if (!chat) return;
   const m = cq.message;
   if (m.caption !== undefined || m.photo) await call('editMessageCaption', { chat_id: chat, message_id: mid, caption: ((m.caption || '') + mark).slice(0, 1000), reply_markup: { inline_keyboard: [] } });
@@ -161,7 +163,7 @@ export async function handleOrdersBotUpdate(env, u) {
   try {
     const cq = u && u.callback_query; if (!cq) return;
     const token = env.TELEGRAM_BOT_TOKEN, adm = String(env.TELEGRAM_CHAT_ID || '');
-    const m = String(cq.data || '').match(/^(ok|mn|no|mp|mr):([A-Z0-9]{4,20})$/);
+    const m = String(cq.data || '').match(/^(ok|mn|no|mp|mr|dp|dn|dd|dr):([A-Z0-9]{4,20})$/);
     if (!m || !adm || String(cq.from.id) !== adm) { await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id }, 10000, token); return; }
     await adminAction(env, cq, m[1], m[2], token);
   } catch (e) { console.log('orders bot error', String(e && e.stack || e).slice(0, 300)); }
@@ -169,7 +171,7 @@ export async function handleOrdersBotUpdate(env, u) {
 
 
 // ---------- аккаунты: покупка и продажа через гаранта ----------
-const SELL_STEPS = ['st', 'sp', 'sd', 'sc', 'sph'];
+const SELL_STEPS = ['st', 'sp', 'sd', 'sl', 'sw', 'sb', 'so', 'sc', 'sph'];
 const pickPhoto = (arr, max) => { const ok = (arr || []).filter(x => (x.file_size || 0) <= max); return ok.length ? ok[ok.length - 1] : null; };
 async function tgDownload(env, fileId) {
   const fi = await tgApi(env, 'getFile', { file_id: fileId });
@@ -202,6 +204,12 @@ async function buyAccount(env, cq, id) {
   const a = await env.DB.prepare("SELECT id, title, price FROM accounts WHERE id = ? AND status = 'available'").bind(id).first();
   if (!a) return send(env, chat, 'Это объявление уже недоступно.');
   const who = cq.from.username ? '@' + cq.from.username : (cq.from.first_name || 'покупатель');
+  const dl = await createDeal(env, { tg_chat: chat }, { account_id: a.id, contact: cq.from.username ? '@' + cq.from.username : 'Telegram id ' + chat });
+  if (dl.ok) {
+    const link = `https://diamond.kg/deal.html?c=${dl.code}&s=${dl.secret}`;
+    return send(env, chat, `<b>Покупка через гаранта</b>\n${esc(a.title)}, ${money2(a.price)} сом.\n\nОткройте страницу сделки: там реквизиты для оплаты. После вашей оплаты и моего подтверждения на этой же странице появятся логин и пароль. Войдите в аккаунт и нажмите «Зашёл, подтверждаю». Деньги продавцу мы переводим только через 72 часа после вашего подтверждения.\n\n⚠️ Сохраните ссылку, она личная.`, { reply_markup: { inline_keyboard: [[{ text: '🛡 Открыть страницу сделки', url: link }], [btn('« К списку', 'acc')]] } });
+  }
+  if (dl.status && dl.status !== 400) return send(env, chat, '⚠️ ' + esc(dl.error), { reply_markup: kb([[btn('« К списку', 'acc')]]) });
   await notify(env, `🛒 Покупатель ${who} (id ${chat}) хочет аккаунт №${a.id}: ${a.title} за ${a.price} сом. Напишите ему и проведите сделку через гаранта.`);
   const wa = 'https://wa.me/996555920204?text=' + encodeURIComponent(`Здравствуйте! Хочу купить аккаунт №${a.id}: ${a.title}, ${a.price} сом (diamond.kg)`);
   await send(env, chat, `<b>Заявка отправлена</b>\nАккаунт: ${esc(a.title)}, ${money2(a.price)} сом.\n\nКак проходит сделка:\n1. Мы свяжемся с вами и пришлём реквизиты.\n2. Вы переводите сумму гаранту (Diamond.kg), деньги держим у себя.\n3. Продавец передаёт аккаунт, вы проверяете.\n4. Мы переводим деньги продавцу.\n\nХотите ускорить, напишите нам напрямую.`, { reply_markup: { inline_keyboard: [[{ text: '📲 Написать в WhatsApp', url: wa }], [btn('« К списку', 'acc')]] } });
@@ -209,7 +217,7 @@ async function buyAccount(env, cq, id) {
 async function startSell(env, chat, msgId) {
   await setSt(env, chat, { step: 'sg', sell: {} });
   const rows = SELL_GAMES.map((g, i) => [btn(g, 'sg:' + i)]); rows.push([btn('« Меню', 'menu')]);
-  await show(env, chat, msgId, `<b>Продать аккаунт</b>\n\n1. Размещение <b>бесплатное</b>: вы указываете, сколько хотите получить.\n2. Мы проверяем и публикуем объявление на сайте и в канале. К вашей цене добавляется наша наценка.\n3. Когда найдётся покупатель, сделка идёт через нас: он платит гаранту, вы передаёте аккаунт, мы переводим вам деньги.\n\nВыберите игру:`, kb(rows));
+  await show(env, chat, msgId, `<b>Продать аккаунт</b>\n\n1. Размещение <b>бесплатное</b>: вы указываете, сколько хотите получить.\n2. Вы пишете данные для входа (они зашифрованы и видны покупателю только после оплаты).\n3. Мы проверяем и публикуем объявление на сайте и в канале. К вашей цене добавляется наша наценка.\n4. Покупатель платит нам, получает данные, проверяет вход. Через 72 часа после его подтверждения мы переводим вам деньги.\n\nВыберите игру:`, kb(rows));
 }
 async function onSellMessage(env, chat, msg, st) {
   const text = String(msg.text || '').trim(), S = st.sell || (st.sell = {});
@@ -223,7 +231,27 @@ async function onSellMessage(env, chat, msg, st) {
     S.price = Math.floor(n); st.step = 'sd'; await setSt(env, chat, st);
     return send(env, chat, `Вы получите: <b>${money2(S.price)} сом</b>. Покупатель увидит: <b>${money2(S.price + sellMarkup(S.price))} сом</b> (наценка +${sellMarkup(S.price)}).\n\nОпишите аккаунт: ранг, уровень, героев, скины, что привязано. Или пропустите.`, { reply_markup: kb([[btn('Пропустить', 'sskip')], CANCEL]) });
   }
-  if (st.step === 'sd') { S.desc = text.slice(0, 1500); return askContact(env, chat, st, msg.from || {}); }
+  if (st.step === 'sd') { S.desc = text.slice(0, 1500); return askLogin(env, chat, st); }
+  if (st.step === 'sl') {
+    if (text.length < 3) return send(env, chat, '⚠️ Напишите способ входа и логин.');
+    S.login = text.slice(0, 160); st.step = 'sw'; await setSt(env, chat, st);
+    return send(env, chat, '🔑 Теперь <b>пароль</b> от аккаунта. Покупатель увидит его только после оплаты. Я удалю ваше сообщение с паролем из чата.', { reply_markup: kb([CANCEL]) });
+  }
+  if (st.step === 'sw') {
+    if (!text) return send(env, chat, '⚠️ Отправьте пароль текстом.');
+    S.pass = text.slice(0, 120); st.step = 'sb'; await setSt(env, chat, st);
+    if (msg.message_id) await tgApi(env, 'deleteMessage', { chat_id: chat, message_id: msg.message_id });
+    return send(env, chat, '🔗 Что <b>привязано</b> к аккаунту? Например: «Google gmail …@gmail.com, телефона нет, Facebook нет». Покупателю важно знать, что поменять после покупки.', { reply_markup: kb([CANCEL]) });
+  }
+  if (st.step === 'sb') {
+    if (text.length < 3) return send(env, chat, '⚠️ Напишите, что привязано (почта, телефон, соцсети) или «ничего».');
+    S.bind = text.slice(0, 400); st.step = 'so'; await setSt(env, chat, st);
+    return send(env, chat, '💳 <b>Куда перевести деньги</b> после сделки? Номер Mbank или O!Банк (и имя).', { reply_markup: kb([CANCEL]) });
+  }
+  if (st.step === 'so') {
+    if (text.length < 5) return send(env, chat, '⚠️ Укажите номер Mbank или O!Банк.');
+    S.payout = text.slice(0, 120); return askContact(env, chat, st, msg.from || {});
+  }
   if (st.step === 'sc') { if (text.length < 5) return send(env, chat, '⚠️ Укажите номер WhatsApp или @username.'); return createAndAskPhotos(env, chat, st, msg.from || {}, text); }
   if (st.step === 'sph') {
     const ph = pickPhoto(msg.photo, 450 * 1024) || (msg.document && /^image\//.test(msg.document.mime_type || '') && (msg.document.file_size || 0) <= 450 * 1024 ? { file_id: msg.document.file_id } : null);
@@ -234,6 +262,10 @@ async function onSellMessage(env, chat, msg, st) {
     return send(env, chat, `📷 Фото добавлено (${r.count}/6). Отправьте ещё или нажмите «Готово».`, { reply_markup: kb([[btn('✅ Готово', 'sdone')]]) });
   }
 }
+async function askLogin(env, chat, st) {
+  st.step = 'sl'; await setSt(env, chat, st);
+  return send(env, chat, '🔐 <b>Данные для входа.</b> Они хранятся в зашифрованном виде и показываются покупателю только после того, как он оплатит.\n\nНапишите <b>способ входа и логин</b>, например: «Moonton, email test@mail.com» или «Facebook, логин …».', { reply_markup: kb([CANCEL]) });
+}
 async function askContact(env, chat, st, from) {
   st.step = 'sc'; await setSt(env, chat, st);
   const rows = []; if (from.username) rows.push([btn('Использовать @' + from.username, 'scont')]); rows.push(CANCEL);
@@ -241,7 +273,7 @@ async function askContact(env, chat, st, from) {
 }
 async function createAndAskPhotos(env, chat, st, from, contact) {
   const S = st.sell;
-  const r = await createOffer(env, { tg_chat: chat, tg_user: from.username ? '@' + from.username : '' }, { game: S.game, title: S.title, price: S.price, description: S.desc || '', contact });
+  const r = await createOffer(env, { tg_chat: chat, tg_user: from.username ? '@' + from.username : '' }, { game: S.game, title: S.title, price: S.price, description: S.desc || '', contact, login_method: (S.login || '').split(/[,:]/)[0].slice(0, 40), login: S.login, password: S.pass, bindings: S.bind, payout: S.payout });
   if (r.error) { await send(env, chat, '⚠️ ' + esc(r.error)); return; }
   S.code = r.code; S.secret = r.secret; st.step = 'sph'; await setSt(env, chat, st);
   return send(env, chat, 'Теперь пришлите <b>фото аккаунта</b> (скриншоты профиля, героев, скинов), от 1 до 6. Отправляйте как обычные фото. Когда закончите, нажмите «Готово».', { reply_markup: kb([CANCEL]) });
@@ -250,7 +282,7 @@ async function onSellCallback(env, cq, d, st) {
   const chat = cq.message.chat.id, mid = cq.message.message_id; let x;
   if (d === 'sell') { await startSell(env, chat, mid); return true; }
   if ((x = d.match(/^sg:(\d)$/)) && st.step === 'sg') { const g = SELL_GAMES[Number(x[1])]; if (!g) return true; st.sell = { game: g }; st.step = 'st'; await setSt(env, chat, st); await show(env, chat, mid, `Игра: <b>${esc(g)}</b>\n\nНапишите короткое <b>название объявления</b>, например: «Mythic Glory, 120 скинов».`, kb([CANCEL])); return true; }
-  if (d === 'sskip' && st.step === 'sd') { st.sell.desc = ''; await askContact(env, chat, st, cq.from || {}); return true; }
+  if (d === 'sskip' && st.step === 'sd') { st.sell.desc = ''; await askLogin(env, chat, st); return true; }
   if (d === 'scont' && st.step === 'sc' && cq.from && cq.from.username) { await createAndAskPhotos(env, chat, st, cq.from, '@' + cq.from.username); return true; }
   if (d === 'sdone' && st.step === 'sph') {
     const r = await submitOffer(env, st.sell.code, st.sell.secret);

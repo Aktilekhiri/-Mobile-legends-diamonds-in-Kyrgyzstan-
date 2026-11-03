@@ -171,7 +171,7 @@
 
 
   /* ---- продажа аккаунта через гаранта ---- */
-  var SELL_GAMES = ['MLBB', 'PUBG', 'Free Fire', 'Genshin', 'Другая игра'];
+  var SELL_GAMES = ['MLBB', 'PUBG', 'Free Fire', 'Genshin', 'Brawl Stars', 'Другая игра'];
   var PAY_NUM = '+996 702 097 127', PAY_NAME = 'Актилек К.';
   var sell = null;
   function shrink(file) {

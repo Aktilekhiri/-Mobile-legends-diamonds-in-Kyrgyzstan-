@@ -6,7 +6,7 @@ import { notify, notifyPhoto, defer } from './notify.js';
 import { tgApi, send, esc } from './tgapi.js';
 
 export const FEE = 200;
-export const GAMES = ['MLBB', 'PUBG', 'Free Fire', 'Genshin', 'Другая игра'];
+export const GAMES = ['MLBB', 'PUBG', 'Free Fire', 'Genshin', 'Brawl Stars', 'Другая игра'];
 const MAX_PHOTOS = 6, MAX_PHOTO_BYTES = 450 * 1024, MAX_RECEIPT_BYTES = 1500 * 1024;
 const MIMES = ['image/jpeg', 'image/webp', 'image/png'];
 const SITE = 'https://diamond.kg/';

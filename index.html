@@ -1954,7 +1954,7 @@ const PKG_NOTES = {
   'zzz:inter_knot_membership': ['Inter-Knot Membership', ['(30 дней)', 'Сразу 300 Monochrome + ежедневно за вход 90 Polychrome. Награду нужно забирать в игре каждый день.']]
 };
 const FIRST_NOTE = ['Только на первое пополнение', ['Бонус даётся один раз на аккаунт.', 'Если вы уже пополняли этот аккаунт в Mobile Legends, выберите другой пакет: иначе заказ может обрабатываться очень долго и в итоге будет возвращён.']];
-const ROBUX_NOTE = ['Код пополнения Robux', ['Вы получите код, а не пополнение по ID.', 'Активируйте его на roblox.com/redeem. Использованный код вернуть нельзя.']];
+const ROBUX_NOTE = ['Код пополнения Robux', ['Вы получите код, а не пополнение по ID.', 'Активируйте его на roblox.com/redeem, войдя в тот аккаунт, куда нужны Robux. Использованный код вернуть нельзя.', 'Сохраните код сразу после получения (скриншот).']];
 function pkgNote(p) {
   if (!p) return null;
   if (p.firstOnly) return FIRST_NOTE;
@@ -2321,7 +2321,8 @@ function renderDelivery(el, region, delivery) {
   const rd = gd.redeem;
   const codes = String(delivery || '').split('\n').filter(Boolean);
   el.innerHTML = '<div class="dl-title">🔑 Ваш код</div>' + codes.map(c => `<div class="dl-row"><code>${esc(c)}</code><button type="button" class="copy-btn" data-copy="${esc(c)}" onclick="copyCode(this)">Копировать</button></div>`).join('')
-    + (rd ? `<p class="dl-help">${esc(rd.t)}</p><a class="dl-link" href="${esc(rd.u)}" target="_blank" rel="noopener">${esc(rd.b)} →</a>` : '');
+    + (rd ? `<p class="dl-help">${esc(rd.t)}</p><a class="dl-link" href="${esc(rd.u)}" target="_blank" rel="noopener">${esc(rd.b)} →</a>` : '')
+    + (region === 'roblox' ? '<p class="dl-help"><b>⚠️ Перед активацией:</b> 1) сохраните код (скриншот или «Копировать»), на этой странице он виден только в этом браузере; 2) убедитесь, что вошли в тот аккаунт Roblox, куда нужны Robux (имя аккаунта видно вверху страницы); 3) код работает один раз, после активации возврата нет; 4) Robux видны в roblox.com/transactions, иногда с задержкой до нескольких минут.</p>' : '');
   el.hidden = false;
 }
 function copyCode(btn) {

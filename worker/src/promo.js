@@ -48,6 +48,15 @@ export async function redeemPromo(env, who, b, userId = null, extra = {}) {
   const { code, row } = g, now = Date.now();
   if (/^6\d{3}$/.test(String(b.serverId || '').replace(/\D/g, ''))) return { error: 'Промокод работает только для Global-аккаунтов. Российские серверы (начинаются на 6) не подходят.', status: 400 };
 
+  // один человек — один промокод: тот же ID игрока, тот же вход на сайте или тот же Telegram-аккаунт уже получал промо-заказ
+  const pid = String(b.playerId == null ? '' : b.playerId).replace(/\D+/g, '').slice(0, 25);
+  const conds = ['player_id = ?'], args = [pid];
+  if (userId) { conds.push('user_id = ?'); args.push(userId); }
+  if (extra.tgChat) { conds.push('tg_chat = ?'); args.push(extra.tgChat); }
+  let dup = null;
+  try { dup = await env.DB.prepare(`SELECT id FROM orders WHERE method = 'promo' AND status NOT IN ('cancelled','refunded','refund_due') AND (${conds.join(' OR ')}) LIMIT 1`).bind(...args).first(); } catch (e) { /* без проверки не блокируем */ }
+  if (dup) return { error: 'С этого аккаунта промокод уже активирован. Один аккаунт, один промокод.', status: 409 };
+
   // атомарно занимаем код: два одновременных запроса не пройдут оба
   const claim = await env.DB.prepare('UPDATE promo_codes SET used_at = ? WHERE code = ? AND used_at = 0 AND expires_at > ?').bind(now, code, now).run();
   if (!claim.meta.changes) return { error: 'Этот промокод уже использован.', status: 409 };

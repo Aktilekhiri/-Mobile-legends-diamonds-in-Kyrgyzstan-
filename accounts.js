@@ -7,9 +7,9 @@
     ru: {
       sellBtn: '💼 Продать аккаунт', buyBtn: '🛒 Купить аккаунт', chBtn: '📣 Наш канал',
       howH: 'Как работает гарант Diamond.kg',
-      how: ['Продавец подаёт объявление и платит гарантию 200 сом.', 'Мы проверяем и публикуем объявление на сайте и в канале.', 'Покупатель платит гаранту (нам), продавец передаёт аккаунт, мы переводим деньги продавцу.'],
-      sellH: 'Продать аккаунт через гаранта', game: 'Игра', ttl: 'Название объявления', ttlPh: 'Например: Mythic Glory, 120 скинов', prc: 'Цена, сом', dsc: 'Описание', dscPh: 'Ранг, уровень, герои, скины, что привязано к аккаунту', cnt: 'Контакт (WhatsApp или @username Telegram)', cntPh: '+996… или @username', phs: 'Фото аккаунта (1–6)', addPh: '＋ Добавить фото', next: 'Далее: гарантия 200 сом',
-      payH: 'Гарантия 200 сом', payT: 'Переведите 200 сом через Mbank или O!Банк и приложите скриншот чека.', recv: 'Получатель', rcpt: 'Чек об оплате', send: 'Отправить на проверку', okH: 'Объявление отправлено ✅', okT: 'Мы проверим оплату гарантии и опубликуем объявление, обычно в течение нескольких часов. Когда найдётся покупатель, свяжемся с вами по указанному контакту.', working: 'Отправляем…', errPhoto: 'Добавьте хотя бы одно фото', errFile: 'Прикрепите чек (картинку)', gnote: 'Гарантия нужна, чтобы мы проверили объявление и провели сделку безопасно.', done: 'Готово',
+      how: ['Размещение бесплатное: вы указываете, сколько хотите получить.', 'Мы проверяем и публикуем объявление на сайте и в канале. К цене добавляется наша наценка.', 'Покупатель платит гаранту (нам), продавец передаёт аккаунт, мы переводим деньги продавцу.'],
+      sellH: 'Продать аккаунт через гаранта', game: 'Игра', ttl: 'Название объявления', ttlPh: 'Например: Mythic Glory, 120 скинов', prc: 'Сколько вы хотите получить, сом', seeP: 'Покупатель увидит: ', seeM: ' сом (наценка +', seeE: ')', dsc: 'Описание', dscPh: 'Ранг, уровень, герои, скины, что привязано к аккаунту', cnt: 'Контакт (WhatsApp или @username Telegram)', cntPh: '+996… или @username', phs: 'Фото аккаунта (1–6)', addPh: '＋ Добавить фото', next: 'Отправить на проверку',
+      recv: 'Получатель', rcpt: 'Чек об оплате', send: 'Отправить на проверку', okH: 'Объявление отправлено ✅', okT: 'Мы проверим и опубликуем объявление, обычно в течение нескольких часов. Когда найдётся покупатель, свяжемся с вами по указанному контакту.', working: 'Отправляем…', errPhoto: 'Добавьте хотя бы одно фото', errFile: 'Прикрепите чек (картинку)', gnote: 'Размещение бесплатное. После сделки вы получаете ровно ту сумму, которую указали.', done: 'Готово',
       all: 'Все', available: 'В наличии', sold: 'Продан', avail_b: 'В наличии', sold_b: 'Продан',
       empty: 'Пока нет аккаунтов в этой категории.', soon: 'Каталог аккаунтов скоро откроется.',
       fail: 'Не удалось загрузить каталог. Обновите страницу или напишите в поддержку.', loading: 'Загружаем аккаунты…',
@@ -25,9 +25,9 @@
     ky: {
       sellBtn: '💼 Аккаунт сатуу', buyBtn: '🛒 Аккаунт сатып алуу', chBtn: '📣 Биздин канал',
       howH: 'Diamond.kg кепилдиги кантип иштейт',
-      how: ['Сатуучу жарнама берип, 200 сом кепилдик төлөйт.', 'Биз текшерип, жарнаманы сайтка жана каналга жарыялайбыз.', 'Сатып алуучу акчаны кепилдикке (бизге) төлөйт, сатуучу аккаунтту берет, биз акчаны сатуучуга которобуз.'],
-      sellH: 'Аккаунтту кепилдик менен сатуу', game: 'Оюн', ttl: 'Жарнаманын аталышы', ttlPh: 'Мисалы: Mythic Glory, 120 скин', prc: 'Баасы, сом', dsc: 'Сүрөттөмө', dscPh: 'Даража, деңгээл, баатырлар, скиндер, аккаунтка эмне байланган', cnt: 'Байланыш (WhatsApp же Telegram @username)', cntPh: '+996… же @username', phs: 'Аккаунттун сүрөттөрү (1–6)', addPh: '＋ Сүрөт кошуу', next: 'Кийинки: 200 сом кепилдик',
-      payH: '200 сом кепилдик', payT: '200 сомду Mbank же O!Банк аркылуу которуп, чектин скриншотун тиркеңиз.', recv: 'Алуучу', rcpt: 'Төлөм чеги', send: 'Текшерүүгө жөнөтүү', okH: 'Жарнама жөнөтүлдү ✅', okT: 'Кепилдик төлөмүн текшерип, жарнаманы жарыялайбыз, адатта бир нече саатта. Сатып алуучу табылганда көрсөтүлгөн байланыш аркылуу чогулабыз.', working: 'Жөнөтүлүүдө…', errPhoto: 'Жок дегенде бир сүрөт кошуңуз', errFile: 'Чекти (сүрөт) тиркеңиз', gnote: 'Кепилдик жарнаманы текшерип, бүтүмдү коопсуз өткөрүү үчүн керек.', done: 'Даяр',
+      how: ['Жарнама бекер: сиз канча алгыңыз келерин көрсөтөсүз.', 'Биз текшерип, жарнаманы сайтка жана каналга жарыялайбыз. Баага биздин кошумча акы кошулат.', 'Сатып алуучу акчаны кепилдикке (бизге) төлөйт, сатуучу аккаунтту берет, биз акчаны сатуучуга которобуз.'],
+      sellH: 'Аккаунтту кепилдик менен сатуу', game: 'Оюн', ttl: 'Жарнаманын аталышы', ttlPh: 'Мисалы: Mythic Glory, 120 скин', prc: 'Канча алгыңыз келет, сом', seeP: 'Сатып алуучу көрөт: ', seeM: ' сом (кошумча +', seeE: ')', dsc: 'Сүрөттөмө', dscPh: 'Даража, деңгээл, баатырлар, скиндер, аккаунтка эмне байланган', cnt: 'Байланыш (WhatsApp же Telegram @username)', cntPh: '+996… же @username', phs: 'Аккаунттун сүрөттөрү (1–6)', addPh: '＋ Сүрөт кошуу', next: 'Текшерүүгө жөнөтүү',
+      recv: 'Алуучу', rcpt: 'Төлөм чеги', send: 'Текшерүүгө жөнөтүү', okH: 'Жарнама жөнөтүлдү ✅', okT: 'Жарнаманы текшерип жарыялайбыз, адатта бир нече саатта. Сатып алуучу табылганда көрсөтүлгөн байланыш аркылуу чогулабыз.', working: 'Жөнөтүлүүдө…', errPhoto: 'Жок дегенде бир сүрөт кошуңуз', errFile: 'Чекти (сүрөт) тиркеңиз', gnote: 'Жарнама бекер. Бүтүмдөн кийин сиз көрсөткөн сумманы так аласыз.', done: 'Даяр',
       all: 'Баары', available: 'Бар', sold: 'Сатылган', avail_b: 'Бар', sold_b: 'Сатылган',
       empty: 'Бул категорияда азырынча аккаунт жок.', soon: 'Аккаунттар каталогу жакында ачылат.',
       fail: 'Каталог жүктөлгөн жок. Баракчаны жаңыртыңыз же колдоого жазыңыз.', loading: 'Аккаунттар жүктөлүүдө…',
@@ -194,6 +194,7 @@
       m = document.createElement('div'); m.id = 'sellModal'; m.className = 'acc-modal'; document.body.appendChild(m);
       m.addEventListener('click', function (e) { if (e.target === m || e.target.closest('[data-sclose]')) closeSell(); });
       m.addEventListener('change', onSellChange);
+      m.addEventListener('input', function (e) { if (e.target.id === 'sPrice') { var h = document.getElementById('sHint'); if (h) h.textContent = hint(e.target.value); } });
       m.addEventListener('click', onSellClick);
     }
     return m;
@@ -204,6 +205,8 @@
     var m = document.getElementById('sellModal'), g = function (id) { var e = m.querySelector('#' + id); return e ? e.value : ''; };
     if (sell.step === 1) sell.f = { game: g('sGame'), title: g('sTitle'), price: g('sPrice'), desc: g('sDesc'), contact: g('sContact') };
   }
+  function markup(p) { return p <= 1000 ? 100 : p <= 5000 ? 200 : p <= 10000 ? 300 : 500; }
+  function hint(v) { var n = Math.floor(Number(v) || 0); if (n < 100) return ''; var s = t(); return s.seeP + (n + markup(n)) + s.seeM + markup(n) + s.seeE; }
   function drawSell() {
     var m = sellEl(), s = t(), f = sell.f, h = '<div class="acc-sheet sell-sheet" role="dialog" aria-modal="true"><button type="button" class="acc-x" data-sclose aria-label="' + esc(s.close) + '">✕</button><div class="acc-info sell-in">';
     var dis = sell.busy ? ' disabled' : '';
@@ -211,17 +214,13 @@
       h += '<h3>' + esc(s.sellH) + '</h3><div class="acc-how"><ol>' + s.how.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol></div>' +
         '<label class="sf-l" for="sGame">' + esc(s.game) + '</label><select id="sGame" class="sf-i">' + SELL_GAMES.map(function (g) { return '<option' + (g === f.game ? ' selected' : '') + '>' + esc(g) + '</option>'; }).join('') + '</select>' +
         '<label class="sf-l" for="sTitle">' + esc(s.ttl) + '</label><input id="sTitle" class="sf-i" maxlength="80" placeholder="' + esc(s.ttlPh) + '" value="' + esc(f.title) + '">' +
-        '<label class="sf-l" for="sPrice">' + esc(s.prc) + '</label><input id="sPrice" class="sf-i" type="number" inputmode="numeric" min="100" value="' + esc(f.price) + '">' +
+        '<label class="sf-l" for="sPrice">' + esc(s.prc) + '</label><input id="sPrice" class="sf-i" type="number" inputmode="numeric" min="100" value="' + esc(f.price) + '"><div class="acc-note" id="sHint">' + esc(hint(f.price)) + '</div>' +
         '<label class="sf-l" for="sDesc">' + esc(s.dsc) + '</label><textarea id="sDesc" class="sf-i" rows="4" maxlength="1500" placeholder="' + esc(s.dscPh) + '">' + esc(f.desc) + '</textarea>' +
         '<label class="sf-l" for="sContact">' + esc(s.cnt) + '</label><input id="sContact" class="sf-i" maxlength="80" placeholder="' + esc(s.cntPh) + '" value="' + esc(f.contact) + '">' +
         '<div class="sf-l">' + esc(s.phs) + '</div><div class="sf-ph">' + sell.photos.map(function (p, i) { return '<div class="sf-th"><img src="' + p.url + '" alt=""><button type="button" data-delph="' + i + '" aria-label="✕">✕</button></div>'; }).join('') +
         (sell.photos.length < 6 ? '<label class="sf-add">' + esc(s.addPh) + '<input id="sFiles" type="file" accept="image/*" multiple hidden></label>' : '') + '</div>' +
         '<p class="acc-note">' + esc(s.gnote) + '</p>';
       h += (sell.err ? '<div class="sf-err" role="alert">' + esc(sell.err) + '</div>' : '') + '<button type="button" class="sf-go" data-go1' + dis + '>' + esc(sell.busy ? s.working : s.next) + '</button>';
-    } else if (sell.step === 2) {
-      h += '<h3>' + esc(s.payH) + '</h3><p class="acc-desc">' + esc(s.payT) + '</p><div class="sf-pay"><span>' + esc(s.recv) + '</span><b>' + PAY_NUM + '</b><span>' + PAY_NAME + ' · Mbank / O!Банк</span></div>' +
-        '<label class="sf-l" for="sRcpt">' + esc(s.rcpt) + '</label><input id="sRcpt" class="sf-i" type="file" accept="image/*">' +
-        (sell.err ? '<div class="sf-err" role="alert">' + esc(sell.err) + '</div>' : '') + '<button type="button" class="sf-go" data-go2' + dis + '>' + esc(sell.busy ? s.working : s.send) + '</button>';
     } else {
       h += '<h3>' + esc(s.okH) + '</h3><p class="acc-desc">' + esc(s.okT) + '</p><button type="button" class="sf-go" data-sclose>' + esc(s.done) + '</button>';
     }
@@ -234,14 +233,13 @@
       var chain = Promise.resolve();
       files.forEach(function (f) { chain = chain.then(function () { if (sell.photos.length >= 6) return; return shrink(f).then(function (b) { sell.photos.push({ blob: b, url: URL.createObjectURL(b) }); }).catch(function () { sell.err = 'Фото не удалось обработать'; }); }); });
       chain.then(drawSell);
-    } else if (e.target.id === 'sRcpt') { sell.rcpt = e.target.files[0] || null; }
+    }
   }
   function onSellClick(e) {
     if (!sell) return;
     var d = e.target.closest('[data-delph]');
     if (d) { readForm(); sell.photos.splice(Number(d.getAttribute('data-delph')), 1); drawSell(); return; }
     if (e.target.closest('[data-go1]')) submit1();
-    else if (e.target.closest('[data-go2]')) submit2();
   }
   function post(path, body, type) {
     return fetch(api() + path, { method: 'POST', headers: { 'Content-Type': type }, body: body }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || 'Ошибка ' + r.status); return j; }); });
@@ -261,17 +259,10 @@
       var chain = Promise.resolve();
       sell.photos.slice(sell.up).forEach(function (ph) { chain = chain.then(function () { return post('/api/market/offers/' + sell.code + '/photos?s=' + sell.secret, ph.blob, ph.blob.type).then(function () { sell.up++; }); }); });
       return chain;
-    }).then(function () { sell.step = 2; sell.busy = false; sell.err = ''; drawSell(); })
+    }).then(function () { return post('/api/market/offers/' + sell.code + '/submit?s=' + sell.secret, '{}', 'application/json'); })
+      .then(function () { sell.step = 3; sell.busy = false; sell.err = ''; drawSell(); })
       .catch(function (e) { sell.busy = false; sell.err = e.message; drawSell(); });
   }
-  function submit2() {
-    if (!sell.rcpt) { sell.err = t().errFile; drawSell(); return; }
-    sell.busy = true; sell.err = ''; drawSell();
-    shrink(sell.rcpt).then(function (b) { return post('/api/market/offers/' + sell.code + '/receipt?s=' + sell.secret, b, b.type); })
-      .then(function () { sell.step = 3; sell.busy = false; drawSell(); })
-      .catch(function (e) { sell.busy = false; sell.err = e.message; drawSell(); });
-  }
-
   function init() {
     var r = root(); if (!r) return;
     var m = document.createElement('div'); m.id = 'accModal'; m.className = 'acc-modal'; document.body.appendChild(m);

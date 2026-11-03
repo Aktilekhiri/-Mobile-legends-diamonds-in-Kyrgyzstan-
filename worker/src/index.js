@@ -14,7 +14,7 @@ import { financeSummary, maybeSendWeekly } from './finance.js';
 import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
-import { createOffer, addOfferPhoto, submitOfferReceipt } from './market.js';
+import { createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
 import { redeemPromo } from './promo.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
@@ -227,6 +227,11 @@ export default {
         const b = await req.json().catch(() => ({}));
         const r = await createOffer(env, { ip: req.headers.get('CF-Connecting-IP') || '' }, b);
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      mm = path.match(/^\/api\/market\/offers\/(AC[A-Z0-9]{8})\/submit$/);
+      if (mm && m === 'POST') {
+        const r = await submitOffer(env, mm[1], url.searchParams.get('s') || '');
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
       }
       mm = path.match(/^\/api\/market\/offers\/(AC[A-Z0-9]{8})\/(photos|receipt)$/);
       if (mm && m === 'POST') {

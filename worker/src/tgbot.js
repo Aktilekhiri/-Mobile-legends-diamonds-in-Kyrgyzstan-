@@ -4,7 +4,7 @@ import { SHOP } from './shop_data.js';
 import { tgApi, send, esc } from './tgapi.js';
 import { createOrder, saveReceipt, confirmOrder, markManualDone, cancelOrder, alertText } from './orders.js';
 import { CATALOGS, MAX_AUTO_COST_USD } from './catalog.js';
-import { publishOffer, rejectOffer, createOffer, addOfferPhoto, submitOfferReceipt, GAMES as SELL_GAMES, FEE } from './market.js';
+import { publishOffer, rejectOffer, createOffer, addOfferPhoto, submitOffer, markup as sellMarkup, GAMES as SELL_GAMES } from './market.js';
 import { notify } from './notify.js';
 import { checkPromo, redeemPromo, normCode } from './promo.js';
 
@@ -169,7 +169,7 @@ export async function handleOrdersBotUpdate(env, u) {
 
 
 // ---------- аккаунты: покупка и продажа через гаранта ----------
-const SELL_STEPS = ['st', 'sp', 'sd', 'sc', 'sph', 'srec'];
+const SELL_STEPS = ['st', 'sp', 'sd', 'sc', 'sph'];
 const pickPhoto = (arr, max) => { const ok = (arr || []).filter(x => (x.file_size || 0) <= max); return ok.length ? ok[ok.length - 1] : null; };
 async function tgDownload(env, fileId) {
   const fi = await tgApi(env, 'getFile', { file_id: fileId });
@@ -209,19 +209,19 @@ async function buyAccount(env, cq, id) {
 async function startSell(env, chat, msgId) {
   await setSt(env, chat, { step: 'sg', sell: {} });
   const rows = SELL_GAMES.map((g, i) => [btn(g, 'sg:' + i)]); rows.push([btn('« Меню', 'menu')]);
-  await show(env, chat, msgId, `<b>Продать аккаунт через гаранта</b>\n\n1. Вы заполняете объявление и платите гарантию <b>${FEE} сом</b>.\n2. Мы проверяем и публикуем его на сайте и в канале.\n3. Когда найдётся покупатель, сделка идёт через нас: он платит гаранту, вы передаёте аккаунт, мы переводим вам деньги.\n\nВыберите игру:`, kb(rows));
+  await show(env, chat, msgId, `<b>Продать аккаунт</b>\n\n1. Размещение <b>бесплатное</b>: вы указываете, сколько хотите получить.\n2. Мы проверяем и публикуем объявление на сайте и в канале. К вашей цене добавляется наша наценка.\n3. Когда найдётся покупатель, сделка идёт через нас: он платит гаранту, вы передаёте аккаунт, мы переводим вам деньги.\n\nВыберите игру:`, kb(rows));
 }
 async function onSellMessage(env, chat, msg, st) {
   const text = String(msg.text || '').trim(), S = st.sell || (st.sell = {});
   if (st.step === 'st') {
     if (text.length < 3) return send(env, chat, 'Напишите короткое название, например: «Mythic Glory, 120 скинов».');
     S.title = text.slice(0, 80); st.step = 'sp'; await setSt(env, chat, st);
-    return send(env, chat, 'Укажите <b>цену в сомах</b> (только число):', { reply_markup: kb([CANCEL]) });
+    return send(env, chat, 'Сколько вы хотите <b>получить на руки</b>, в сомах? (только число). Покупатель увидит цену с нашей наценкой.', { reply_markup: kb([CANCEL]) });
   }
   if (st.step === 'sp') {
     const n = Number(text.replace(/\s/g, '')); if (!(n >= 100)) return send(env, chat, '⚠️ Введите цену числом, не меньше 100 сом.');
     S.price = Math.floor(n); st.step = 'sd'; await setSt(env, chat, st);
-    return send(env, chat, 'Опишите аккаунт: ранг, уровень, героев, скины, что привязано. Или пропустите.', { reply_markup: kb([[btn('Пропустить', 'sskip')], CANCEL]) });
+    return send(env, chat, `Вы получите: <b>${money2(S.price)} сом</b>. Покупатель увидит: <b>${money2(S.price + sellMarkup(S.price))} сом</b> (наценка +${sellMarkup(S.price)}).\n\nОпишите аккаунт: ранг, уровень, героев, скины, что привязано. Или пропустите.`, { reply_markup: kb([[btn('Пропустить', 'sskip')], CANCEL]) });
   }
   if (st.step === 'sd') { S.desc = text.slice(0, 1500); return askContact(env, chat, st, msg.from || {}); }
   if (st.step === 'sc') { if (text.length < 5) return send(env, chat, '⚠️ Укажите номер WhatsApp или @username.'); return createAndAskPhotos(env, chat, st, msg.from || {}, text); }
@@ -230,17 +230,8 @@ async function onSellMessage(env, chat, msg, st) {
     if (!ph) return send(env, chat, msg.photo || msg.document ? 'Фото слишком большое. Отправьте скриншот поменьше (как обычное фото, не файлом).' : 'Пришлите фото аккаунта (скриншоты профиля, героев, скинов).');
     const f = await tgDownload(env, ph.file_id); if (!f) return send(env, chat, 'Не удалось получить фото, отправьте ещё раз.');
     const r = await addOfferPhoto(env, S.code, S.secret, f.mime, f.buf);
-    if (r.error) return send(env, chat, '⚠️ ' + esc(r.error), { reply_markup: kb([[btn('✅ Готово, к оплате', 'sdone')]]) });
-    return send(env, chat, `📷 Фото добавлено (${r.count}/6). Отправьте ещё или нажмите «Готово».`, { reply_markup: kb([[btn('✅ Готово, к оплате', 'sdone')]]) });
-  }
-  if (st.step === 'srec') {
-    const ph = pickPhoto(msg.photo, 1400000) || (msg.document && /^image\//.test(msg.document.mime_type || '') && (msg.document.file_size || 0) <= 1400000 ? { file_id: msg.document.file_id } : null);
-    if (!ph) return send(env, chat, 'Пришлите скриншот чека картинкой (до 1,4 МБ).');
-    const f = await tgDownload(env, ph.file_id); if (!f) return send(env, chat, 'Не удалось получить чек, отправьте ещё раз.');
-    const r = await submitOfferReceipt(env, S.code, S.secret, f.mime, f.buf);
-    if (r.error) return send(env, chat, '⚠️ ' + esc(r.error));
-    await setSt(env, chat, {});
-    return send(env, chat, `✅ <b>Объявление ${esc(S.code)} отправлено на проверку.</b>\nПроверяем гарантию и публикуем, обычно до нескольких часов. Напишем сюда, когда оно появится в каталоге и в канале.`, { reply_markup: MENU });
+    if (r.error) return send(env, chat, '⚠️ ' + esc(r.error), { reply_markup: kb([[btn('✅ Готово', 'sdone')]]) });
+    return send(env, chat, `📷 Фото добавлено (${r.count}/6). Отправьте ещё или нажмите «Готово».`, { reply_markup: kb([[btn('✅ Готово', 'sdone')]]) });
   }
 }
 async function askContact(env, chat, st, from) {
@@ -262,8 +253,10 @@ async function onSellCallback(env, cq, d, st) {
   if (d === 'sskip' && st.step === 'sd') { st.sell.desc = ''; await askContact(env, chat, st, cq.from || {}); return true; }
   if (d === 'scont' && st.step === 'sc' && cq.from && cq.from.username) { await createAndAskPhotos(env, chat, st, cq.from, '@' + cq.from.username); return true; }
   if (d === 'sdone' && st.step === 'sph') {
-    st.step = 'srec'; await setSt(env, chat, st);
-    await send(env, chat, `<b>Гарантия ${FEE} сом</b>\n\nПереведите ${FEE} сом на номер:\n<code>${PAY_NUM}</code> (${PAY_NAME}) через Mbank или O!Банк и пришлите скриншот чека сюда фото.\n\nГарантия нужна, чтобы мы проверили объявление и провели сделку безопасно.`, { reply_markup: kb([CANCEL]) });
+    const r = await submitOffer(env, st.sell.code, st.sell.secret);
+    if (r.error) { await send(env, chat, '⚠️ ' + esc(r.error)); return true; }
+    const code = st.sell.code; await setSt(env, chat, {});
+    await send(env, chat, `✅ <b>Объявление ${esc(code)} отправлено на проверку.</b>\nПубликуем обычно в течение нескольких часов. Напишем сюда, когда оно появится в каталоге и в канале.`, { reply_markup: MENU });
     return true;
   }
   return false;

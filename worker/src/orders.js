@@ -334,7 +334,7 @@ export async function saveReceipt(env, id, buf, opts = {}) {
   if (first && !opts.silent) { // повторная загрузка чека не плодит уведомления
     await defer(env, (async () => {
       const sent = await notifyPhoto(env, u8, mime, text, adminButtons(o));
-      if (!sent) await notify(env, text + '\n(фото не ушло в Telegram — смотрите чек в админке)', adminButtons(o));
+      if (sent !== true) await notify(env, text + '\n(чек не пришёл фото — смотрите его в админке)', adminButtons(o));
     })());
   }
   return { ok: true };

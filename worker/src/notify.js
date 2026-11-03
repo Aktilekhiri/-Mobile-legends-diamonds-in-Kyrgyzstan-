@@ -31,7 +31,7 @@ export async function notifyPhoto(env, bytes, mime, caption, markup) {
     fd.append('caption', String(caption).slice(0, 1000));
     if (markup) fd.append('reply_markup', JSON.stringify(markup));
     fd.append('photo', new Blob([bytes], { type: mime }), mime === 'image/png' ? 'receipt.png' : 'receipt.jpg');
-    const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd, signal: AbortSignal.timeout(25000) });
+    const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd, signal: AbortSignal.timeout(12000) });
     return r.ok;
   } catch (e) {
     // таймаут: Telegram мог получить фото и доставить его с задержкой, поэтому «не ушло» не утверждаем,

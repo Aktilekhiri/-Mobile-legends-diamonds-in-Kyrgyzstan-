@@ -101,7 +101,7 @@ button:disabled{opacity:.5;cursor:default}
       +'<div class="step"><span class="n">1</span><div>Переведите на карту-сейф (Simbank)<div class="big">'+n(p.to_safe)+' сом</div><div class="o-meta" style="margin:0">Прибыль минус резерв '+n(p.reserve)+' сом (комиссии, курс, возвраты)'+(p.promo_cost?' и промо '+n(p.promo_cost)+' сом':'')+'</div></div></div>'
       +'<div class="step"><span class="n">2</span><div>Остальное оставьте на Mbank и O!Банк<div class="o-meta" style="margin:2px 0 0">Это оборотные деньги на закупку: '+n(p.keep)+' сом</div></div></div>'
       +'<div class="step"><span class="n">3</span><div>'+(p.buy_usd>0?'Докупите USDT для FazerCards<div class="big">$'+p.buy_usd+' ≈ '+n(p.buy_kgs)+' сом</div><div class="o-meta" style="margin:0">Одним платежом: комиссия сети 1 USDT одна. Расход за неделю ≈ $'+p.weekly_spend_usd+', держим запас не ниже $'+f.constants.min_balance_usd+'</div>':'Пополнять FazerCards пока не нужно<div class="o-meta" style="margin:2px 0 0">Баланса хватает с запасом (расход за неделю ≈ $'+p.weekly_spend_usd+')</div>')+'</div></div>'
-      +'<div class="warn">Это оценка по каталожным ценам. Воскресным вечером (21:00) такой же план приходит в Telegram.</div></div>';
+      +'<div class="warn">Это оценка по каталожным ценам. Каждый понедельник в 14:00 в Telegram приходит план по итогам прошлой недели.</div></div>';
     h+=period('Сегодня',f.today)+period('Эта неделя (с понедельника)',f.week)+period('Прошлая неделя',f.last_week)+period('С начала месяца',f.month)+period('За всё время',f.all);
     $('fin').innerHTML=h;
     Array.prototype.forEach.call(document.querySelectorAll('[data-w]'),function(b){b.onclick=function(){wk=b.dataset.w;render()}});

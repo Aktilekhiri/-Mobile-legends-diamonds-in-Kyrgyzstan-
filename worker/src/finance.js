@@ -9,7 +9,7 @@ const DAY = 86400000;
 export const RESERVE_PCT = 0.03;       // 3% выручки остаётся на карте приёма: комиссии сети, курс, возвраты
 export const MIN_BALANCE_USD = 60;     // не опускаем баланс FazerCards ниже (запас на ~4 дня)
 export const MIN_DEPOSIT_USD = 50;     // меньше не пополняем: комиссия 1 USDT съест слишком много
-const SEND_DOW = 0, SEND_HOUR = 21;    // воскресенье 21:00 по Бишкеку
+const SEND_DOW = 1, SEND_HOUR = 14;    // понедельник 14:00 по Бишкеку (итоги прошедшей недели)
 
 const fmt = n => Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ');
 const pad = n => String(n).padStart(2, '0');
@@ -76,8 +76,8 @@ export async function financeSummary(env, nowMs = Date.now()) {
 }
 
 export function weeklyText(f) {
-  const w = f.week, p = f.plan_week;
-  let t = `💰 Итоги недели\n\nВыдано заказов: ${w.n}\nВыручка: ${fmt(w.rev)} сом\nСебестоимость: ${fmt(w.cost)} сом\nПрибыль: ${w.profit >= 0 ? '' : '−'}${fmt(Math.abs(w.profit))} сом` + (w.promo_n ? `\nПромо (бесплатные Weekly Pass): ${w.promo_n} шт, расход ${fmt(w.promo_cost)} сом (в прибыль не входит)` : '');
+  const w = f.last_week, p = f.plan_last;   // в понедельник отчёт за только что закончившуюся неделю
+  let t = `💰 Итоги прошлой недели\n\nВыдано заказов: ${w.n}\nВыручка: ${fmt(w.rev)} сом\nСебестоимость: ${fmt(w.cost)} сом\nПрибыль: ${w.profit >= 0 ? '' : '−'}${fmt(Math.abs(w.profit))} сом` + (w.promo_n ? `\nПромо (бесплатные Weekly Pass): ${w.promo_n} шт, расход ${fmt(w.promo_cost)} сом (в прибыль не входит)` : '');
   t += `\n\n📤 Что перевести сейчас\n• На карту-сейф (Simbank): ${fmt(p.to_safe)} сом (прибыль за вычетом резерва ${fmt(p.reserve)} сом${p.promo_cost ? ' и промо ' + fmt(p.promo_cost) + ' сом' : ''})\n• На картах приёма (Mbank, O!Банк) оставьте остальное: это оборотные деньги на закупку`;
   if (f.balance_usd != null) {
     t += `\n\n🏦 FazerCards: баланс $${f.balance_usd.toFixed(2)} (≈ ${fmt(f.balance_kgs)} сом)`;
@@ -88,7 +88,7 @@ export function weeklyText(f) {
   return t;
 }
 
-// Из cron каждую минуту: недельный план в Telegram — воскресенье после 21:00 по Бишкеку, один раз за неделю
+// Из cron каждую минуту: недельный план в Telegram — понедельник после 14:00 по Бишкеку, один раз за неделю
 export async function maybeSendWeekly(env, nowMs = Date.now()) {
   const local = new Date(nowMs + TZ);
   if (local.getUTCDay() !== SEND_DOW || local.getUTCHours() < SEND_HOUR) return;

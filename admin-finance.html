@@ -67,7 +67,7 @@ button:disabled{opacity:.5;cursor:default}
 (function(){
   var $=function(i){return document.getElementById(i)};
   var TK='dk_admin_token', AK='dk_admin_api';
-  var token='', data=null, wk='week';
+  var token='', data=null, wk='last';
   function sget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
   function sset(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}
   function api(){return (window.DK_API||sget(AK)||'').replace(/\/+$/,'')}
@@ -95,7 +95,9 @@ button:disabled{opacity:.5;cursor:default}
       +'<div><small>Хватит примерно на</small><b>'+(f.days_left==null?'—':f.days_left+' дн.')+'</b></div>'
       +'<div><small>Расход в день</small><b>$'+f.spend_per_day_usd.toFixed(2)+'</b></div>'
       +'<div><small>В сомах</small><b>'+(f.balance_kgs==null?'—':n(f.balance_kgs)+' сом')+'</b></div></div></div>';
-    h+='<div class="card plan"><div class="o-head"><b>Что перевести за неделю</b></div>'
+    var bk=new Date(Date.now()+6*3600000), planOn=bk.getUTCDay()===1&&bk.getUTCHours()>=14;   // Бишкек UTC+6: план виден по понедельникам с 14:00
+    if(!planOn) h+='<div class="card"><div class="o-head"><b>Что перевести за неделю</b></div><div class="o-meta">План переводов показывается по понедельникам с 14:00 (по итогам прошлой недели) и приходит в Telegram.</div></div>';
+    else h+='<div class="card plan"><div class="o-head"><b>Что перевести за неделю</b></div>'
       +'<div class="chips" style="margin-top:8px"><button data-w="week" class="'+(wk==='week'?'on':'')+'">Эта неделя</button><button data-w="last" class="'+(wk==='last'?'on':'')+'">Прошлая неделя</button></div>'
       +'<div class="o-meta">Выручка '+n(w.rev)+' сом · прибыль '+(w.profit<0?'−':'')+n(Math.abs(w.profit))+' сом</div>'
       +'<div class="step"><span class="n">1</span><div>Переведите на карту-сейф (Simbank)<div class="big">'+n(p.to_safe)+' сом</div><div class="o-meta" style="margin:0">Прибыль минус резерв '+n(p.reserve)+' сом (комиссии, курс, возвраты)'+(p.promo_cost?' и промо '+n(p.promo_cost)+' сом':'')+'</div></div></div>'

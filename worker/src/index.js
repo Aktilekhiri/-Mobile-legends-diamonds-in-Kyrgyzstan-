@@ -16,6 +16,7 @@ import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
 import { ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
 import { createDeal, viewDeal, dealPaid, dealConfirm, dealProblem, remindDeals } from './deals.js';
+import { startFinikOrder, finikWebhook, cleanupFinik, finikReady } from './finik.js';
 import { redeemPromo } from './promo.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
@@ -163,6 +164,17 @@ export default {
         const b = await req.json().catch(() => ({}));
         const r = await createOrder(env, req.headers.get('CF-Connecting-IP') || '', b, await userFromRequest(req, env));
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      // оплата через Finik: создаём заказ и возвращаем ссылку на страницу оплаты; вебхук подтверждает оплату сам
+      if (path === '/api/orders/finik' && m === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const r = await startFinikOrder(env, req.headers.get('CF-Connecting-IP') || '', b, await userFromRequest(req, env));
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      if (path === '/api/finik/status' && m === 'GET') return json(req, { enabled: finikReady(env) }, 200, { 'Cache-Control': 'public, max-age=60' });
+      if (path === '/api/finik/webhook' && m === 'POST') {
+        const r = await finikWebhook(env, req);
+        return new Response(r.body, { status: r.status });
       }
       // промокод розыгрыша: бесплатный Weekly Diamond Pass (одноразовые коды, срок в таблице promo_codes)
       if (path === '/api/promo/redeem' && m === 'POST') {
@@ -410,5 +422,6 @@ export default {
     ctx.waitUntil(maybeSendReport(env).catch(() => {}));
     ctx.waitUntil(maybeSendWeekly(env).catch(() => {}));
     ctx.waitUntil(remindDeals(env).catch(() => {}));
+    ctx.waitUntil(cleanupFinik(env).catch(() => {}));
   },
 };

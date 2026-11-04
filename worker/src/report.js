@@ -22,7 +22,7 @@ async function sums(env, from, to) {
   const NP = "COALESCE(method,'') != 'promo'";
   const r = await env.DB.prepare(
     `SELECT COALESCE(SUM(CASE WHEN ${NP} THEN 1 ELSE 0 END),0) AS n, COALESCE(SUM(CASE WHEN ${NP} THEN price_kgs - refund_kgs ELSE 0 END),0) AS rev,
-            COALESCE(SUM(CASE WHEN ${NP} AND cost_usd > 0 THEN price_kgs - refund_kgs - cost_usd * ? ELSE 0 END),0) AS profit,
+            COALESCE(SUM(CASE WHEN ${NP} AND cost_usd > 0 THEN price_kgs - refund_kgs - fee_kgs - cost_usd * ? ELSE 0 END),0) AS profit,
             COALESCE(SUM(CASE WHEN ${NP} AND NOT cost_usd > 0 THEN 1 ELSE 0 END),0) AS nocost,
             COALESCE(SUM(CASE WHEN ${NP} THEN 0 ELSE 1 END),0) AS promo_n,
             COALESCE(SUM(CASE WHEN ${NP} THEN 0 ELSE cost_usd * ? END),0) AS promo_cost

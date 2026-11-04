@@ -5,6 +5,7 @@ import { tgApi, send, esc } from './tgapi.js';
 import { createOrder, saveReceipt, confirmOrder, markManualDone, cancelOrder, alertText } from './orders.js';
 import { CATALOGS, MAX_AUTO_COST_USD } from './catalog.js';
 import { adminDeal, createDeal } from './deals.js';
+import { startFinikOrder, finikReady } from './finik.js';
 import { publishOffer, rejectOffer, createOffer, addOfferPhoto, submitOffer, markup as sellMarkup, GAMES as SELL_GAMES } from './market.js';
 import { notify } from './notify.js';
 import { checkPromo, redeemPromo, normCode } from './promo.js';
@@ -81,7 +82,21 @@ async function showSummary(env, chat, msgId, st) {
 
 async function showMethods(env, chat, msgId, st) {
   st.step = 'method'; await setSt(env, chat, st);
-  await show(env, chat, msgId, '<b>Выберите банк</b>, через который переведёте оплату:', kb([[btn('Mbank', 'm:M'), btn('O!Банк', 'm:O')], CANCEL]));
+  const fin = finikReady(env);
+  await show(env, chat, msgId, fin ? '<b>Как оплатить?</b>\n⚡ <b>Finik</b>: платите в приложении любого банка или по QR, заказ выдаётся сам, чек не нужен.\nИли переведите вручную через Mbank / O!Банк и пришлите чек.' : '<b>Выберите банк</b>, через который переведёте оплату:', kb([...(fin ? [[btn('⚡ Оплатить через Finik', 'mf')]] : []), [btn('Mbank', 'm:M'), btn('O!Банк', 'm:O')], CANCEL]));
+}
+
+async function payFinikBot(env, cq, st) {
+  const chat = cq.message.chat.id, g = SHOP.find(x => x.id === st.g), p = g && g.packs[st.i];
+  if (!g || !p) { await send(env, chat, 'Сессия устарела. Начните заново.', { reply_markup: MENU }); return; }
+  const recent = await env.DB.prepare('SELECT COUNT(*) AS c FROM orders WHERE tg_chat = ? AND created_at > ?').bind(chat, Date.now() - 3600000).first();
+  if (recent && recent.c >= 5) { await send(env, chat, 'Слишком много заказов за час. Попробуйте позже или напишите в WhatsApp ' + WA + '.'); return; }
+  const r = await startFinikOrder(env, '', { region: g.region, pkg: p.k, pkgLabel: p.l, price: p.p, phone: '000' + String(chat), playerId: g.none ? '' : st.pid, serverId: st.srv || '' }, null);
+  if (r.error) { await send(env, chat, '⚠️ ' + esc(r.error), { reply_markup: kb([[btn('✏️ Изменить ID', 'ed')], CANCEL]) }); return; }
+  const from = cq.from || {}, who = from.username ? '@' + from.username : (from.first_name || 'клиент');
+  await env.DB.prepare('UPDATE orders SET tg_chat = ?, tg_user = ? WHERE id = ?').bind(chat, who, r.id).run();
+  await setSt(env, chat, {});
+  await send(env, chat, `<b>Заказ ${esc(r.id)}</b>: ${esc(g.name)}, ${esc(p.l)} · ${money(p.p)} сом\n\nНажмите кнопку, выберите банк или отсканируйте QR. После оплаты заказ придёт автоматически, мы напишем сюда.\n⏱ Ссылка действует 1 час.`, { reply_markup: { inline_keyboard: [[{ text: '⚡ Перейти к оплате', url: r.url }], [btn('« Меню', 'menu')]] } });
 }
 
 async function showPay(env, chat, msgId, st) {
@@ -323,6 +338,7 @@ async function onCallback(env, cq) {
   if ((x = d.match(/^s:(\w+)$/)) && st.g) { st.srv = x[1]; return showSummary(env, chat, mid, st); }
   if (d === 'ed' && st.g) return askId(env, chat, mid, st);
   if (d === 'ok' && st.g && st.step === 'confirm') return showMethods(env, chat, mid, st);
+  if (d === 'mf' && st.g && st.step === 'method') return payFinikBot(env, cq, st);
   if ((x = d.match(/^m:([MO])$/)) && st.g) { st.method = METHODS[x[1]]; return showPay(env, chat, mid, st); }
 }
 

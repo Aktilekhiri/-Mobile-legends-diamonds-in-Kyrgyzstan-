@@ -1564,6 +1564,12 @@
   <div class="payment-layout">
     <div class="order-summary"><div class="card-title">📋 Ваш заказ</div><div class="order-row"><span>Товар</span><span id="payProduct">Mobile Legends — Алмазы</span></div><div class="order-row" id="payPlayerRow"><span id="payPlayerLabel">ID игрока</span><span id="payPlayerId">—</span></div><div class="order-row" id="payServerRow"><span>Сервер</span><span id="payServerId">—</span></div><div class="order-row"><span>Пакет</span><span id="payPackage" style="color:var(--gold)">—</span></div><div class="order-row"><span>Итого</span><span id="payTotal" style="color:var(--gold)">—</span></div></div>
     <div class="pay-steps"><div class="ps-title">📋 Инструкция</div><div class="ps-row"><div class="ps-n">1</div><div>Выберите способ оплаты (Mbank или O!Банк)</div></div><div class="ps-row"><div class="ps-n">2</div><div>Переведите <strong id="instrAmt">сумму</strong> на номер <span class="paynum"></span> или по QR-коду</div></div><div class="ps-row"><div class="ps-n">3</div><div id="psComment">В комментарии к переводу укажите <strong>ID игрока</strong></div></div><div class="ps-row"><div class="ps-n">4</div><div>Сделайте скриншот чека</div></div><div class="ps-row"><div class="ps-n">5</div><div>Приложите чек ниже и нажмите «Я оплатил»</div></div>
+    <div class="payment-confirm" id="finikBox" hidden><div class="card-title">⚡ Быстрая оплата</div>
+      <p class="method-note" style="margin:0 0 10px">Оплатите в приложении любого банка Кыргызстана или по QR. Заказ выдаётся автоматически, чек не нужен.</p>
+      <label for="finikPhone">Номер телефона</label><input type="tel" class="input-field" id="finikPhone" placeholder="700 123 456" autocomplete="tel">
+      <button class="btn-primary btn-full" id="finikBtn" onclick="payWithFinik()">⚡ Оплатить через Finik</button>
+      <div id="finikMsg" class="receipt-msg" role="alert" aria-live="polite"></div>
+      <div class="method-note" style="margin-top:12px;text-align:center">или переведите вручную в Mbank / O!Банк ниже</div></div>
     <div class="payment-methods"><div class="card-title">🏦 Выберите банк для перевода</div><div class="method-grid" id="methodsGrid"></div><div id="qrContainer" style="text-align:center; margin-top:15px;"></div></div>
     <div class="payment-confirm"><div class="card-title">📎 Чек об оплате</div>
     <div class="pay-comment" id="payComment">💬 В комментарии к переводу укажите ID игрока: <strong id="payCommentId"></strong></div>
@@ -2429,6 +2435,37 @@ async function redeemPromoForm(ev) {
 }
 (function () { try { const c = new URLSearchParams(location.search).get('promo'); if (c) { const el = document.getElementById('pmCode'); if (el) { el.value = c.slice(0, 20); document.getElementById('promo').open = true; } } } catch (e) {} })();
 
+// Быстрая оплата через Finik: сервер создаёт заказ и возвращает ссылку на страницу оплаты (банки / QR)
+async function payWithFinik() {
+  const btn = document.getElementById('finikBtn'), msg = document.getElementById('finikMsg');
+  const set = (t, c) => { msg.textContent = t; msg.className = 'receipt-msg' + (c ? ' ' + c : ''); };
+  const phone = document.getElementById('finikPhone').value.trim();
+  if (!currentOrder) { set('Ошибка: нет данных заказа', 'err'); return; }
+  if (!phoneOk(phone)) { set('Укажите номер телефона (например 700 123 456)', 'err'); document.getElementById('finikPhone').focus(); return; }
+  btn.disabled = true; set('Создаём оплату…', '');
+  try {
+    const resp = await fetch(API_BASE() + '/api/orders/finik', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({ playerId: currentOrder.playerId, serverId: currentOrder.serverId, region: currentOrder.region, pkg: currentOrder.packageName, pkgLabel: currentOrder.label, price: currentOrder.price, phone }) });
+    const d = await resp.json().catch(() => ({}));
+    if (!resp.ok || !d.url) { set(d.error || 'Не удалось создать оплату. Переведите вручную ниже.', 'err'); btn.disabled = false; return; }
+    try { if (d.secret) localStorage.setItem('dk_sec_' + d.id, d.secret); } catch (e) {}
+    set('Переходим к оплате…', 'ok');
+    location.href = d.url;
+  } catch (e) { set('Нет связи с сервером. Переведите вручную ниже.', 'err'); btn.disabled = false; }
+}
+document.addEventListener('DOMContentLoaded', () => { try { if (window.DK_API) fetch(API_BASE() + '/api/finik/status').then(r => r.json()).then(j => { if (j && j.enabled) { const b = document.getElementById('finikBox'); if (b) b.hidden = false; } }).catch(() => {}); } catch (e) {} });
+// Возврат со страницы оплаты Finik: показываем статус заказа и обновляем, пока он не выдан
+(function () {
+  try {
+    const code = new URLSearchParams(location.search).get('paid'); if (!code || !/^DK[A-Z0-9]{8}$/.test(code)) return;
+    window.addEventListener('load', () => {
+      showPage('orders');
+      const inp = document.getElementById('statusCode'); if (!inp) return; inp.value = code;
+      let n = 0; const run = () => { if (!document.getElementById('page-orders').classList.contains('active')) return; checkOrderStatus(); if (++n < 24) setTimeout(run, 6000); };
+      run();
+    });
+  } catch (e) {}
+})();
 const phoneOk = v => String(v || '').replace(/\D/g, '').length >= 9; // пока нет ИП — телефон обязателен
 async function sendOrderToWhatsApp() {
   if (!currentOrder) { alert('Ошибка: нет данных заказа'); return; }

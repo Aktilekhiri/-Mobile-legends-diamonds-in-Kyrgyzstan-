@@ -18,3 +18,7 @@ enabled = true
 
 # Секреты (Settings -> Variables and Secrets): FAZERCARDS_API_KEY, FAZERCARDS_WEBHOOK_SECRET,
 # TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID (последние два — для уведомлений).
+
+# Оплата через Finik (включается, когда заданы все четыре секрета; пока пусто, кнопка оплаты скрыта):
+# FINIK_API_KEY, FINIK_PRIVATE_KEY (PEM, наш приватный ключ), FINIK_PUBLIC_KEY (PEM, публичный ключ Finik для проверки вебхуков), FINIK_ACCOUNT_ID.
+# Необязательно: FINIK_QR_NAME (имя QR, по умолчанию diamondkg), FINIK_BASE (https://beta.api.acquiring.averspay.kg для тестов), FINIK_FEE_PCT (по умолчанию 0.02).

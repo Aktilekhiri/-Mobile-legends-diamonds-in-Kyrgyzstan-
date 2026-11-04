@@ -7,6 +7,9 @@ import { notify } from './notify.js';
 const TZ = 6 * 3600 * 1000;            // Бишкек = UTC+6
 const DAY = 86400000;
 export const RESERVE_PCT = 0.03;       // 3% выручки остаётся на карте приёма: комиссии сети, курс, возвраты
+export const TAX_PCT = 0.02;           // единый налог ИП: 2% от выручки (за вычетом возвратов), платится раз в квартал
+export const SOCIAL_MONTH = 1257;      // взнос в Соцфонд в месяц, сом
+export const SOCIAL_WEEK = Math.round(SOCIAL_MONTH * 12 / 52); // недельная доля взноса
 export const MIN_BALANCE_USD = 60;     // не опускаем баланс FazerCards ниже (запас на ~4 дня)
 export const MIN_DEPOSIT_USD = 50;     // меньше не пополняем: комиссия 1 USDT съест слишком много
 const SEND_DOW = 1, SEND_HOUR = 14;    // понедельник 14:00 по Бишкеку (итоги прошедшей недели)
@@ -38,13 +41,16 @@ async function sums(env, from, to) {
 // План на неделю по её сумме: сколько перевести на «карту-сейф» (Simbank), сколько оставить, сколько USDT докупить
 function plan(week, balanceUsd) {
   const reserve = Math.round(week.rev * RESERVE_PCT);
-  const toSafe = Math.max(0, week.profit - reserve - (week.promo_cost || 0));   // расход на промо вычитаем: деньги реально потрачены
+  const profitSafe = Math.max(0, week.profit - reserve - (week.promo_cost || 0));   // расход на промо вычитаем: деньги реально потрачены
+  const tax = Math.round(Math.max(0, week.rev) * TAX_PCT), social = SOCIAL_WEEK;   // налог и Соцфонд откладываем на сейф вместе с прибылью
+  const toSafe = Math.max(profitSafe, tax + social);                  // налоги обязательны, даже если прибыли не хватает
+  const free = Math.max(0, profitSafe - tax - social);                // прибыль, которую можно тратить
   const weeklySpend = week.cost_usd;                                 // расход на поставщика за неделю, USD
   const need = weeklySpend + MIN_BALANCE_USD - (balanceUsd == null ? 0 : balanceUsd);
   let buyUsd = 0;
   if (balanceUsd != null && need > 0) buyUsd = Math.max(MIN_DEPOSIT_USD, Math.ceil(need / 10) * 10);
   return {
-    reserve, promo_cost: week.promo_cost || 0, to_safe: toSafe,
+    reserve, promo_cost: week.promo_cost || 0, to_safe: toSafe, tax, social, free, short: Math.max(0, tax + social - profitSafe),
     keep: Math.max(0, week.rev - toSafe),                            // остаётся на картах приёма (закупка + резерв)
     weekly_spend_usd: Number(weeklySpend.toFixed(2)),
     buy_usd: buyUsd, buy_kgs: Math.round(buyUsd * USD_KGS),
@@ -60,30 +66,34 @@ export async function financeSummary(env, nowMs = Date.now()) {
   const weekStart = dayStart - dow * DAY, lastWeekStart = weekStart - 7 * DAY;
   const monthStart = Date.UTC(y, m, 1) - TZ;
   let balance = null; try { balance = await fzGetBalance(env); } catch (e) { /* баланс недоступен */ }
-  const [today, thisWeek, lastWeek, month, all, r7] = await Promise.all([
+  const quarterStart = Date.UTC(y, Math.floor(m / 3) * 3, 1) - TZ;
+  const [today, thisWeek, lastWeek, month, all, r7, quarter] = await Promise.all([
     sums(env, dayStart, dayEnd), sums(env, weekStart, dayEnd), sums(env, lastWeekStart, weekStart),
-    sums(env, monthStart, dayEnd), sums(env, 0, dayEnd), sums(env, dayEnd - 7 * DAY, dayEnd),
+    sums(env, monthStart, dayEnd), sums(env, 0, dayEnd), sums(env, dayEnd - 7 * DAY, dayEnd), sums(env, quarterStart, dayEnd),
   ]);
+  const qMonths = (m % 3) + 1;     // сколько месяцев квартала уже идёт (для начисленного взноса в Соцфонд)
   const spend7 = r7.cost_usd + r7.promo_usd;                                        // реальный темп расхода: последние 7 дней
   return {
     rate: USD_KGS, balance_usd: balance, balance_kgs: balance == null ? null : Math.round(balance * USD_KGS),
     spend_per_day_usd: Number((spend7 / 7).toFixed(2)), days_left: spend7 > 0 && balance != null ? Number((balance / (spend7 / 7)).toFixed(1)) : null,
     today, week: thisWeek, last_week: lastWeek, month, all,
+    quarter: { ...quarter, tax: Math.round(Math.max(0, quarter.rev) * TAX_PCT), social: SOCIAL_MONTH * 3, social_accrued: SOCIAL_MONTH * qMonths },
     plan_week: plan({ ...thisWeek, cost_usd: Math.max(thisWeek.cost_usd + thisWeek.promo_usd, spend7) }, balance),
     plan_last: plan({ ...lastWeek, cost_usd: Math.max(lastWeek.cost_usd + lastWeek.promo_usd, spend7) }, balance),
-    constants: { reserve_pct: RESERVE_PCT, min_balance_usd: MIN_BALANCE_USD, min_deposit_usd: MIN_DEPOSIT_USD },
+    constants: { tax_pct: TAX_PCT, social_month: SOCIAL_MONTH, reserve_pct: RESERVE_PCT, min_balance_usd: MIN_BALANCE_USD, min_deposit_usd: MIN_DEPOSIT_USD },
   };
 }
 
 export function weeklyText(f) {
   const w = f.last_week, p = f.plan_last;   // в понедельник отчёт за только что закончившуюся неделю
   let t = `💰 Итоги прошлой недели\n\nВыдано заказов: ${w.n}\nВыручка: ${fmt(w.rev)} сом\nСебестоимость: ${fmt(w.cost)} сом\nПрибыль: ${w.profit >= 0 ? '' : '−'}${fmt(Math.abs(w.profit))} сом` + (w.promo_n ? `\nПромо (бесплатные Weekly Pass): ${w.promo_n} шт, расход ${fmt(w.promo_cost)} сом (в прибыль не входит)` : '');
-  t += `\n\n📤 Что перевести сейчас\n• На карту-сейф (Simbank): ${fmt(p.to_safe)} сом (прибыль за вычетом резерва ${fmt(p.reserve)} сом${p.promo_cost ? ' и промо ' + fmt(p.promo_cost) + ' сом' : ''})\n• На картах приёма (Mbank, O!Банк) оставьте остальное: это оборотные деньги на закупку`;
+  t += `\n\n📤 Что перевести сейчас\n• На карту-сейф (Simbank): ${fmt(p.to_safe)} сом, из них:\n   – налог 2%: ${fmt(p.tax)} сом (не тратить до оплаты)\n   – Соцфонд: ${fmt(p.social)} сом (не тратить)\n   – свободная прибыль: ${fmt(p.free)} сом (после резерва ${fmt(p.reserve)} сом${p.promo_cost ? ' и промо ' + fmt(p.promo_cost) + ' сом' : ''})${p.short ? '\n   ⚠️ Прибыли не хватило на налоги, не хватает ' + fmt(p.short) + ' сом из оборота' : ''}\n• На картах приёма (Mbank, O!Банк) оставьте остальное: это оборотные деньги на закупку`;
   if (f.balance_usd != null) {
     t += `\n\n🏦 FazerCards: баланс $${f.balance_usd.toFixed(2)} (≈ ${fmt(f.balance_kgs)} сом)`;
     if (f.days_left != null) t += `, хватит примерно на ${f.days_left} дн.`;
     t += p.buy_usd > 0 ? `\n• Докупите USDT на $${p.buy_usd} (≈ ${fmt(p.buy_kgs)} сом) одним платежом: комиссия сети 1 USDT одна` : '\n• Пополнять пока не нужно';
   }
+  const q = f.quarter; if (q) t += `\n\n🧾 За квартал: налог 2% ${fmt(q.tax)} сом (с выручки ${fmt(q.rev)} сом), Соцфонд ${fmt(q.social_accrued)} сом начислено. Налог платится раз в квартал, деньги должны лежать на сейфе.`;
   if (w.nocost) t += `\n\n(у ${w.nocost} заказ(ов) нет себестоимости: они не входят в прибыль)`;
   return t;
 }

@@ -23,7 +23,7 @@ import { redeemPromo } from './promo.js';
 import { aiChat, aiReady } from './aichat.js';
 import { SHOP } from './shop_data.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
-import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, refundToBalance, markManualDone, cancelOrder, blacklistOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
+import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, refundToBalance, selfOrder, selfOrders, markManualDone, cancelOrder, blacklistOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
 
 function cors(req) {
   const o = req.headers.get('Origin') || '';
@@ -376,6 +376,14 @@ export default {
         if (path === '/api/admin/wallets' && m === 'GET') return json(req, await adminWallets(env, url.searchParams.get('q') || ''));
         if (path === '/api/admin/wallet' && m === 'GET') {
           const r = await adminWalletHistory(env, url.searchParams.get('owner') || '');
+          return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+        }
+        if (path === '/api/admin/self-catalog' && m === 'GET') {
+          return json(req, { games: SHOP.map(g => ({ id: g.id, name: g.name, hint: g.hint || '', none: !!g.none, user: !!g.user, mlbb: !!g.mlbb, zone: !!g.zone, servers: g.servers || null, packs: g.packs.map(p => ({ k: p.k, l: p.l })) })) });
+        }
+        if (path === '/api/admin/self-orders' && m === 'GET') return json(req, await selfOrders(env));
+        if (path === '/api/admin/self-order' && m === 'POST') {
+          const r = await selfOrder(env, await req.json().catch(() => ({})));
           return r.error ? err(req, r.error, r.status || 400) : json(req, r);
         }
         if (path === '/api/admin/wallet' && m === 'POST') {

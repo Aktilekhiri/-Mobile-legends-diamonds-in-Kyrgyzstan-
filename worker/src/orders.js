@@ -5,6 +5,7 @@ import { notify, notifyPhoto, defer } from './notify.js';
 import { sendOrderMail } from './mail.js';
 import { tgNotifyOrder } from './tgapi.js';
 import { refundOrderToWallet } from './ledger.js';
+import { SHOP } from './shop_data.js';
 
 const clean = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
 const digits = (v, n) => String(v == null ? '' : v).replace(/\D+/g, '').slice(0, n);
@@ -121,7 +122,7 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
   const cat = (CATALOGS[region] || {})[pkg] || null;
   const id = newCode(), now = Date.now();
   const secret = newSecret();
-  const auto = !!(cat && cat.cost <= MAX_AUTO_COST_USD);
+  const auto = !!(cat && (cat.cost <= MAX_AUTO_COST_USD || opts.forceAuto));
   await env.DB.prepare(
     `INSERT INTO orders (id,created_at,updated_at,player_id,server_id,region,pkg,pkg_label,price_kgs,method,phone,offer_id,cost_usd,status,ip)
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
@@ -218,7 +219,10 @@ export async function syncFromFz(env, o, fz) {
     await notify(env, `⚠️ Заказ ${o.id}: составной пакет выдан частично (FazerCards ${fz.id}). Проверьте вручную, что получил клиент.`);
   } else if (st === 'refund' || st === 'failed') {
     // failed: деньги гарантированно вернутся только при refund, поэтому клиенту возвращаем деньги только после refund
-    if (st === 'refund' && o.method === 'promo') {
+    if (st === 'refund' && o.method === 'Для себя') {
+      await setStatus(env, o.id, { status: 'cancelled', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
+      await notify(env, `↩️ Заказ для себя ${o.id} не выполнен (${String(fz.fail_reason || '—').slice(0, 150)}). Деньги вернулись на баланс FazerCards.`);
+    } else if (st === 'refund' && o.method === 'promo') {
       await setStatus(env, o.id, { status: 'cancelled', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
       const back = await releasePromo(env, o.id);
       await notify(env, `↩️ Промо-заказ ${o.id} не выполнен (FazerCards вернул деньги на баланс).${back ? ' Промокод возвращён, клиент может ввести его снова.' : ' Промокод не найден, проверьте таблицу промокодов.'}\nПричина: ${String(fz.fail_reason || '—').slice(0, 150)}`);
@@ -302,6 +306,30 @@ export async function markRefunded(env, id) {
 }
 // Возврат на баланс сайта по решению админа: заказ завис (processing), нужен ручной разбор (manual) или ждёт возврата (refund_due).
 // Статус 'balance' в финансы не попадает (там только delivered). Зачисление идемпотентно: повторное нажатие деньги не удвоит.
+// Заказ для себя (админ): без оплаты, сразу уходит поставщику по себестоимости. Метод «Для себя» не входит в финансы (FIN_WHERE).
+export async function selfOrder(env, b) {
+  const g = SHOP.find(x => x.id === String(b.game || ''));
+  const p = g && g.packs.find(x => x.k === String(b.pack || ''));
+  if (!g || !p) return { error: 'Игра или пакет не найдены', status: 400 };
+  const r = await createOrder(env, '', { region: g.region, pkg: p.k, pkgLabel: p.l, price: 0, method: 'Для себя', phone: '',
+    playerId: g.none ? '' : String(b.playerId || ''), serverId: String(b.serverId || ''), deferNotify: true }, null, { promo: true, forceAuto: true });
+  if (r.error) return r;
+  if (r.status !== 'new') {
+    await setStatus(env, r.id, { status: 'cancelled', fail_reason: 'Нет авто-выдачи для этого пакета' });
+    return { error: 'Для этого пакета нет авто-выдачи у поставщика', status: 409 };
+  }
+  const c = await confirmOrder(env, r.id);
+  if (c.error) {
+    await setStatus(env, r.id, { status: 'cancelled', fail_reason: String(c.error).slice(0, 250), finished_at: Date.now() });
+    return { error: c.error, status: c.status || 502 };
+  }
+  return { ok: true, id: r.id };
+}
+export async function selfOrders(env) {
+  const { results } = await env.DB.prepare("SELECT id, created_at, pkg_label, region, player_id, server_id, status, fail_reason, delivery, cost_usd FROM orders WHERE method = 'Для себя' ORDER BY created_at DESC LIMIT 30").all();
+  return { orders: results };
+}
+
 export async function refundToBalance(env, id) {
   const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(id).first();
   if (!o) return { error: 'Заказ не найден', status: 404 };

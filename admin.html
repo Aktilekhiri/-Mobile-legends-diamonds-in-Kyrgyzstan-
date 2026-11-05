@@ -72,7 +72,7 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
     try{
       var r=await fetch(api+'/api/admin/orders',{headers:{Authorization:'Bearer '+tk}});
       if(!r.ok){el.classList.remove('on');return}
-      var d=await r.json(),n=(d.orders||[]).filter(function(o){return ['new','refund_due','manual'].indexOf(o.status)>-1}).length;
+      var d=await r.json(),n=(d.orders||[]).filter(function(o){return ['new','refund_due','manual'].indexOf(o.status)>-1&&!(o.status==='new'&&o.method==='Finik')}).length;
       el.textContent=n;el.classList.toggle('on',n>0);
     }catch(e){}
   }

@@ -501,3 +501,7 @@ body .night-note:not(.on){display:none!important}
 .wal-hist div span:last-child{opacity:.7;text-align:right}
 .wal-row input{flex:1 1 110px}
 .wal-row .btn-primary{flex:0 0 auto;width:auto;padding:0 18px;min-height:46px}
+
+/* баланс в шапке */
+.nav-bal{margin-left:10px;display:inline-flex;align-items:center;gap:4px;padding:0 12px;min-height:38px;border-radius:999px;border:1px solid var(--line,#dfe3ee);background:var(--card,#fff);color:inherit;font:inherit;font-weight:800;font-size:.9rem;cursor:pointer;white-space:nowrap;flex:none}
+.nav-bal[hidden]{display:none}

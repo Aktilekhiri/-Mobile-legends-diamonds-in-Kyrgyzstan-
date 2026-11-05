@@ -87,8 +87,11 @@ button:disabled{opacity:.5;cursor:default}
   }
 
   var LBL={new:'Ждёт оплаты',processing:'Выдаётся',delivered:'Выдан',refund_due:'Вернуть деньги',refunded:'Деньги возвращены',balance:'Возвращено на баланс',manual:'Выдать вручную',cancelled:'Отменён'};
-  var FILTERS=[['active','Активные'],['all','Все'],['delivered','Выданные'],['refund_due','Возвраты']];
-  function isActive(o){return ['new','processing','refund_due','manual'].indexOf(o.status)>-1}
+  var FILTERS=[['active','Активные'],['auto','⚡ Авто'],['all','Все'],['delivered','Выданные'],['refund_due','Возвраты'],['unpaid','Не оплачены']];
+  // Finik-заказ в статусе «new» — клиент ещё не оплатил (ссылка на оплату живёт час): выдавать такой нельзя
+  function unpaid(o){return o.status==='new'&&o.method==='Finik'}
+  function isAuto(o){return (o.method==='Finik'||o.method==='Баланс')&&!unpaid(o)}
+  function isActive(o){return ['new','processing','refund_due','manual'].indexOf(o.status)>-1&&!unpaid(o)}
 
   function drawChips(){
     $('chips').innerHTML=FILTERS.map(function(f){return '<button data-f="'+f[0]+'" class="'+(f[0]===filter?'on':'')+'">'+f[1]+'</button>'}).join('');
@@ -97,20 +100,21 @@ button:disabled{opacity:.5;cursor:default}
   function ago(ts){var m=Math.round((Date.now()-ts)/60000);if(m<1)return 'только что';if(m<60)return m+' мин назад';var h=Math.round(m/60);if(h<24)return h+' ч назад';return new Date(ts).toLocaleDateString('ru-RU')}
 
   function draw(){
-    var rows=orders.filter(function(o){return filter==='all'||(filter==='active'?isActive(o):o.status===filter)});
+    var rows=orders.filter(function(o){return filter==='all'||(filter==='active'?isActive(o):filter==='auto'?isAuto(o):filter==='unpaid'?unpaid(o):o.status===filter)});
     if(!rows.length){$('list').innerHTML='<div class="card hint">Заказов нет</div>';return}
     $('list').innerHTML=rows.map(function(o){
       var acts='';
-      if(o.status==='new')acts='<button class="ok" data-a="confirm" data-id="'+o.id+'">✅ Деньги пришли — выдать</button><button class="dng" data-a="cancel" data-id="'+o.id+'">Отменить</button>';
+      if(unpaid(o))acts='<button class="dng" data-a="cancel" data-id="'+o.id+'">Отменить</button>';
+      else if(o.status==='new')acts='<button class="ok" data-a="confirm" data-id="'+o.id+'">✅ Деньги пришли — выдать</button><button class="dng" data-a="cancel" data-id="'+o.id+'">Отменить</button>';
       else if(o.status==='manual')acts='<button class="ok" data-a="manual-done" data-id="'+o.id+'">Выдал вручную</button><button class="dng" data-a="cancel" data-id="'+o.id+'">Отменить</button>';
       else if(o.status==='processing')acts='<button data-a="refresh" data-id="'+o.id+'">Проверить статус</button>';
       else if(o.status==='refund_due')acts='<button class="ok" data-a="refunded" data-id="'+o.id+'">Деньги клиенту возвращены</button>';
       if(o.phone&&String(o.phone).replace(/\D/g,'').length>=9&&o.status!=='new')acts+='<button class="dng" data-a="blacklist" data-id="'+o.id+'">🚫 В чёрный список</button>';
       var hasR=o.receipt_at>0, canR=(o.status==='new'||o.status==='manual');
       if(hasR)acts='<button data-a="receipt" data-id="'+o.id+'">📎 '+(rcOpen[o.id]?'Скрыть чек':'Показать чек')+'</button>'+acts;
-      var rnote=(!hasR&&canR)?'<div class="rcpt-hint">Чека на сайте нет — проверьте оплату по банку (возможно, клиент отправил через WhatsApp)</div>':'';
+      var rnote=unpaid(o)?'<div class="rcpt-hint">Клиент ещё не оплатил по ссылке Finik. Когда оплатит, заказ выдастся сам.</div>':(!hasR&&canR)?'<div class="rcpt-hint">Чека на сайте нет — проверьте оплату по банку (возможно, клиент отправил через WhatsApp)</div>':'';
       var warn=o.status==='refund_due'?'<div class="warn">Заказ не выполнен. Верните клиенту '+o.price_kgs+' сом на '+esc(o.method||'карту')+(o.phone?' ('+esc(o.phone)+')':'')+'. '+esc(o.fail_reason||'')+'</div>':(o.status==='processing'&&o.fail_reason?'<div class="warn">'+esc(o.fail_reason)+'</div>':'');
-      return '<div class="card"><div class="o-head"><div><b>'+esc(o.id)+'</b><span class="st '+o.status+'">'+(LBL[o.status]||o.status)+'</span></div><div class="o-sum">'+o.price_kgs+' сом</div></div>'
+      return '<div class="card"><div class="o-head"><div><b>'+esc(o.id)+'</b><span class="st '+o.status+'">'+(unpaid(o)?'Не оплачен':(LBL[o.status]||o.status))+'</span>'+(isAuto(o)?'<span class="st">⚡ авто</span>':'')+'</div><div class="o-sum">'+o.price_kgs+' сом</div></div>'
         +'<div class="o-meta">'+esc(o.pkg_label)+' · ID '+esc(o.player_id)+' ('+esc(o.server_id)+') · '+esc(o.method||'—')+(o.phone?' · '+esc(o.phone):'')+' · '+ago(o.created_at)+'</div>'
         +warn+rnote+(acts?'<div class="acts" style="margin-top:8px">'+acts+'</div>':'')+'<div class="rcpt" id="rc-'+o.id+'"></div></div>';
     }).join('');

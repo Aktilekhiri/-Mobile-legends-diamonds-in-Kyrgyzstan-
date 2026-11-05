@@ -201,7 +201,8 @@ export const GAMES = {
     '2000_robux': { offer: '2000_robux' },
     '4500_robux': { offer: '4500_robux' },
     '10000_robux': { offer: '10000_robux' },
-  } },  steam: { category: 'steam_cis', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+  } },
+  steam: { category: 'steam_cis', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
     '5': { offer: '5' },
     '10': { offer: '10' },
     '15': { offer: '15' },

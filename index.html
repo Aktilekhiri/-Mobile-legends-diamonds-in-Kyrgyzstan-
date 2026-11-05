@@ -3190,6 +3190,5 @@ g.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.ta
 function updNightNote() { try { const on = bishkekHour() < 8; document.querySelectorAll('.night-note').forEach(e => e.classList.toggle('on', on)); } catch (e) {} }
 updNightNote(); setInterval(updNightNote, 60000);
 </script>
-<script src="/chat.js?v=2" defer></script>
 </body>
 </html>

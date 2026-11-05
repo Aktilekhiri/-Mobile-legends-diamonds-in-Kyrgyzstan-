@@ -8,6 +8,7 @@ import { handleTopupPayment } from './wallet.js';
 
 const PROD_BASE = 'https://api.acquiring.averspay.kg';
 const SITE = 'https://diamond.kg/';
+export const PAY_MIN = 30;   // сколько минут действует ссылка на оплату
 export const finikReady = env => !!(env.FINIK_API_KEY && env.FINIK_PRIVATE_KEY && env.FINIK_ACCOUNT_ID && env.FINIK_PUBLIC_KEY);
 const enc = new TextEncoder();
 
@@ -49,7 +50,7 @@ export async function createFinikPayment(env, o, redirectUrl) {
     Data: {
       accountId: env.FINIK_ACCOUNT_ID, name_en: env.FINIK_QR_NAME || 'diamondkg',
       webhookUrl: (env.origin || '') + '/api/finik/webhook', description: String(o.pkg_label || o.pkg || 'Заказ').slice(0, 100) + ' · ' + o.id,
-      endDate: Date.now() + 60 * 60 * 1000,   // ссылка живёт час
+      endDate: Date.now() + PAY_MIN * 60 * 1000,   // ссылка живёт 30 минут: столько же клиент может оплатить из «Моих заказов»
     },
   };
   const ts = String(Date.now()), headers = { Host: host, 'x-api-key': env.FINIK_API_KEY, 'x-api-timestamp': ts };
@@ -65,6 +66,8 @@ async function ensure(env) {
   if (ready) return;
   await env.DB.prepare('CREATE TABLE IF NOT EXISTS finik_payments (tx_id TEXT PRIMARY KEY, order_id TEXT NOT NULL, amount REAL NOT NULL, status TEXT, created_at INTEGER NOT NULL)').run();
   try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN fee_kgs REAL NOT NULL DEFAULT 0').run(); } catch (e) { /* уже есть */ }
+  try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN pay_url TEXT').run(); } catch (e) { /* уже есть */ }
+  try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN pay_exp INTEGER').run(); } catch (e) { /* уже есть */ }
   ready = true;
 }
 
@@ -81,6 +84,7 @@ export async function startFinikOrder(env, ip, b, userId) {
     await env.DB.prepare("UPDATE orders SET status = 'cancelled', fail_reason = ?, updated_at = ? WHERE id = ? AND status IN ('new','manual')").bind(p.error, Date.now(), r.id).run();
     return p;
   }
+  await env.DB.prepare('UPDATE orders SET pay_url = ?, pay_exp = ? WHERE id = ?').bind(p.url, Date.now() + PAY_MIN * 60 * 1000, r.id).run();
   return { id: r.id, secret: r.secret, url: p.url };
 }
 
@@ -124,10 +128,10 @@ export async function finikWebhook(env, req) {
   return { status: 200, body: 'ok' };
 }
 
-// Из cron: неоплаченные заказы Finik старше 2 часов отменяем (ссылка на оплату живёт час)
+// Из cron: неоплаченные заказы Finik старше 35 минут отменяем (ссылка на оплату живёт 30 минут)
 export async function cleanupFinik(env) {
   if (!finikReady(env)) return;
   await ensure(env);
   await env.DB.prepare("UPDATE orders SET status = 'cancelled', fail_reason = 'Не оплачен в Finik', updated_at = ? WHERE method = 'Finik' AND status IN ('new','manual') AND created_at < ? AND NOT EXISTS (SELECT 1 FROM finik_payments p WHERE p.order_id = orders.id)")
-    .bind(Date.now(), Date.now() - 2 * 3600 * 1000).run();
+    .bind(Date.now(), Date.now() - (PAY_MIN + 5) * 60 * 1000).run();
 }

@@ -526,3 +526,5 @@ body.v2 .nav-links .lang-toggle,body.v2 .nav-links .user-name,body.v2 .nav-links
   body.v2 .nav-lang-m button{min-width:34px;padding:0 6px}
   body.v2 .nav-logo{font-size:1.2rem}
 }
+
+.hist-pay{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0}.hist-pay .btn-primary{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;text-decoration:none}.hist-pay-t{color:var(--muted);font-size:.85rem}

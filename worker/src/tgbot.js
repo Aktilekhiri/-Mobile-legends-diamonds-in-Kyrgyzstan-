@@ -10,6 +10,8 @@ import { startGopayOrder, gopayPublic } from './gopay.js';
 const fastReady = env => gopayPublic(env) || finikReady(env);
 import { publishOffer, rejectOffer, createOffer, addOfferPhoto, submitOffer, markup as sellMarkup, GAMES as SELL_GAMES } from './market.js';
 import { notify } from './notify.js';
+import { startTopup, startWalletOrder, linkTelegram, TOPUP_MIN, TOPUP_MAX } from './wallet.js';
+import { ownerForTg, balanceOf, history as walletHistory } from './ledger.js';
 import { aiChat, aiReady } from './aichat.js';
 import { checkPromo, redeemPromo, normCode } from './promo.js';
 
@@ -30,7 +32,7 @@ const setSt = (env, chat, st) => env.DB.prepare('INSERT INTO tg_sessions (chat_i
 const btn = (text, data) => ({ text, callback_data: data });
 const kb = rows => ({ inline_keyboard: rows });
 const CHANNEL = 'https://t.me/topupdiamondskg';
-const MENU = kb([[btn('🎮 Пополнить игру', 'games')], [btn('🛒 Купить аккаунт', 'acc'), btn('💼 Продать аккаунт', 'sell')], [btn('📋 Мои заказы', 'orders'), btn('💬 Поддержка', 'help')], [btn('🎁 Промокод', 'promo')], [{ text: '📣 Наш канал', url: CHANNEL }]]);
+const MENU = kb([[btn('🎮 Пополнить игру', 'games')], [btn('🛒 Купить аккаунт', 'acc'), btn('💼 Продать аккаунт', 'sell')], [btn('📋 Мои заказы', 'orders'), btn('💬 Поддержка', 'help')], [btn('💰 Баланс', 'bal'), btn('🎁 Промокод', 'promo')], [{ text: '📣 Наш канал', url: CHANNEL }]]);
 const CANCEL = [btn('❌ Отмена', 'menu')];
 const money = n => Number(n).toLocaleString('ru-RU').replace(/ /g, ' ');
 
@@ -82,7 +84,42 @@ async function showSummary(env, chat, msgId, st) {
 async function showMethods(env, chat, msgId, st) {
   st.step = 'method'; await setSt(env, chat, st);
   if (!fastReady(env)) { await show(env, chat, msgId, `<b>Оплата временно недоступна</b>\nПопробуйте позже или напишите нам в WhatsApp ${WA}.`, kb([CANCEL])); return; }
-  await show(env, chat, msgId, '<b>Оплата</b>\n⚡ Платите в приложении любого банка Кыргызстана или по QR. Заказ выдаётся автоматически, чек не нужен.', kb([[btn('⚡ Оплатить по QR', 'mf')], CANCEL]));
+  const g = SHOP.find(x => x.id === st.g), p = g && g.packs[st.i];
+  const bal = p ? await balanceOf(env, await ownerForTg(env, chat)) : 0;
+  const rows = [[btn('⚡ Оплатить по QR', 'mf')]];
+  if (p && bal >= p.p) rows.push([btn(`💰 Оплатить балансом (${money(bal)} сом)`, 'mw')]);
+  await show(env, chat, msgId, '<b>Оплата</b>\n⚡ Платите в приложении любого банка Кыргызстана или по QR. Заказ выдаётся автоматически, чек не нужен.' + (bal > 0 ? `\n💰 На балансе: ${money(bal)} сом` + (p && bal < p.p ? '. Для этого заказа не хватает, пополните в меню «Баланс».' : '') : ''), kb([...rows, CANCEL]));
+}
+
+// оплата заказа с баланса
+async function payWalletBot(env, cq, st) {
+  const chat = cq.message.chat.id, g = SHOP.find(x => x.id === st.g), p = g && g.packs[st.i];
+  if (!g || !p) { await send(env, chat, 'Сессия устарела. Начните заново.', { reply_markup: MENU }); return; }
+  const recent = await env.DB.prepare('SELECT COUNT(*) AS c FROM orders WHERE tg_chat = ? AND created_at > ?').bind(chat, Date.now() - 3600000).first();
+  if (recent && recent.c >= 5) { await send(env, chat, 'Слишком много заказов за час. Попробуйте позже или напишите в WhatsApp ' + WA + '.'); return; }
+  const from = cq.from || {}, who = from.username ? '@' + from.username : (from.first_name || 'клиент');
+  const owner = await ownerForTg(env, chat);
+  const r = await startWalletOrder(env, '', { region: g.region, pkg: p.k, pkgLabel: p.l, price: p.p, phone: '000' + String(chat), playerId: g.none ? '' : st.pid, serverId: st.srv || '' }, owner, null, { chat, user: who });
+  if (r.error) { await send(env, chat, '⚠️ ' + esc(r.error), { reply_markup: kb([[btn('✏️ Изменить ID', 'ed')], CANCEL]) }); return; }
+  await setSt(env, chat, {});
+  await send(env, chat, `✅ <b>Заказ ${esc(r.id)} оплачен с баланса</b>\n${esc(g.name)}, ${esc(p.l)} · ${money(p.p)} сом\nОстаток на балансе: ${money(r.balance)} сом.\n\nВыдаём автоматически, напишем сюда, когда заказ придёт.`, { reply_markup: MENU });
+}
+
+// ---------- баланс ----------
+async function showBalance(env, chat, msgId) {
+  const owner = await ownerForTg(env, chat), bal = await balanceOf(env, owner), linked = owner.startsWith('g:');
+  const h = await walletHistory(env, owner, 5);
+  const KIND = { refund: 'Возврат за заказ', topup: 'Пополнение', spend: 'Оплата заказа', withdraw: 'Вывод', admin: 'Корректировка', 'link-in': 'Перенос из бота', 'link-out': 'Перенос в аккаунт' };
+  const t = `<b>💰 Ваш баланс: ${money(bal)} сом</b>\n` + (linked ? 'Общий с аккаунтом на сайте.' : 'Чтобы пользоваться балансом и на сайте, привяжите Telegram: войдите на diamond.kg → Профиль → «Привязать Telegram».')
+    + (h.length ? '\n\n<b>Последние операции</b>\n' + h.map(x => `${x.amount > 0 ? '+' : '−'}${money(Math.abs(x.amount))} · ${KIND[x.kind] || x.kind}`).join('\n') : '')
+    + '\n\nЕсли заказ не удалось выполнить, деньги сразу возвращаются сюда. Вывод на карту или кошелёк: через поддержку.';
+  await show(env, chat, msgId, t, kb([[btn('➕ 100', 'tu:100'), btn('➕ 300', 'tu:300'), btn('➕ 500', 'tu:500'), btn('➕ 1000', 'tu:1000')], [btn('✏️ Другая сумма', 'tuc')], [btn('« Меню', 'menu')]]));
+}
+async function topupBot(env, chat, from, amount) {
+  const r = await startTopup(env, await ownerForTg(env, chat), amount, chat);
+  if (r.error) return send(env, chat, '⚠️ ' + esc(r.error), { reply_markup: kb([[btn('💰 Баланс', 'bal')]]) });
+  await setSt(env, chat, {});
+  return send(env, chat, `<b>Пополнение на ${money(amount)} сом</b>\nНажмите кнопку, выберите банк или отсканируйте QR. Баланс пополнится автоматически, мы напишем сюда.\n⏱ Ссылка действует 1 час.`, { reply_markup: { inline_keyboard: [[{ text: '⚡ Перейти к оплате', url: r.url }], [btn('« Меню', 'menu')]] } });
 }
 
 async function payFinikBot(env, cq, st) {
@@ -321,6 +358,9 @@ async function onCallback(env, cq) {
   { const a = d.match(/^(ac|ab):(\d+)$/); if (a) return a[1] === 'ac' ? showAccount(env, chat, Number(a[2])) : buyAccount(env, cq, Number(a[2])); }
   if (d === 'games') { await setSt(env, chat, {}); return showGames(env, chat, mid); }
   if (d === 'orders') return showOrders(env, chat, mid);
+  if (d === 'bal') { await setSt(env, chat, {}); return showBalance(env, chat, mid); }
+  if (d === 'tuc') { await setSt(env, chat, { step: 'tu' }); return show(env, chat, mid, `<b>Пополнение баланса</b>\nОтправьте сумму числом, от ${TOPUP_MIN} до ${TOPUP_MAX} сом.`, kb([[btn('« Назад', 'bal')]])); }
+  { const t = d.match(/^tu:(\d{2,5})$/); if (t) return topupBot(env, chat, cq.from || {}, Number(t[1])); }
   if (d === 'help') return showHelp(env, chat, mid);
   let x;
   if ((x = d.match(/^g:(\w+)$/))) return showPacks(env, chat, mid, x[1], 0);
@@ -335,12 +375,15 @@ async function onCallback(env, cq) {
   if (d === 'ed' && st.g) return askId(env, chat, mid, st);
   if (d === 'ok' && st.g && st.step === 'confirm') return showMethods(env, chat, mid, st);
   if (d === 'mf' && st.g && st.step === 'method') return payFinikBot(env, cq, st);
+  if (d === 'mw' && st.g && st.step === 'method') return payWalletBot(env, cq, st);
   if (/^m:[MO]$/.test(d) && st.g) return showPay(env, chat, mid, st);
 }
 
 async function onMessage(env, msg) {
   const chat = msg.chat.id; if (msg.chat.type !== 'private') return;
   const text = String(msg.text || '').trim();
+  { const lk = text.match(/^\/start\s+link_([A-Za-z0-9]{8})/i); if (lk) { const r = await linkTelegram(env, chat, lk[1]); await setSt(env, chat, {}); return send(env, chat, r.error ? '⚠️ ' + esc(r.error) : `✅ <b>Telegram привязан к аккаунту ${esc(r.label)}</b>\nБаланс теперь общий: ${money(r.balance)} сом. Его можно тратить и в боте, и на сайте.`, { reply_markup: MENU }); } }
+  if (/^\/balance/i.test(text)) return showBalance(env, chat, 0);
   if (/^\/(start|menu)/i.test(text)) { await setSt(env, chat, {}); return send(env, chat, welcome(), { reply_markup: MENU }); }
   if (/^\/orders/i.test(text)) return showOrders(env, chat, 0);
   if (/^\/help/i.test(text)) return showHelp(env, chat, 0);
@@ -364,6 +407,11 @@ async function onMessage(env, msg) {
     }
     await setSt(env, chat, {});
     return send(env, chat, `🎁 <b>Промокод активирован!</b>\nЗаказ ${esc(r.id)}: Weekly Diamond Pass для ID <code>${pid}</code> (${zone}). Выдача занимает 5–10 минут, напишем сюда, как только он придёт.`, { reply_markup: kb([[btn('📋 Мои заказы', 'orders')], [btn('« Меню', 'menu')]]) });
+  }
+  if (st.step === 'tu' && text) {
+    const n = Math.floor(Number(text.replace(/[^\d]/g, '')));
+    if (!(n >= TOPUP_MIN && n <= TOPUP_MAX)) return send(env, chat, `⚠️ Сумма от ${TOPUP_MIN} до ${TOPUP_MAX} сом, например 300.`, { reply_markup: kb([[btn('« Назад', 'bal')]]) });
+    return topupBot(env, chat, msg.from || {}, n);
   }
   if (g && st.step === 'receipt') return finishReceipt(env, chat, msg.from || {}, msg, st);
   if (g && g.user && st.step === 'id' && text) {

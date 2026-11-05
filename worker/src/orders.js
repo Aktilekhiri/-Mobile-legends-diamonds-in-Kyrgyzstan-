@@ -4,6 +4,7 @@ import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { notify, notifyPhoto, defer } from './notify.js';
 import { sendOrderMail } from './mail.js';
 import { tgNotifyOrder } from './tgapi.js';
+import { refundOrderToWallet } from './ledger.js';
 
 const clean = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
 const digits = (v, n) => String(v == null ? '' : v).replace(/\D+/g, '').slice(0, n);
@@ -222,6 +223,9 @@ export async function syncFromFz(env, o, fz) {
       await setStatus(env, o.id, { status: 'cancelled', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
       const back = await releasePromo(env, o.id);
       await notify(env, `↩️ Промо-заказ ${o.id} не выполнен (FazerCards вернул деньги на баланс).${back ? ' Промокод возвращён, клиент может ввести его снова.' : ' Промокод не найден, проверьте таблицу промокодов.'}\nПричина: ${String(fz.fail_reason || '—').slice(0, 150)}`);
+    } else if (st === 'refund' && await refundOrderToWallet(env, o)) {
+      // деньги сразу вернулись на баланс клиента (кошелёк по аккаунту сайта или Telegram), клиент может заказать заново
+      await setStatus(env, o.id, { status: 'balance', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
     } else if (st === 'refund') {
       await setStatus(env, o.id, { status: 'refund_due', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
       await notify(env, `↩️ Заказ ${o.id} не выполнен (FazerCards вернул деньги на баланс).\nВерните клиенту ${o.price_kgs} сом (${o.method}, тел. ${o.phone || '—'}) и нажмите «Деньги возвращены» в админке.\nПричина: ${String(fz.fail_reason || '—').slice(0, 150)}`);

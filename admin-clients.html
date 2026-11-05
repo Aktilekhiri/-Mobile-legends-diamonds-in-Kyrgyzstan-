@@ -66,7 +66,7 @@ button:disabled{opacity:.5;cursor:default}
 (function(){
   var $=function(i){return document.getElementById(i)};
   var TK='dk_admin_token', AK='dk_admin_api';
-  var token='', q='', items=[], timer=null;
+  var token='', q='', items=[], timer=null, mode='users', wallets=[];
   function sget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
   function sset(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}
   function api(){return (window.DK_API||sget(AK)||'').replace(/\/+$/,'')}
@@ -84,13 +84,50 @@ button:disabled{opacity:.5;cursor:default}
   }
   function fmt(ts){return ts?new Date(ts).toLocaleDateString('ru-RU'):'—'}
   function drawChips(){
-    $('chips').innerHTML='<input id="q" type="search" placeholder="Поиск по почте или имени" value="'+esc(q)+'" style="flex:1 1 220px"><button id="csv">⬇ CSV</button>';
-    $('q').oninput=function(){q=this.value;draw()};
+    $('chips').innerHTML='<button id="mU" class="'+(mode==='users'?'on':'')+'">Клиенты</button><button id="mW" class="'+(mode==='wallets'?'on':'')+'">💰 Балансы</button><input id="q" type="search" placeholder="Поиск по почте или имени" value="'+esc(q)+'" style="flex:1 1 220px">'+(mode==='users'?'<button id="csv">⬇ CSV</button>':'');
+    $('mU').onclick=function(){mode='users';q='';load()};
+    $('mW').onclick=function(){mode='wallets';q='';load()};
+    var qt=null;
+    $('q').oninput=function(){q=this.value;if(mode==='wallets'){clearTimeout(qt);qt=setTimeout(loadWallets,300)}else draw()};
+    if(mode!=='users')return;
     $('csv').onclick=function(){
       var rows=[['email','name','registered','last_login','orders','spent_kgs']].concat(items.map(function(u){return [u.email,u.name,fmt(u.created_at),fmt(u.last_login),u.orders,u.spent]}));
       var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'}).join(',')}).join('\n');
       var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));a.download='clients.csv';a.click();
     };
+  }
+  var KIND={refund:'Возврат за заказ',topup:'Пополнение',spend:'Оплата заказа',withdraw:'Вывод',admin:'Корректировка','link-in':'Перенос из Telegram','link-out':'Перенос'};
+  function drawWallets(){
+    var head='<div class="hint">Кошельки: '+wallets.length+'. Вывод: списывает баланс и пишет вам в Telegram, куда перевести. Деньги переводите сами.</div>';
+    if(!wallets.length){$('list').innerHTML=head+'<div class="card hint">Нет кошельков. Найдите клиента по почте.</div>';return}
+    $('list').innerHTML=head+wallets.map(function(w){
+      return '<div class="card"><div class="o-head"><b>'+esc(w.label)+'</b><span class="o-sum">'+w.balance+' сом</span></div>'
+        +'<div class="o-meta">'+esc(w.owner)+(w.updated_at?' · '+fmt(w.updated_at):'')+'</div>'
+        +'<div class="acts"><button class="ok" data-op="withdraw" data-o="'+esc(w.owner)+'">💸 Вывести</button><button data-op="credit" data-o="'+esc(w.owner)+'">➕ Начислить</button><button class="dng" data-op="debit" data-o="'+esc(w.owner)+'">➖ Списать</button><button data-op="hist" data-o="'+esc(w.owner)+'">🧾 История</button></div><div class="hist" data-h="'+esc(w.owner)+'"></div></div>';
+    }).join('');
+    Array.prototype.forEach.call($('list').querySelectorAll('button[data-op]'),function(b){b.onclick=function(){walletAct(b.getAttribute('data-op'),b.getAttribute('data-o'))}});
+  }
+  async function walletAct(op,owner){
+    var w=wallets.filter(function(x){return x.owner===owner})[0]||{label:owner,balance:0};
+    if(op==='hist'){
+      try{var d=await call('GET','/api/admin/wallet?owner='+encodeURIComponent(owner));
+        var el=document.querySelector('[data-h="'+owner+'"]');
+        el.innerHTML=(d.history||[]).length?'<div class="o-meta" style="margin-top:10px">'+d.history.map(function(x){return (x.amount>0?'+':'−')+Math.abs(x.amount)+' · '+esc(KIND[x.kind]||x.kind)+(x.note?' · '+esc(x.note):'')+' · '+new Date(x.created_at).toLocaleString('ru-RU')}).join('<br>')+'</div>':'<div class="o-meta">Операций нет</div>';
+      }catch(e){msg(e.message,'err')}
+      return;
+    }
+    var title={withdraw:'Вывести с баланса: сколько сом?',credit:'Начислить на баланс: сколько сом?',debit:'Списать с баланса: сколько сом?'}[op];
+    var a=prompt(title+'\nКлиент: '+w.label+'\nСейчас на балансе: '+w.balance+' сом',op==='withdraw'?String(w.balance):'');
+    if(a===null)return; a=parseInt(a,10); if(!(a>0)){msg('Укажите сумму числом','err');return}
+    var note=prompt(op==='withdraw'?'Куда перевести (номер Mbank/O!Банк/карты и имя):':'Комментарий (необязательно):','');
+    if(note===null)return;
+    if(op==='withdraw'&&!note.trim()){msg('Укажите, куда переводить','err');return}
+    if(!confirm((op==='withdraw'?'Вывод ':op==='credit'?'Начислить ':'Списать ')+a+' сом — '+w.label+'?'))return;
+    try{var r=await call('POST','/api/admin/wallet',{owner:owner,op:op,amount:a,note:note});msg('Готово. Остаток на балансе: '+r.balance+' сом','good');loadWallets()}catch(e){msg(e.message,'err')}
+  }
+  async function loadWallets(){
+    try{var d=await call('GET','/api/admin/wallets?q='+encodeURIComponent(q.trim()));wallets=d.wallets||[];show('listBox');if(!$('q')||!$('mW'))drawChips();drawWallets()}
+    catch(e){msg(e.message,'err')}
   }
   function draw(){
     var s=q.trim().toLowerCase();
@@ -103,7 +140,8 @@ button:disabled{opacity:.5;cursor:default}
     }).join('');
   }
   async function load(){
-    try{var d=await call('GET','/api/admin/users');items=d.users||[];show('listBox');if(!$('q'))drawChips();draw()}
+    if(mode==='wallets'){drawChips();return loadWallets()}
+    try{var d=await call('GET','/api/admin/users');items=d.users||[];show('listBox');drawChips();draw()}
     catch(e){msg(e.message,'err')}
   }
   function start(){

@@ -17,6 +17,7 @@ import { defer } from './notify.js';
 import { ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
 import { createDeal, viewDeal, dealPaid, dealConfirm, dealProblem, remindDeals } from './deals.js';
 import { startFinikOrder, finikWebhook, cleanupFinik, finikReady } from './finik.js';
+import { walletInfo, startTopup, startWalletOrder, makeLinkCode, adminWallets, adminWalletHistory, adminWalletOp } from './wallet.js';
 import { startGopayOrder, gopayWebhook, cleanupGopay, gopayReady, gopayPublic } from './gopay.js';
 import { redeemPromo } from './promo.js';
 import { aiChat, aiReady } from './aichat.js';
@@ -151,6 +152,32 @@ export default {
         const sub = await userFromRequest(req, env);
         if (!sub) return err(req, 'Нужен вход', 401);
         return json(req, await listMyOrders(env, sub));
+      }
+
+      // ----- баланс клиента (нужен вход через Google) -----
+      if (path === '/api/wallet' && m === 'GET') {
+        const sub = await userFromRequest(req, env);
+        if (!sub) return err(req, 'Нужен вход', 401);
+        return json(req, await walletInfo(env, sub));
+      }
+      if (path === '/api/wallet/topup' && m === 'POST') {
+        const sub = await userFromRequest(req, env);
+        if (!sub) return err(req, 'Нужен вход', 401);
+        const b = await req.json().catch(() => ({}));
+        const r = await startTopup(env, 'g:' + sub, b.amount, null);
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      if (path === '/api/wallet/tg-code' && m === 'POST') {
+        const sub = await userFromRequest(req, env);
+        if (!sub) return err(req, 'Нужен вход', 401);
+        return json(req, await makeLinkCode(env, sub));
+      }
+      if (path === '/api/orders/wallet' && m === 'POST') {
+        const sub = await userFromRequest(req, env);
+        if (!sub) return err(req, 'Нужен вход', 401);
+        const b = await req.json().catch(() => ({}));
+        const r = await startWalletOrder(env, req.headers.get('CF-Connecting-IP') || '', b, 'g:' + sub, sub);
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
       }
 
       // вход
@@ -346,6 +373,15 @@ export default {
           return r && r.ok ? json(req, { ok: true }) : err(req, (r && r.description) || 'Не удалось отключить', 400);
         }
         if (path === '/api/admin/users' && m === 'GET') return json(req, await adminListUsers(env));
+        if (path === '/api/admin/wallets' && m === 'GET') return json(req, await adminWallets(env, url.searchParams.get('q') || ''));
+        if (path === '/api/admin/wallet' && m === 'GET') {
+          const r = await adminWalletHistory(env, url.searchParams.get('owner') || '');
+          return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+        }
+        if (path === '/api/admin/wallet' && m === 'POST') {
+          const r = await adminWalletOp(env, await req.json().catch(() => ({})));
+          return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+        }
         if (path === '/api/admin/reviews' && m === 'GET') return json(req, await adminListReviews(env, url.searchParams.get('status') || 'all'));
         mm = path.match(/^\/api\/admin\/reviews\/([A-Za-z0-9]{4,40})\/(approve|hide|pending)$/);
         if (mm && m === 'POST') {

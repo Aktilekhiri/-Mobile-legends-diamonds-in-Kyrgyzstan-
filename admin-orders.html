@@ -33,7 +33,7 @@ button:disabled{opacity:.5;cursor:default}
 .o-meta{color:var(--mu);font-size:.88rem;margin:4px 0 10px;word-break:break-word}
 .st{font-size:.75rem;padding:2px 8px;border-radius:999px;background:#1D2943;margin-left:6px;white-space:nowrap}
 .st.new{background:#7a5a0a}.st.processing{background:#1D2943}.st.delivered{background:#12633a}
-.st.refund_due{background:#7a1f2a}.st.refunded{background:#555d6e}.st.manual{background:#6b4a12}.st.cancelled{background:#444}
+.st.refund_due{background:#7a1f2a}.st.refunded{background:#555d6e}.st.balance{background:#12633a}.st.manual{background:#6b4a12}.st.cancelled{background:#444}
 .acts{display:flex;gap:8px;flex-wrap:wrap}
 .acts button{flex:1 1 140px}
 .err{color:#ffd6d6;background:#5a1f2a;padding:10px 12px;border-radius:10px;margin-bottom:12px}
@@ -86,7 +86,7 @@ button:disabled{opacity:.5;cursor:default}
     return d;
   }
 
-  var LBL={new:'Ждёт оплаты',processing:'Выдаётся',delivered:'Выдан',refund_due:'Вернуть деньги',refunded:'Деньги возвращены',manual:'Выдать вручную',cancelled:'Отменён'};
+  var LBL={new:'Ждёт оплаты',processing:'Выдаётся',delivered:'Выдан',refund_due:'Вернуть деньги',refunded:'Деньги возвращены',balance:'Возвращено на баланс',manual:'Выдать вручную',cancelled:'Отменён'};
   var FILTERS=[['active','Активные'],['all','Все'],['delivered','Выданные'],['refund_due','Возвраты']];
   function isActive(o){return ['new','processing','refund_due','manual'].indexOf(o.status)>-1}
 

@@ -4,6 +4,7 @@
 // FINIK_ACCOUNT_ID, FINIK_QR_NAME; необязательно: FINIK_BASE (адрес API, по умолчанию боевой), FINIK_FEE_PCT (комиссия, по умолчанию 0.02).
 import { createOrder, confirmOrder, orderCard } from './orders.js';
 import { notify } from './notify.js';
+import { handleTopupPayment } from './wallet.js';
 
 const PROD_BASE = 'https://api.acquiring.averspay.kg';
 const SITE = 'https://diamond.kg/';
@@ -102,6 +103,9 @@ export async function finikWebhook(env, req) {
   if (!orderId || !tx) return { status: 200, body: 'no ids' };
   const ins = await env.DB.prepare('INSERT OR IGNORE INTO finik_payments (tx_id, order_id, amount, status, created_at) VALUES (?,?,?,?,?)').bind(tx, orderId, Number(body.amount) || 0, status, Date.now()).run();
   if (!ins.meta.changes) return { status: 200, body: 'duplicate' };   // повтор вебхука
+
+  // пополнение баланса (PaymentId вида TU********)
+  if (await handleTopupPayment(env, orderId, Number(body.amount) || 0, tx)) return { status: 200, body: 'ok' };
 
   const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
   if (!o) { await notify(env, `⚠️ Finik: пришла оплата ${body.amount} сом по неизвестному заказу ${orderId} (транзакция ${tx}). Проверьте в кабинете Finik.`); return { status: 200, body: 'ok' }; }

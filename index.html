@@ -1319,7 +1319,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=93">
-<link rel="stylesheet" href="theme.css?v=28">
+<link rel="stylesheet" href="theme.css?v=30">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1393,6 +1393,13 @@
     </div>
     <div id="authUser" style="display:none">
       <div class="auth-profile"><img id="authAvatar" alt="" width="56" height="56" referrerpolicy="no-referrer"><div><strong id="authName"></strong><div id="authEmail" class="auth-sub"></div></div></div>
+      <div class="wal" id="walBox">
+        <div class="wal-top"><span>💰 Баланс</span><b id="walBal">…</b></div>
+        <div class="wal-row"><input type="number" id="walAmt" class="input-field" inputmode="numeric" min="50" max="20000" placeholder="Сумма, сом" aria-label="Сумма пополнения"><button type="button" class="btn-primary" id="walTop" onclick="walletTopup()">Пополнить</button></div>
+        <div class="wal-msg" id="walMsg" role="status"></div>
+        <button type="button" class="btn-secondary btn-full" id="walTg" onclick="walletLinkTg()">✈️ Привязать Telegram</button>
+        <div class="wal-hist" id="walHist"></div>
+      </div>
       <button type="button" class="btn-secondary btn-full" onclick="logout()">Выйти</button>
     </div>
     <div class="auth-links">
@@ -1566,9 +1573,15 @@
     <button type="button" class="back-cat" onclick="backFromPayment()" style="align-self:flex-start">← Назад</button>
     <div class="order-summary"><div class="card-title">📋 Ваш заказ</div><div class="order-row"><span>Товар</span><span id="payProduct">Mobile Legends — Алмазы</span></div><div class="order-row" id="payPlayerRow"><span id="payPlayerLabel">ID игрока</span><span id="payPlayerId">—</span></div><div class="order-row" id="payServerRow"><span>Сервер</span><span id="payServerId">—</span></div><div class="order-row"><span>Пакет</span><span id="payPackage" style="color:var(--gold)">—</span></div><div class="order-row"><span>Итого</span><span id="payTotal" style="color:var(--gold)">—</span></div></div>
     <div class="pay-steps"><div class="ps-row"><div class="ps-n">1</div><div>Нажмите <strong>«Оплатить по QR»</strong></div></div><div class="ps-row"><div class="ps-n">2</div><div>Выберите банк или отсканируйте QR</div></div><div class="ps-row"><div class="ps-n">3</div><div>Оплатите: заказ придёт сам</div></div>
+    <div class="payment-confirm" id="walletPay" hidden><div class="card-title">💰 Оплата с баланса</div>
+      <div class="method-note" id="walletNote" style="margin:0 0 10px"></div>
+      <div id="walletForm">
+      <label for="walletPhone">Номер телефона</label><input type="tel" class="input-field" id="walletPhone" placeholder="700 123 456" autocomplete="tel" oninput="syncPhones(this)">
+      <button class="btn-primary btn-full" id="walletBtn" onclick="payWithWallet()">💰 Оплатить балансом</button>
+      <div id="walletMsg" class="receipt-msg" role="alert" aria-live="polite"></div></div></div>
     <div class="payment-confirm" id="finikBox" hidden><div class="card-title">⚡ Быстрая оплата</div>
       <p class="method-note" style="margin:0 0 10px">Оплата в приложении банка или по QR. Чек не нужен.</p>
-      <label for="finikPhone">Номер телефона</label><input type="tel" class="input-field" id="finikPhone" placeholder="700 123 456" autocomplete="tel">
+      <label for="finikPhone">Номер телефона</label><input type="tel" class="input-field" id="finikPhone" placeholder="700 123 456" autocomplete="tel" oninput="syncPhones(this)">
       <button class="btn-primary btn-full" id="finikBtn" onclick="payWithFinik()">⚡ Оплатить по QR</button>
       <div id="finikMsg" class="receipt-msg" role="alert" aria-live="polite"></div>
       <div class="method-note" style="margin-top:12px;text-align:center">Проблема с оплатой? <a href="https://wa.me/996555920204" target="_blank" rel="noopener">WhatsApp</a></div></div>
@@ -2469,6 +2482,77 @@ document.addEventListener('DOMContentLoaded', () => { try { if (!window.DK_API) 
   const off = () => { const o = document.getElementById('finikOff'); if (o) o.hidden = false; };
   const test = /[?&]gopaytest=1/.test(location.search);   // владелец проверяет GoPay до публичного запуска
   fetch(API_BASE() + '/api/gopay/status').then(r => r.json()).then(j => { if (j && (j.enabled || (test && j.ready))) show('gopay'); else return fetch(API_BASE() + '/api/finik/status').then(r => r.json()).then(f => { if (f && f.enabled) show('finik'); else off(); }); }).catch(off); } catch (e) {} });
+// ---------- Баланс клиента ----------
+let walletState = null;
+function syncPhones(el) { ['finikPhone', 'walletPhone'].forEach(id => { const o = document.getElementById(id); if (o && o !== el) o.value = el.value; }); }
+async function loadWallet() {
+  if (!getCurrentUser() || !window.DK_API) return null;
+  try { const r = await fetch(API_BASE() + '/api/wallet', { headers: authHeaders() }); if (!r.ok) return null; walletState = await r.json(); } catch (e) { return null; }
+  renderWallet(); updateWalletPay(); return walletState;
+}
+const WAL_KIND = { refund: 'Возврат за заказ', topup: 'Пополнение', spend: 'Оплата заказа', withdraw: 'Вывод', admin: 'Корректировка', 'link-in': 'Перенос из Telegram', 'link-out': 'Перенос' };
+function renderWallet() {
+  const w = walletState; if (!w) return;
+  const set = (id, f) => { const e = document.getElementById(id); if (e) f(e); };
+  set('walBal', e => e.textContent = Number(w.balance).toLocaleString('ru-RU') + ' сом');
+  set('walTg', e => { e.textContent = w.tg_linked ? '✅ Telegram привязан' : '✈️ Привязать Telegram'; e.disabled = !!w.tg_linked; });
+  set('walTop', e => e.disabled = !w.finik);
+  set('walHist', e => e.innerHTML = (w.history || []).slice(0, 5).map(x => `<div><span>${x.amount > 0 ? '+' : '−'}${Math.abs(x.amount).toLocaleString('ru-RU')} сом</span><span>${esc(WAL_KIND[x.kind] || x.kind)} · ${new Date(x.created_at).toLocaleDateString('ru-RU')}</span></div>`).join(''));
+}
+function updateWalletPay() {
+  const box = document.getElementById('walletPay'); if (!box) return;
+  const w = walletState, price = currentOrder && currentOrder.price;
+  if (!getCurrentUser() || !w || !(w.balance > 0) || !price) { box.hidden = true; return; }
+  box.hidden = false;
+  const ok = w.balance >= price;
+  document.getElementById('walletNote').textContent = ok ? `На балансе ${Number(w.balance).toLocaleString('ru-RU')} сом. Заказ спишется с баланса.` : `На балансе ${Number(w.balance).toLocaleString('ru-RU')} сом, для заказа не хватает. Пополните в профиле.`;
+  document.getElementById('walletForm').hidden = !ok;
+  document.getElementById('walletBtn').textContent = `💰 Оплатить балансом · ${Number(price).toLocaleString('ru-RU')} сом`;
+}
+async function walletTopup() {
+  const msg = document.getElementById('walMsg'), amt = Math.floor(Number(document.getElementById('walAmt').value) || 0), w = walletState || {};
+  if (amt < (w.min || 50) || amt > (w.max || 20000)) { msg.textContent = `Сумма от ${w.min || 50} до ${w.max || 20000} сом`; return; }
+  const b = document.getElementById('walTop'); b.disabled = true; msg.textContent = 'Создаём оплату…';
+  try {
+    const r = await fetch(API_BASE() + '/api/wallet/topup', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ amount: amt }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.url) { msg.textContent = d.error || 'Не удалось создать оплату'; b.disabled = false; return; }
+    location.href = d.url;
+  } catch (e) { msg.textContent = 'Нет связи с сервером'; b.disabled = false; }
+}
+async function walletLinkTg() {
+  const msg = document.getElementById('walMsg'); msg.textContent = 'Готовим ссылку…';
+  try {
+    const r = await fetch(API_BASE() + '/api/wallet/tg-code', { method: 'POST', headers: authHeaders() });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.url) { msg.textContent = d.error || 'Не удалось получить ссылку'; return; }
+    msg.innerHTML = 'Откройте бота и нажмите «Запустить»: <a href="' + esc(d.url) + '" target="_blank" rel="noopener">привязать Telegram</a>. Ссылка действует 15 минут.';
+  } catch (e) { msg.textContent = 'Нет связи с сервером'; }
+}
+async function payWithWallet() {
+  const btn = document.getElementById('walletBtn'), msg = document.getElementById('walletMsg');
+  const set = (t, c) => { msg.textContent = t; msg.className = 'receipt-msg' + (c ? ' ' + c : ''); };
+  const phone = document.getElementById('walletPhone').value.trim();
+  if (!currentOrder) { set('Ошибка: нет данных заказа', 'err'); return; }
+  if (!phoneOk(phone)) { set('Укажите номер телефона (например 700 123 456)', 'err'); document.getElementById('walletPhone').focus(); return; }
+  btn.disabled = true; set('Оплачиваем с баланса…', '');
+  try {
+    const resp = await fetch(API_BASE() + '/api/orders/wallet', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({ playerId: currentOrder.playerId, serverId: currentOrder.serverId, region: currentOrder.region, pkg: currentOrder.packageName, pkgLabel: currentOrder.label, price: currentOrder.price, phone }) });
+    const d = await resp.json().catch(() => ({}));
+    if (!resp.ok || !d.id) { set(d.error || 'Не удалось оплатить с баланса', 'err'); btn.disabled = false; loadWallet(); return; }
+    try { if (d.secret) localStorage.setItem('dk_sec_' + d.id, d.secret); } catch (e) {}
+    set('Готово! Открываем статус заказа…', 'ok');
+    location.href = '/?paid=' + encodeURIComponent(d.id);
+  } catch (e) { set('Нет связи с сервером', 'err'); btn.disabled = false; }
+}
+// Возврат после пополнения баланса: открываем профиль и ждём, пока придёт вебхук
+(function () {
+  try {
+    if (!/[?&]wallet=1/.test(location.search)) return;
+    window.addEventListener('load', () => { if (!getCurrentUser()) return; toggleAuthModal(); let n = 0; const t = setInterval(() => { loadWallet(); if (++n >= 6) clearInterval(t); }, 4000); });
+  } catch (e) {}
+})();
 // Возврат со страницы оплаты Finik: показываем статус заказа и обновляем, пока он не выдан
 (function () {
   try {
@@ -2565,7 +2649,7 @@ function showPage(name) {
   document.body.dataset.page = name;
   { const map = { home:'home', catalog:'topup', topup:'topup', payment:'topup', orders:'orders', status:'orders', accounts:'accounts' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
   window.scrollTo(0,0);
-  if (name === 'payment') setSteps(3);
+  if (name === 'payment') { setSteps(3); if (getCurrentUser()) loadWallet(); else updateWalletPay(); }
   if (name === 'topup') renderPackages();
   if (name === 'catalog') renderCatalog();
   if (name === 'orders') renderOrders();
@@ -2638,6 +2722,7 @@ async function onGoogleCredential(resp) {
 }
 function showAuthState() {
   const user = getCurrentUser();
+  if (user) loadWallet();
   document.getElementById('authGuest').style.display = user ? 'none' : '';
   document.getElementById('authUser').style.display = user ? '' : 'none';
   if (user) {
@@ -2665,7 +2750,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuthMod
 
 const ORDER_STATUS = {
   new: ['Ожидает проверки оплаты', 'wait'], manual: ['Ожидает выдачи', 'wait'], processing: ['Зачисляется', 'wait'],
-  delivered: ['Выдан', 'ok'], refund_due: ['Возврат', 'bad'], refunded: ['Деньги возвращены', 'bad'], cancelled: ['Отменён', 'bad']
+  delivered: ['Выдан', 'ok'], balance: ['Возвращено на баланс', 'ok'], refund_due: ['Возврат', 'bad'], refunded: ['Деньги возвращены', 'bad'], cancelled: ['Отменён', 'bad']
 };
 // ---------- Отзывы ----------
 function pluralReviews(n) { const a = n % 10, b = n % 100; return n + ' ' + (b > 10 && b < 20 ? 'отзывов' : a === 1 ? 'отзыв' : (a >= 2 && a <= 4) ? 'отзыва' : 'отзывов'); }

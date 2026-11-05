@@ -199,8 +199,6 @@ export const GAMES = {
     '800_robux': { offer: '800_robux', cost: 9.0675 },
     '1000_robux': { offer: '1000_robux', cost: 10.692 },
     '2000_robux': { offer: '2000_robux', cost: 22.2952 },
-    '2500_robux': { offer: '2500_robux', cost: 25.7564 },
-    '3000_robux': { offer: '3000_robux', cost: 34.7247 },
     '4500_robux': { offer: '4500_robux', cost: 47.8563 },
     '10000_robux': { offer: '10000_robux', cost: 98.2313 },
   } },

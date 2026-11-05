@@ -1972,7 +1972,7 @@ function pkgImg(p) {
     dir = 'genshin';
     if (p.type === 'pass') f = 'gs-moon';
     else { const t = p.totalDiamonds || p.diam || 0; f = (GS_TIERS.find(x => t < x[0]) || GS_TIERS[GS_TIERS.length - 1])[1]; }
-  } else if (currentGame === 'steam' || currentGame === 'valorant') {
+  } else if (currentGame === 'steam' || currentGame === 'valorant' || currentGame === 'discord') {
     return `<img class="pkg-img" src="/img/packs/${currentGame}/${currentGame}.webp?v=1" width="104" height="104" alt="${esc(gamesData[currentGame].name)}" loading="lazy" decoding="async" style="border-radius:20px">`;
   } else if (currentGame in GC_IMG) {
     const n = parseInt(p.key, 10), have = GC_IMG[currentGame];

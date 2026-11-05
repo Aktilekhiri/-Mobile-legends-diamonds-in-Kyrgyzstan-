@@ -166,7 +166,7 @@
         if (!x.ok) { say('⚠️ ' + (x.j.error || 'Не получилось оформить заказ') + '. Проверьте данные.'); S.step = 'id'; return chips([{ t: '✏️ Изменить ID', f: askId }, { t: 'В начало', f: menu }]); }
         var j = x.j;
         if (how === 'qr') showAction({ type: 'pay', id: j.id, secret: j.secret, url: j.url, label: p.l, amount: p.p });
-        else showAction({ type: 'receipt', id: j.id, secret: j.secret, label: p.l, amount: p.p, num: '+996 702 097 127', name: 'Актилек К.' });
+        else showAction({ type: 'receipt', id: j.id, secret: j.secret, label: p.l, amount: p.p, num: '', name: '' });
         say('Заказ ' + j.id + ' создан. Когда он будет выполнен, я напишу здесь.');
         S = { step: 'menu' }; chips([{ t: 'Новый заказ', f: function () { say('Что нужно пополнить?'); menu(); } }]);
       }).catch(function () { say('Нет связи с сервером. Попробуйте ещё раз.'); S.step = 'confirm'; chips([{ t: 'Повторить', f: function () { place(how); } }]); });

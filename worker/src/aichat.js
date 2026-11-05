@@ -9,7 +9,8 @@ import { startFinikOrder, finikReady } from './finik.js';
 import { startGopayOrder, gopayPublic } from './gopay.js';
 import { notify } from './notify.js';
 
-export const PAY_NUM = '+996 702 097 127', PAY_NAME = 'Актилек К.';
+// ручной перевод отключён (оплата только через Finik); реквизиты ИП появятся здесь, если понадобятся
+export const PAY_NUM = '', PAY_NAME = '';
 const WA = '+996 555 920 204';
 // Провайдер: бесплатный Cloudflare Workers AI (binding AI) по умолчанию, платный Anthropic (ANTHROPIC_API_KEY) — если AI_PROVIDER=anthropic или нет binding
 // ИИ-чат выключен, пока не задана переменная AI_ENABLED=1 (включим после автоматизации оплаты)

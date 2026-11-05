@@ -1319,7 +1319,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=93">
-<link rel="stylesheet" href="theme.css?v=27">
+<link rel="stylesheet" href="theme.css?v=28">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1480,8 +1480,7 @@
 <!-- TOPUP -->
 <!-- CATALOG -->
 <div class="page" id="page-catalog">
-  <div class="page-header" style="padding:30px 5% 14px;"><h1>🎮 Каталог</h1><p>Выберите игру или сервис. Выдача за 5–10 минут.</p></div>
-  <div class="night-note">🌙 С 00:00 до 08:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
+  <div class="page-header" style="padding:30px 5% 14px;"><h1>🎮 Каталог</h1><p>Выберите игру или сервис</p></div>
   <div class="catalog-wrap">
     <div class="cat-search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="catSearch" placeholder="Найти игру или сервис" autocomplete="off" aria-label="Поиск игры" oninput="renderCatalog()"></div>
     <div id="catList"></div>
@@ -1489,8 +1488,8 @@
 </div>
 
 <div class="page" id="page-topup">
-  <div class="page-header" style="padding:34px 5% 26px; border-bottom:1px solid var(--border);"><h1 id="topupTitle">💎 Пополнить алмазы</h1><p>Выберите пакет, затем введите данные. Выдача за 5–10 минут.</p></div>
-  <div class="night-note">🌙 С 00:00 до 08:00 (время Бишкека) заказы зачисляются утром. Оплатить можно в любое время.</div>
+  <div class="page-header" style="padding:34px 5% 26px; border-bottom:1px solid var(--border);"><h1 id="topupTitle">💎 Пополнить алмазы</h1></div>
+  <div class="steps-bar" id="stepsBarTopup" aria-label="Шаги заказа"></div>
   <div class="topup-layout">
     <div class="form-card step-card" id="stepGame">
       <button type="button" class="back-cat" onclick="showPage('catalog')">← Каталог</button>
@@ -1519,37 +1518,38 @@
         <option value="global">🌍 Глобальный</option>
         <option value="russia">🇷🇺 Россия</option>
       </select>
-      <div class="field-hint" id="regionHint" style="color:var(--gold)">ℹ️ Для Кыргызстана, Казахстана и большинства стран выбирайте «Глобальный». Если аккаунт российский, выберите «🇷🇺 Россия». Не уверены? Напишите нам в WhatsApp, подскажем до оплаты.</div>
+      <div class="field-hint" id="regionHint" style="color:var(--gold)">«Глобальный» — для Кыргызстана и большинства стран. «Россия» — только для российских аккаунтов.</div>
       </div>
     </div>
     <div class="packages-card step-card" id="stepPkg">
-      <div class="card-title"><span class="step-n">1</span> Выберите пакет</div>
+      <div class="card-title">Выберите пакет</div>
       <div class="pkg-tabs" id="pkgTabs" role="tablist" hidden></div>
       <div class="packages-grid" id="packagesGrid"></div>
     </div>
     <div class="form-card step-card" id="stepData" hidden>
-      <div class="card-title"><span class="step-n">2</span> Данные для пополнения</div>
+      <button type="button" class="back-cat" onclick="backToPackages()">← Пакеты</button>
+      <div class="card-title">Ваши данные</div>
       <div class="sel-info" id="selectedInfo" style="display:none"><div>ВЫБРАННЫЙ ПАКЕТ</div><div class="sir"><span id="selDiamonds"></span><span id="selPrice"></span></div></div>
       <div id="idRow">
       <label>ID ИГРОКА</label>
       <input type="text" class="input-field" id="playerId" placeholder="598505997" inputmode="numeric" autocomplete="off" onpaste="return smartPasteId(event)" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
-      <div class="field-hint" id="idHint">User ID: только цифры, без скобок. Пример: 598505997</div>
+      <div class="field-hint" id="idHint">Только цифры</div>
       </div>
       <div id="userRow" style="display:none">
       <label for="tgUser">TELEGRAM @USERNAME</label>
       <input type="text" class="input-field" id="tgUser" placeholder="@username" autocomplete="off" autocapitalize="off" spellcheck="false" oninput="this.value=this.value.replace(/[^A-Za-z0-9_@]/g,'');updateBuyBtn()">
-      <div class="field-hint">Ваш ник в Telegram (Настройки → Имя пользователя), 5–32 символа. Символ @ можно не писать. Звёзды или подписка придут прямо на этот аккаунт.</div>
+      <div class="field-hint">Ник из Настроек Telegram. @ можно не писать</div>
       </div>
       <div id="serverRow">
       <label id="serverLabel">ZONE ID (СЕРВЕР)</label>
       <input type="text" class="input-field" id="serverId" placeholder="8403" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
       <select class="input-field" id="serverSelect" style="display:none" onchange="updateBuyBtn()"></select>
-      <div class="field-hint" id="serverHint">Zone ID: цифры в скобках рядом с ID в профиле. Пример: (8403) → введите 8403</div>
+      <div class="field-hint" id="serverHint">Цифры в скобках рядом с ID</div>
       <div class="zone-warn" id="idWarn" role="alert" hidden></div>
-      <div class="zone-warn" id="zoneWarn" role="alert" hidden>🚫 Сервер 6xxx — российский. Для него выберите регион «🇷🇺 Россия» выше. В глобальном регионе такой сервер не принимается.</div>
+      <div class="zone-warn" id="zoneWarn" role="alert" hidden>🚫 Сервер 6xxx — российский. Выберите регион «Россия».</div>
       </div>
       <div class="id-guide" id="idGuide" style="background:rgba(255,186,8,.06); padding:13px; border-radius:12px;"><strong>📖 Как найти ID?</strong><br>Профиль → ваш ID (123456789) и сервер в скобках (1234)</div>
-      <div class="first-warn" id="firstWarn" hidden><strong>⚠️ Пакет только для первого пополнения</strong><p>Бонус даётся один раз на аккаунт. Если вы уже пополняли этот аккаунт в Mobile Legends, выберите другой пакет: иначе заказ может обрабатываться очень долго и в итоге будет возвращён.</p><label class="first-ok"><input type="checkbox" id="firstOk" onchange="updateBuyBtn()"> Я ещё ни разу не пополнял этот аккаунт</label></div>
+      <div class="first-warn" id="firstWarn" hidden><strong>⚠️ Только для первого пополнения</strong><p>Бонус даётся один раз на аккаунт. Если уже пополняли, выберите другой пакет.</p><label class="first-ok"><input type="checkbox" id="firstOk" onchange="updateBuyBtn()"> Я ещё ни разу не пополнял этот аккаунт</label></div>
       <label class="id-ok" id="idOkRow" hidden><input type="checkbox" id="idOk" onchange="updateBuyBtn()"><span id="idOkText"></span></label>
       <button class="btn-primary btn-full" onclick="proceedToPayment()" id="buyBtn" disabled style="margin-top:14px; opacity:0.5">Перейти к оплате →</button>
     </div>
@@ -1560,17 +1560,19 @@
 
 <!-- PAYMENT -->
 <div class="page" id="page-payment">
-  <div class="page-header" style="padding:24px 5% 12px;"><h1>💳 Оплата заказа</h1><p>Оплата по QR или в приложении любого банка Кыргызстана</p></div>
+  <div class="page-header" style="padding:24px 5% 12px;"><h1>💳 Оплата</h1></div>
+  <div class="steps-bar" id="stepsBarPay" aria-label="Шаги заказа"></div>
   <div class="payment-layout">
+    <button type="button" class="back-cat" onclick="backFromPayment()" style="align-self:flex-start">← Назад</button>
     <div class="order-summary"><div class="card-title">📋 Ваш заказ</div><div class="order-row"><span>Товар</span><span id="payProduct">Mobile Legends — Алмазы</span></div><div class="order-row" id="payPlayerRow"><span id="payPlayerLabel">ID игрока</span><span id="payPlayerId">—</span></div><div class="order-row" id="payServerRow"><span>Сервер</span><span id="payServerId">—</span></div><div class="order-row"><span>Пакет</span><span id="payPackage" style="color:var(--gold)">—</span></div><div class="order-row"><span>Итого</span><span id="payTotal" style="color:var(--gold)">—</span></div></div>
-    <div class="pay-steps"><div class="ps-title">📋 Как оплатить</div><div class="ps-row"><div class="ps-n">1</div><div>Укажите номер телефона и нажмите <strong>«Оплатить по QR»</strong></div></div><div class="ps-row"><div class="ps-n">2</div><div>Выберите свой банк или отсканируйте QR в любом банковском приложении</div></div><div class="ps-row"><div class="ps-n">3</div><div>Оплатите. Заказ придёт автоматически, чек не нужен</div></div>
+    <div class="pay-steps"><div class="ps-row"><div class="ps-n">1</div><div>Нажмите <strong>«Оплатить по QR»</strong></div></div><div class="ps-row"><div class="ps-n">2</div><div>Выберите банк или отсканируйте QR</div></div><div class="ps-row"><div class="ps-n">3</div><div>Оплатите: заказ придёт сам</div></div>
     <div class="payment-confirm" id="finikBox" hidden><div class="card-title">⚡ Быстрая оплата</div>
-      <p class="method-note" style="margin:0 0 10px">Оплатите в приложении любого банка Кыргызстана или по QR. Заказ выдаётся автоматически, чек не нужен.</p>
+      <p class="method-note" style="margin:0 0 10px">Оплата в приложении банка или по QR. Чек не нужен.</p>
       <label for="finikPhone">Номер телефона</label><input type="tel" class="input-field" id="finikPhone" placeholder="700 123 456" autocomplete="tel">
       <button class="btn-primary btn-full" id="finikBtn" onclick="payWithFinik()">⚡ Оплатить по QR</button>
       <div id="finikMsg" class="receipt-msg" role="alert" aria-live="polite"></div>
-      <div class="method-note" style="margin-top:12px;text-align:center">Не получается оплатить? <a href="https://wa.me/996555920204" target="_blank" rel="noopener">Напишите в WhatsApp</a></div></div>
-    <div class="payment-confirm" id="finikOff" hidden><div class="card-title">⚠️ Оплата временно недоступна</div><p class="method-note" style="margin:0 0 10px">Не удалось подключить оплату. Попробуйте обновить страницу через минуту или напишите нам.</p><a class="btn-wa" href="https://wa.me/996555920204" target="_blank" rel="noopener">📲 Написать в WhatsApp</a></div>
+      <div class="method-note" style="margin-top:12px;text-align:center">Проблема с оплатой? <a href="https://wa.me/996555920204" target="_blank" rel="noopener">WhatsApp</a></div></div>
+    <div class="payment-confirm" id="finikOff" hidden><div class="card-title">⚠️ Оплата временно недоступна</div><p class="method-note" style="margin:0 0 10px">Обновите страницу через минуту или напишите нам.</p><a class="btn-wa" href="https://wa.me/996555920204" target="_blank" rel="noopener">📲 Написать в WhatsApp</a></div>
     <div class="payment-methods" style="display:none" hidden><div class="card-title">🏦 Выберите банк для перевода</div><div class="method-grid" id="methodsGrid"></div><div id="qrContainer" style="text-align:center; margin-top:15px;"></div></div>
     <div class="payment-confirm" style="display:none" hidden><div class="card-title">📎 Чек об оплате</div>
     <div class="pay-comment" id="payComment">💬 В комментарии к переводу укажите ID игрока: <strong id="payCommentId"></strong></div>
@@ -1837,8 +1839,8 @@ function changeGame(g) {
     tt.prepend(im); }
   if (currentGame === 'roblox') renderRobloxHero(true);
   document.getElementById('playerId').placeholder = gd ? '123456789' : '598505997';
-  document.getElementById('idHint').textContent = gd ? 'Только цифры, без пробелов и букв.' : 'User ID: только цифры, без скобок. Пример: 598505997';
-  document.getElementById('serverHint').textContent = (gd && gd.zone) ? 'Server ID: число в скобках рядом с ID в профиле.' : !gd ? 'Zone ID: цифры в скобках рядом с ID в профиле. Пример: (8403) → введите 8403' : (gd.servers ? 'Выберите сервер, как указано в игре рядом с UID.' : '');
+  document.getElementById('idHint').textContent = gd ? 'Только цифры' : 'Только цифры, без скобок';
+  document.getElementById('serverHint').textContent = (gd && gd.zone) ? 'Число в скобках рядом с ID' : !gd ? 'Цифры в скобках рядом с ID' : (gd.servers ? 'Как указано в игре рядом с UID' : '');
   currentRegion = gd ? currentGame : document.getElementById('regionSelect').value;
   updateRegionHint();
   packages = buildPackages(currentRegion);
@@ -1943,8 +1945,8 @@ function getServerValue() {
   return '-';
 }
 const regionHints = {
-  global: 'ℹ️ Для Кыргызстана, Казахстана и большинства стран выбирайте «Глобальный». Если аккаунт российский, выберите «🇷🇺 Россия». Не уверены? Напишите нам в WhatsApp, подскажем до оплаты.',
-  russia: '✅ Для аккаунтов из России. Если вы в Кыргызстане или другой стране, выберите «🌍 Глобальный».'
+  global: '«Глобальный» — для Кыргызстана и большинства стран. «Россия» — только для российских аккаунтов.',
+  russia: 'Только для российских аккаунтов.'
 };
 function updateRegionHint() { const h = document.getElementById('regionHint'); if (h) h.textContent = regionHints[document.getElementById('regionSelect').value] || ''; }
 function changeRegion() {
@@ -2018,7 +2020,7 @@ function renderPackages() {
     if (p.out && !lastOut) head += `<div class="pkg-group">⏳ Нет в наличии</div>`;
     lastType = p.type; lastOut = !!p.out;
     return head + `
-    <div class="pkg-card ${p.popular && !p.out ? 'popular' : ''} ${p.out ? 'out' : ''} ${selectedPkg?.id === p.id ? 'selected' : ''}" ${p.out ? 'aria-disabled="true"' : `onclick="selectPackage('${p.id}')"`}>
+    <div class="pkg-card ${p.popular && !p.out ? 'popular' : ''} ${p.out ? 'out' : ''} ${selectedPkg?.id === p.id ? 'selected' : ''}" ${p.out ? 'aria-disabled="true"' : `onclick="pickPackage('${p.id}')"`}>
       ${pkgNote(p) ? `<button type="button" class="pkg-warn" aria-label="Внимание: условия пакета" onclick="event.stopPropagation();showPkgNote('${p.id}')">!</button>` : ''}
       <div class="pkg-diamond">${pkgImg(p) || pkgIcon(p)}</div>
       ${p.type === 'pass'
@@ -2043,10 +2045,30 @@ function quickBuy(diam) {
   setTimeout(() => { const el = document.getElementById('playerId'); if (el) el.focus({ preventScroll: true }); }, 450);
 }
 
+// Шаги заказа: 1 пакет → 2 данные → 3 оплата
+function setSteps(n) {
+  const names = ['Пакет', 'Данные', 'Оплата'];
+  const html = names.map((t, i) => `<span class="sb${i + 1 === n ? ' on' : (i + 1 < n ? ' done' : '')}"><b>${i + 1}</b>${t}</span>`).join('');
+  ['stepsBarTopup', 'stepsBarPay'].forEach(id => { const e = document.getElementById(id); if (e) e.innerHTML = html; });
+}
 function showDataStep(show, scroll) {
   const el = document.getElementById('stepData'); if (!el) return;
-  const wasHidden = el.hidden; el.hidden = !show;
-  if (show && wasHidden && scroll !== false) setTimeout(() => { try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }, 60);
+  el.hidden = !show;
+  const pg = document.getElementById('page-topup'); if (pg) pg.dataset.step = show ? 'data' : 'pkg';
+  setSteps(show ? 2 : 1);
+  if (show && scroll !== false) window.scrollTo(0, 0);
+}
+function backToPackages() { showDataStep(false); window.scrollTo(0, 0); }
+function backFromPayment() {
+  const g = gamesData[currentGame];
+  showPage('topup');
+  if (g && g.kind === 'none') showDataStep(false); else showDataStep(true);
+}
+// клик по пакету: у игр без ID (Roblox) шаг «Данные» пропускаем
+function pickPackage(id) {
+  selectPackage(id);
+  const g = gamesData[currentGame];
+  if (g && g.kind === 'none') proceedToPayment();
 }
 function selectPackage(id) {
   const cand = packages.find(p => p.id === id);
@@ -2072,11 +2094,11 @@ function mlbbIdProblem(pid, sid) {
   if (currentGame !== 'mlbb') return '';
   if (pid.length > 10) {
     if (sid && pid.endsWith(sid) && pid.length - sid.length >= 6 && pid.length - sid.length <= 10)
-      return 'fix|Похоже, в поле ID вместе с зоной. ID — только первые цифры, а Zone ID (в скобках) вводится отдельно.';
-    return 'ID слишком длинный (бывает 6–10 цифр). Zone ID из скобок вводится в отдельное поле ниже.';
+      return 'fix|ID слитно с зоной. Zone ID (в скобках) вводится отдельно.';
+    return 'ID слишком длинный (6–10 цифр). Zone ID вводится отдельно.';
   }
-  if (pid && pid.length < 6) return 'ID слишком короткий — проверьте цифры в профиле игры.';
-  if (sid && (sid.length < 4 || sid.length > 5)) return 'Zone ID — это 4–5 цифр в скобках рядом с ID, например (8403).';
+  if (pid && pid.length < 6) return 'ID слишком короткий, проверьте цифры.';
+  if (sid && (sid.length < 4 || sid.length > 5)) return 'Zone ID — 4–5 цифр в скобках, например 8403.';
   return '';
 }
 function fixMergedId() {
@@ -2160,7 +2182,6 @@ function proceedToPayment() {
   document.getElementById('payProduct').textContent = gdPay ? (payKind ? gdPay.name + ' — код активации' : gdPay.name + ' — ' + gdPay.unit) : 'Mobile Legends — Алмазы';
   document.getElementById('payPackage').innerHTML = pkgIcon(selectedPkg) + ' ' + currentOrder.label;
   document.getElementById('payTotal').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;
-  document.getElementById('instrAmt').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;
   showPage('payment');
   selectedMethod = null;
   document.getElementById('successBox').classList.remove('show');
@@ -2547,6 +2568,7 @@ function showPage(name) {
   document.body.dataset.page = name;
   { const map = { home:'home', catalog:'topup', topup:'topup', payment:'topup', orders:'orders', status:'orders', accounts:'accounts' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
   window.scrollTo(0,0);
+  if (name === 'payment') setSteps(3);
   if (name === 'topup') renderPackages();
   if (name === 'catalog') renderCatalog();
   if (name === 'orders') renderOrders();

@@ -5,7 +5,7 @@ import re, json, os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 src = open(os.path.join(ROOT, 'index.html'), encoding='utf-8').read()
 gd = json.loads(re.search(r'const gamesData = (\{.*?\});\n', src, re.S).group(1))
-hints = dict(re.findall(r"^\s*(\w+): '((?:[^'\\]|\\.)*)',?\s*$", src[src.index('const gameIds'):src.index('const gameIds') + 4000], re.M))
+hints = dict(re.findall(r"^\s*(\w+): '((?:[^'\\]|\\.)*)',?\s*$", src[src.index('const gameIds'):src.index('const gameIds') + 9000], re.M))
 SKIP = set()
 games = []
 

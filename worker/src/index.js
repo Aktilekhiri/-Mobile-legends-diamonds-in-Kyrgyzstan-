@@ -19,6 +19,7 @@ import { createDeal, viewDeal, dealPaid, dealConfirm, dealProblem, remindDeals }
 import { startFinikOrder, finikWebhook, cleanupFinik, finikReady } from './finik.js';
 import { startGopayOrder, gopayWebhook, cleanupGopay, gopayReady, gopayPublic } from './gopay.js';
 import { redeemPromo } from './promo.js';
+import { aiChat, aiReady } from './aichat.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, blacklistOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
 
@@ -177,6 +178,14 @@ export default {
         const b = await req.json().catch(() => ({}));
         const r = await startGopayOrder(env, req.headers.get('CF-Connecting-IP') || '', b, await userFromRequest(req, env));
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      // ИИ-чат: приём заказа в диалоге (история приходит с клиента, цены и оплата считаются на сервере)
+      if (path === '/api/chat/status' && m === 'GET') return json(req, { enabled: aiReady(env) }, 200, { 'Cache-Control': 'public, max-age=60' });
+      if (path === '/api/chat' && m === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const ip = req.headers.get('CF-Connecting-IP') || '';
+        const r = await aiChat(env, { history: b.messages, ip, userId: await userFromRequest(req, env), channel: 'web', sid: String(b.sid || '').slice(0, 40) });
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
       }
       if (path === '/api/gopay/status' && m === 'GET') return json(req, { enabled: gopayPublic(env), ready: gopayReady(env) }, 200, { 'Cache-Control': 'public, max-age=60' });
       if (path === '/api/gopay/webhook' && m === 'POST') {

@@ -10,6 +10,7 @@ import { startGopayOrder, gopayPublic } from './gopay.js';
 const fastReady = env => gopayPublic(env) || finikReady(env);
 import { publishOffer, rejectOffer, createOffer, addOfferPhoto, submitOffer, markup as sellMarkup, GAMES as SELL_GAMES } from './market.js';
 import { notify } from './notify.js';
+import { aiChat, aiReady } from './aichat.js';
 import { checkPromo, redeemPromo, normCode } from './promo.js';
 
 const PAY_NUM = '+996 702 097 127', PAY_NAME = 'Актилек К.';
@@ -391,6 +392,18 @@ async function onMessage(env, msg) {
     const z = validZone(text);
     if (!z) return send(env, chat, '⚠️ Проверьте Zone/Server ID: 3–5 цифр.');
     st.srv = z; return showSummary(env, chat, 0, st);
+  }
+  // свободный текст: ИИ-помощник (история диалога хранится в состоянии сессии)
+  if (text && aiReady(env) && !st.step) {
+    const hist = Array.isArray(st.ai) ? st.ai : [];
+    hist.push({ role: 'user', content: text });
+    const from = msg.from || {};
+    const r = await aiChat(env, { history: hist, ip: 'tg:' + chat, channel: 'tg', sid: String(chat), tgChat: chat, tgUser: from.username ? '@' + from.username : (from.first_name || '') });
+    const reply = r.reply || r.error || 'Не получилось ответить.';
+    hist.push({ role: 'assistant', content: reply });
+    st.ai = hist.slice(-14); await setSt(env, chat, st);
+    const pay = (r.actions || []).find(x => x.type === 'pay');
+    return send(env, chat, esc(reply), pay ? { reply_markup: kb([[{ text: '⚡ Оплатить ' + money(pay.amount) + ' сом', url: pay.url }], [btn('« Меню', 'menu')]]) } : { reply_markup: MENU });
   }
   await send(env, chat, welcome(), { reply_markup: MENU });
 }

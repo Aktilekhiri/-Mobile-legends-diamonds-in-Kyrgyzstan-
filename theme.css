@@ -477,3 +477,13 @@ html[data-theme="dark"] .pkg-card.selected,html[data-theme="blue"] .pkg-card.sel
 @media (max-width:520px){.giveaway{flex-wrap:wrap}.giveaway .gw-btn{width:100%;text-align:center}}
 
 body .night-note:not(.on){display:none!important}
+
+/* шаги заказа */
+.steps-bar{display:flex;gap:8px;max-width:800px;margin:14px auto 0;padding:0 5%}
+.steps-bar .sb{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 6px;border-radius:999px;border:1px solid var(--line,#dfe3ee);background:var(--surface,#fff);font-size:.82rem;font-weight:700;color:var(--muted,#6b7280)}
+.steps-bar .sb b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--line,#dfe3ee);color:inherit;font-size:.75rem}
+.steps-bar .sb.on{border-color:var(--indigo,#5b63f0);color:var(--indigo,#5b63f0)}
+.steps-bar .sb.on b,.steps-bar .sb.done b{background:var(--indigo,#5b63f0);color:#fff}
+.steps-bar .sb.done{color:inherit}
+#page-topup[data-step="data"] #stepGame,#page-topup[data-step="data"] #stepPkg,#page-topup[data-step="data"] .game-about{display:none}
+#stepData[hidden]{display:none!important}

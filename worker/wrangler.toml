@@ -27,3 +27,6 @@ enabled = true
 # GOPAY_API_KEY, GOPAY_SECRET_KEY (ключ и секрет из кабинета, Test или Live), GOPAY_WEBHOOK_SECRET (Developer → Webhooks).
 # Необязательно: GOPAY_PUBLIC=1 (показать кнопку клиентам; пока пусто, тест по ссылке diamond.kg/?gopaytest=1),
 # GOPAY_FEE_PCT (комиссия, по умолчанию 0.02). Вебхук: https://<воркер>/api/gopay/webhook, событие payment.committed.
+
+# ИИ-чат (сайт и Telegram-бот, приём заказа в диалоге): секрет ANTHROPIC_API_KEY (ключ Anthropic API, без него чат скрыт).
+# Необязательно: AI_MODEL (по умолчанию claude-haiku-5-5), AI_PER_HOUR (сообщений с одного IP в час, 40), AI_PER_DAY (всего в сутки, 800).

@@ -1,6 +1,7 @@
 // ИИ-помощник: принимает заказ в чате (сайт и Telegram-бот). Модель только общается;
 // цены, проверка ID, оплата и выдача идут тем же кодом, что и обычный заказ.
-// Секреты Cloudflare: ANTHROPIC_API_KEY (без него чат выключен).
+// Бесплатно: [ai] binding = "AI" в wrangler.toml (Cloudflare Workers AI, модель AI_MODEL, по умолчанию @cf/meta/llama-3.3-70b-instruct-fp8-fast).
+// Платно (запасной вариант): секрет ANTHROPIC_API_KEY и AI_PROVIDER=anthropic (модель claude-haiku-5-5).
 // Необязательно: AI_MODEL (по умолчанию claude-haiku-5-5), AI_PER_HOUR (сообщений с одного IP в час, 40), AI_PER_DAY (всего в сутки, 800).
 import { SHOP } from './shop_data.js';
 import { createOrder } from './orders.js';
@@ -10,7 +11,9 @@ import { notify } from './notify.js';
 
 export const PAY_NUM = '+996 702 097 127', PAY_NAME = 'Актилек К.';
 const WA = '+996 555 920 204';
-export const aiReady = env => !!env.ANTHROPIC_API_KEY;
+// Провайдер: бесплатный Cloudflare Workers AI (binding AI) по умолчанию, платный Anthropic (ANTHROPIC_API_KEY) — если AI_PROVIDER=anthropic или нет binding
+export const aiReady = env => !!(env.AI || env.ANTHROPIC_API_KEY);
+const useWorkers = env => !!env.AI && (env.AI_PROVIDER || 'workers') !== 'anthropic';
 const fastReady = env => gopayPublic(env) || finikReady(env);
 const money = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
@@ -80,6 +83,8 @@ async function runTool(env, name, a, ctx) {
     if (name === 'create_order') {
       const g = gameById(a.game_id), p = g && g.packs.find(x => x.k === String(a.pack_key));
       if (!g || !p) return { error: 'Игра или пакет не найдены, сначала вызови list_packages' };
+      // страховка от слабой модели: заказ только после явного «да» клиента на сводку с суммой
+      if (!/(^|[^а-яa-z])(да|верно|всё верно|все верно|подтвержда|согласен|согласна|ок|окей|ok|yes|давай|оформ|плат)/i.test(ctx.lastUser || '') || !ctx.sawSummary) return { error: 'Сначала перечисли клиенту игру, пакет, ID и сумму и дождись его подтверждения («да»)' };
       if (ctx.created >= 1) return { error: 'За одно сообщение создаётся один заказ. Скажи клиенту, что следующий заказ оформим отдельно.' };
       const useQr = a.pay_method === 'qr' && fastReady(env);
       if (!useQr && ctx.channel === 'tg') return { error: 'В Telegram оплата вручную через меню /menu → Пополнить игру' };
@@ -118,8 +123,9 @@ export async function aiChat(env, { history, ip, userId = null, channel = 'web',
   while (msgs.length && msgs[0].role !== 'user') msgs.shift();
   if (!msgs.length || msgs[msgs.length - 1].role !== 'user') return { error: 'Пустое сообщение' };
   const lim = await limits(env, ip || 'anon'); if (lim) return { reply: lim, actions: [] };
-  const ctx = { ip, userId, channel, sid, tgChat, tgUser, created: 0, actions: [], lastUser: msgs[msgs.length - 1].content };
+  const ctx = { sawSummary: msgs.some(m => m.role === 'assistant' && /сом/i.test(m.content)), ip, userId, channel, sid, tgChat, tgUser, created: 0, actions: [], lastUser: msgs[msgs.length - 1].content };
   const sys = systemPrompt(env, channel);
+  if (useWorkers(env)) return aiWorkers(env, sys, msgs, ctx);
   let convo = msgs;
   for (let round = 0; round < 6; round++) {
     let j;
@@ -143,6 +149,33 @@ export async function aiChat(env, { history, ip, userId = null, channel = 'web',
     }
     const reply = content.filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
     return { reply: reply || 'Уточните, пожалуйста, что нужно пополнить?', actions: ctx.actions };
+  }
+  return { reply: 'Давайте попробуем ещё раз. Что нужно пополнить?', actions: ctx.actions };
+}
+
+// Cloudflare Workers AI (OpenAI-подобный формат сообщений и инструментов)
+async function aiWorkers(env, sys, msgs, ctx) {
+  const FAIL = { reply: 'Сейчас не получается ответить. Напишите в WhatsApp ' + WA + '.', actions: ctx.actions };
+  const tools = TOOLS.map(t => ({ name: t.name, description: t.description, parameters: t.input_schema }));
+  const convo = [{ role: 'system', content: sys }, ...msgs];
+  for (let round = 0; round < 6; round++) {
+    let r;
+    try {
+      r = await env.AI.run(env.AI_MODEL || '@cf/meta/llama-3.3-70b-instruct-fp8-fast', { messages: convo, tools, max_tokens: 600, temperature: 0.2 });
+    } catch (e) { console.log('workers ai error', String(e && e.message || e).slice(0, 300)); return FAIL; }
+    const res = (r && r.result) || r || {};
+    const calls = (res.tool_calls || (res.choices && res.choices[0] && res.choices[0].message && res.choices[0].message.tool_calls) || []).map((c, i) => {
+      const f = c.function || c; let a = f.arguments !== undefined ? f.arguments : c.input;
+      if (typeof a === 'string') { try { a = JSON.parse(a); } catch (e) { a = {}; } }
+      return { id: c.id || 'call' + round + '_' + i, name: f.name, args: a || {} };
+    }).filter(c => c.name);
+    const text = String(res.response || (res.choices && res.choices[0] && res.choices[0].message && res.choices[0].message.content) || '').trim();
+    if (calls.length) {
+      convo.push({ role: 'assistant', content: text || '', tool_calls: calls.map(c => ({ id: c.id, type: 'function', function: { name: c.name, arguments: JSON.stringify(c.args) } })) });
+      for (const c of calls) convo.push({ role: 'tool', tool_call_id: c.id, name: c.name, content: JSON.stringify(await runTool(env, c.name, c.args, ctx)) });
+      continue;
+    }
+    return { reply: text || 'Уточните, пожалуйста, что нужно пополнить?', actions: ctx.actions };
   }
   return { reply: 'Давайте попробуем ещё раз. Что нужно пополнить?', actions: ctx.actions };
 }

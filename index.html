@@ -1322,7 +1322,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=93">
-<link rel="stylesheet" href="theme.css?v=35">
+<link rel="stylesheet" href="theme.css?v=37">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1387,6 +1387,16 @@
 </div>
 
 <!-- Auth Modal -->
+<div id="guestGate" style="display:none" class="gg-back" role="dialog" aria-modal="true" aria-labelledby="ggTitle" onclick="if(event.target===this)guestGateClose()">
+  <div class="auth-card">
+    <button type="button" class="auth-x" aria-label="Закрыть" onclick="guestGateClose()">✕</button>
+    <h3 id="ggTitle">Привяжите Google или Telegram</h3>
+    <p class="auth-sub">С аккаунтом вы видите историю заказов на любом устройстве, получаете возврат на баланс сайта и можете пополнять баланс. Без входа тоже можно купить.</p>
+    <button type="button" class="btn-primary btn-full" onclick="guestGateGoogle()">Войти через Google</button>
+    <a class="btn-secondary btn-full gg-tg" href="https://t.me/diamond_kg_bot" target="_blank" rel="noopener">✈️ Открыть Telegram-бот</a>
+    <button type="button" class="gg-skip" onclick="guestGateContinue()">Продолжить без входа</button>
+  </div>
+</div>
 <div id="authModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="authTitle" onclick="if(event.target===this)closeAuthModal()">
   <div class="auth-card">
     <button type="button" class="auth-x" aria-label="Закрыть" onclick="closeAuthModal()">✕</button>
@@ -1477,7 +1487,7 @@
     </div></section>
   <section id="liveFeed" hidden><div class="sec-label">Живая лента</div><div class="sec-divider"></div><h2 class="sec-title">Последние <em>заказы</em></h2>
     <div class="lf-stats" id="lfStats"></div>
-    <ul class="lf-list" id="lfList"></ul>
+    <div class="lf-marquee" id="lfMarquee"><div class="lf-track" id="lfList"></div></div>
   </section>
   <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>24/7 без выходных</h3><p>Заказы принимаем и выдаём в любое время.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
   <section id="reviews"><div class="sec-label">Отзывы</div><div class="sec-divider"></div><h2 class="sec-title">Что пишут <em>клиенты</em></h2>
@@ -1920,7 +1930,7 @@ const GS_TIERS = [[200,'gs-1'],[500,'gs-3'],[1500,'gs-pouch'],[3000,'gs-bag'],[5
 const FF_TIERS = [[200,'ff-gem1'],[450,'ff-gem3'],[800,'ff-tray'],[1500,'ff-case'],[3500,'ff-crate'],[1e9,'ff-crates']];
 const PUBG_TIERS = [[200,'uc-1'],[500,'uc-3'],[1000,'uc-stack'],[2500,'uc-crate'],[5000,'uc-crate-big'],[1e9,'uc-crates']];
 // картинки карточек: какие номиналы уже есть в /img/packs/<игра>/
-const GC_IMG = { psn: [5, 10, 25, 50, 75, 100], netflix: [15, 25, 30, 40, 50, 60, 75], gplay: [5, 10, 15, 20, 25, 50, 100], nintendo: [5, 10, 20, 35, 50] };
+const GC_IMG = { psn: [5, 10, 25, 50, 75, 100], netflix: [15, 25, 30, 40, 50, 60, 75], gplay: [5, 10, 15, 20, 25, 50, 100], nintendo: [5, 10, 20, 35, 50], fortnite: [10, 25, 50, 100] };
 function pkgImg(p) {
   let dir, f;
   if (currentGame === 'mlbb') {
@@ -1991,7 +2001,7 @@ function pkgImg(p) {
   } else if (currentGame === 'whiteout') {
     const n = parseInt(p.key, 10);
     return `<img class="pkg-img" src="/img/packs/whiteout/whiteout-${n}.webp?v=1" width="104" height="104" alt="${n} Frost Stars" loading="lazy" decoding="async">`;
-  } else if (['steam','valorant','discord','whiteout','lords','identityv','fortnite'].includes(currentGame)) {
+  } else if (['steam','valorant','discord'].includes(currentGame)) {
     return `<img class="pkg-img" src="/img/packs/${currentGame}/${currentGame}.webp?v=1" width="104" height="104" alt="${esc(gamesData[currentGame].name)}" loading="lazy" decoding="async" style="border-radius:20px">`;
   } else if (currentGame in GC_IMG) {
     const n = parseInt(p.key, 10), have = GC_IMG[currentGame];
@@ -2132,9 +2142,31 @@ function backFromPayment() {
 }
 // клик по пакету: у игр без ID (Roblox) шаг «Данные» пропускаем
 function pickPackage(id) {
+  if (guestGateNeeded()) { guestGateOpen(id); return; }
+  pickPackageGo(id);
+}
+function pickPackageGo(id) {
   selectPackage(id);
   const g = gamesData[currentGame];
   if (g && g.kind === 'none') proceedToPayment();
+}
+
+// ---------- Подсказка гостю: войти через Google или Telegram (один раз за визит, покупать можно и без входа) ----------
+function guestGateNeeded() {
+  try { if (getCurrentUser()) return false; if (sessionStorage.getItem('dk_guest_ok')) return false; } catch (e) { return false; }
+  return true;
+}
+let guestGatePick = null;
+function guestGateOpen(id) {
+  guestGatePick = id;
+  document.getElementById('guestGate').style.display = 'flex';
+}
+function guestGateClose() { document.getElementById('guestGate').style.display = 'none'; }
+function guestGateGoogle() { guestGateClose(); toggleAuthModal(); }
+function guestGateContinue() {
+  try { sessionStorage.setItem('dk_guest_ok', '1'); } catch (e) {}
+  guestGateClose();
+  if (guestGatePick) { const id = guestGatePick; guestGatePick = null; pickPackageGo(id); }
 }
 function selectPackage(id) {
   const cand = packages.find(p => p.id === id);
@@ -2864,8 +2896,13 @@ async function loadRecentOrders() {
     if (d.median_sec) st.push(`<div><strong>~${d.median_sec} сек</strong><span>выдача после подтверждения оплаты</span></div>`);
     st.push('<div><strong>24/7</strong><span>заказы принимаем всегда</span></div>');
     document.getElementById('lfStats').innerHTML = st.join('');
-    document.getElementById('lfList').innerHTML = d.items.map(i =>
-      `<li class="lf-item"><img src="/img/games/${esc(i.game)}.webp" width="40" height="40" alt="" loading="lazy" decoding="async"><div class="lf-main"><strong>${esc(i.title)}</strong><span>${esc(i.pkg)}</span>${i.who ? `<span class="lf-who">Получатель: ID ${esc(i.who)}</span>` : ''}</div><div class="lf-meta"><span>${agoText(i.ago)}</span>${i.took ? `<em>за ${i.took} сек</em>` : ''}</div></li>`).join('');
+    const card = i => `<div class="lf-item"><img src="/img/games/${esc(i.game)}.webp" width="40" height="40" alt="" loading="lazy" decoding="async"><div class="lf-main"><strong>${esc(i.title)}</strong><span>${esc(i.pkg)}</span>${i.who ? `<span class="lf-who">Получатель: ID ${esc(i.who)}</span>` : ''}</div><div class="lf-meta"><span>${agoText(i.ago)}</span>${i.took ? `<em>за ${i.took} сек</em>` : ''}</div></div>`;
+    const one = d.items.map(card).join('');
+    const reps = Math.max(1, Math.ceil(1500 / (d.items.length * 330)));
+    const set = one.repeat(reps);
+    const trk = document.getElementById('lfList');
+    trk.innerHTML = `<div class="lf-set">${set}</div><div class="lf-set" aria-hidden="true">${set}</div>`;
+    trk.style.setProperty('--lf-dur', Math.max(24, d.items.length * reps * 5) + 's');
     box.hidden = false;
   } catch (e) { /* без ленты блок просто скрыт */ }
 }

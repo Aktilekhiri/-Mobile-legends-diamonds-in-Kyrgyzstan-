@@ -20,72 +20,72 @@ SLUG = {'mlbb': 'mobile-legends-almazy', 'pubg': 'pubg-mobile-uc', 'freefire': '
 G = {
  'mlbb': dict(name='Mobile Legends: Bang Bang', short='MLBB', unit='алмазов', cur='алмазы', icon='💎',
    h1='Пополнение алмазов Mobile Legends (Мобайл Легендс, MLBB) в Кыргызстане',
-   title='Купить алмазы Mobile Legends (MLBB) в Кыргызстане от {min} сом | Mbank, O!Банк',
-   desc='Пополнение алмазов Mobile Legends: Bang Bang в Кыргызстане. Оплата через Mbank и O!Банк, зачисление за 5–10 минут, без пароля от аккаунта. Цены от 45 сом.',
+   title='Купить алмазы Mobile Legends (MLBB) в Кыргызстане от {min} сом | Банки КР',
+   desc='Пополнение алмазов Mobile Legends: Bang Bang в Кыргызстане. Оплата по QR через банки КР, зачисление за 5–10 минут, без пароля от аккаунта. Цены от 45 сом.',
    kw='алмазы mlbb, пополнение mlbb кыргызстан, купить алмазы mobile legends бишкек, алмазы mlbb mbank, алмазы mlbb обанк, weekly diamond pass',
    idinfo='ID игрока и Zone ID (сервер) — в профиле игры: ваш ID и число в скобках рядом с ним.',
    needs='ID игрока и Zone ID', extra='Доступны регионы Global и Россия, Weekly Diamond Pass, Twilight Pass и Elite Pack.',
    dev='Moonton', fresh='Дополнительно: Weekly Diamond Pass, Weekly и Monthly Elite Pack, Twilight Pass.'),
  'pubg': dict(name='PUBG Mobile', short='PUBG Mobile', unit='UC', cur='UC', icon='🔫',
    h1='Пополнение UC PUBG Mobile (ПУБГ Мобайл) в Кыргызстане',
-   title='Купить UC PUBG Mobile в Кыргызстане от {min} сом | Mbank, O!Банк',
-   desc='Купить UC PUBG Mobile в Кыргызстане: оплата Mbank и O!Банк, пополнение по ID за 5–10 минут, без пароля. Prime, Elite Pass и UC от 115 сом.',
+   title='Купить UC PUBG Mobile в Кыргызстане от {min} сом | Банки КР',
+   desc='Купить UC PUBG Mobile в Кыргызстане: оплата по QR через банки КР, пополнение по ID за 5–10 минут, без пароля. Prime, Elite Pass и UC от 115 сом.',
    kw='uc pubg mobile кыргызстан, пополнение uc pubg mbank, купить uc pubg бишкек, uc pubg обанк, pubg mobile uc по id, elite pass pubg',
    idinfo='Откройте PUBG Mobile, нажмите на аватар — там указан ID персонажа (только цифры).',
    needs='ID персонажа', extra='Есть Prime и Elite Pass.', dev='Krafton / Tencent', fresh=''),
  'freefire': dict(name='Free Fire', short='Free Fire', unit='алмазов', cur='алмазы', icon='🔥',
    h1='Пополнение алмазов Free Fire (Фри Фаер) в Кыргызстане',
-   title='Купить алмазы Free Fire (Фри Фаер) в Кыргызстане от {min} сом | Mbank',
-   desc='Алмазы Free Fire (Фри Фаер) в Кыргызстане по ID игрока: оплата Mbank и O!Банк, зачисление за 5–10 минут. Недельная и месячная подписки, пакеты от 49 сом.',
+   title='Купить алмазы Free Fire (Фри Фаер) в Кыргызстане от {min} сом | Банки КР',
+   desc='Алмазы Free Fire (Фри Фаер) в Кыргызстане по ID игрока: оплата по QR через банки КР, зачисление за 5–10 минут. Недельная и месячная подписки, пакеты от 49 сом.',
    kw='алмазы free fire кыргызстан, пополнение free fire mbank, купить алмазы фри фаер бишкек, free fire обанк, подписка free fire',
    idinfo='В Free Fire нажмите на аватар в левом верхнем углу — ID игрока указан под ником.',
    needs='ID игрока', extra='Есть недельная и месячная подписки (Membership).', dev='Garena', fresh=''),
  'hok': dict(name='Honor of Kings', short='Honor of Kings', unit='токенов', cur='токены', icon='👑',
    h1='Пополнение токенов Honor of Kings в Кыргызстане',
-   title='Купить токены Honor of Kings в Кыргызстане от {min} сом | Mbank',
-   desc='Пополнение токенов Honor of Kings в Кыргызстане по ID игрока: оплата Mbank и O!Банк, зачисление за 5–10 минут, без пароля от аккаунта.',
+   title='Купить токены Honor of Kings в Кыргызстане от {min} сом | Банки КР',
+   desc='Пополнение токенов Honor of Kings в Кыргызстане по ID игрока: оплата по QR через банки КР, зачисление за 5–10 минут, без пароля от аккаунта.',
    kw='honor of kings токены кыргызстан, пополнение honor of kings mbank, honor of kings tokens, купить токены hok бишкек, weekly card honor of kings',
    idinfo='Откройте профиль в Honor of Kings — ID игрока указан рядом с ником.',
    needs='ID игрока', extra='Есть Weekly Card.', dev='Tencent (TiMi Studio)', fresh=''),
  'genshin': dict(name='Genshin Impact', short='Genshin Impact', unit='кристаллов', cur='кристаллы', icon='✨',
    h1='Пополнение Genesis Crystals Genshin Impact (Геншин Импакт) в Кыргызстане',
-   title='Купить кристаллы Genshin Impact в Кыргызстане от {min} сом | Mbank',
-   desc='Genesis Crystals и Благословение полой луны (Welkin Moon) для Genshin Impact в Кыргызстане. Оплата Mbank и O!Банк, пополнение по UID без пароля.',
+   title='Купить кристаллы Genshin Impact в Кыргызстане от {min} сом | Банки КР',
+   desc='Genesis Crystals и Благословение полой луны (Welkin Moon) для Genshin Impact в Кыргызстане. Оплата по QR через банки КР, пополнение по UID без пароля.',
    kw='genshin impact кристаллы кыргызстан, пополнение genshin impact mbank, genesis crystals купить, welkin moon купить бишкек, геншин донат кыргызстан',
    idinfo='UID (9 цифр) указан внизу справа в главном меню и в меню Паймон. Выберите свой сервер: America, Asia, Europe или TW, HK, MO.',
    needs='UID и сервер', extra='Есть Благословение полой луны (Welkin Moon).', dev='HoYoverse', fresh=''),
  'wuwa': dict(name='Wuthering Waves', short='Wuthering Waves', unit='Lunite', cur='Lunite', icon='🌊',
    h1='Пополнение Lunite Wuthering Waves (WuWa) в Кыргызстане',
-   title='Купить Lunite Wuthering Waves (WuWa) в Кыргызстане от {min} сом | Mbank',
-   desc='Пополнение Lunite и Lunite Subscription для Wuthering Waves (WuWa) в Кыргызстане. Оплата Mbank и O!Банк, пополнение по UID без пароля.',
+   title='Купить Lunite Wuthering Waves (WuWa) в Кыргызстане от {min} сом | Банки КР',
+   desc='Пополнение Lunite и Lunite Subscription для Wuthering Waves (WuWa) в Кыргызстане. Оплата по QR через банки КР, пополнение по UID без пароля.',
    kw='wuthering waves lunite кыргызстан, wuwa донат кыргызстан, пополнение wuthering waves mbank, lunite купить бишкек, lunite subscription',
    idinfo='UID (9 цифр) указан в меню в разделе профиля. Выберите свой сервер: Asia, America, Europe, SEA или TW, HK, MO.',
    needs='UID и сервер', extra='Есть Lunite Subscription (месячная подписка).', dev='Kuro Games', fresh=''),
  'hsr': dict(name='Honkai: Star Rail', short='Star Rail', unit='Oneiric Shard', cur='Oneiric Shard', icon='🚂',
    h1='Пополнение Oneiric Shard Honkai: Star Rail (Хонкай Стар Рейл) в Кыргызстане',
-   title='Купить Oneiric Shard Honkai: Star Rail в Кыргызстане от {min} сом | Mbank',
-   desc='Пополнение Oneiric Shard и Express Supply Pass для Honkai: Star Rail в Кыргызстане. Оплата Mbank и O!Банк, пополнение по UID без пароля.',
+   title='Купить Oneiric Shard Honkai: Star Rail в Кыргызстане от {min} сом | Банки КР',
+   desc='Пополнение Oneiric Shard и Express Supply Pass для Honkai: Star Rail в Кыргызстане. Оплата по QR через банки КР, пополнение по UID без пароля.',
    kw='honkai star rail кыргызстан, хонкай стар рейл донат, oneiric shard купить, express supply pass купить, пополнение star rail mbank, star rail донат бишкек',
    idinfo='UID (9 цифр) указан в меню игры (Настройки) внизу справа. Выберите свой сервер: America, Asia, Europe или TW, HK, MO.',
    needs='UID и сервер', extra='Есть Express Supply Pass.', dev='HoYoverse', fresh=''),
  'zzz': dict(name='Zenless Zone Zero', short='Zenless Zone Zero', unit='Monochrome', cur='Monochrome', icon='📺',
    h1='Пополнение Monochrome Zenless Zone Zero (ZZZ) в Кыргызстане',
-   title='Купить Monochrome Zenless Zone Zero (ZZZ) в Кыргызстане от {min} сом | Mbank',
-   desc='Пополнение Monochrome и Inter-Knot Membership для Zenless Zone Zero (ZZZ) в Кыргызстане. Оплата Mbank и O!Банк, пополнение по UID без пароля.',
+   title='Купить Monochrome Zenless Zone Zero (ZZZ) в Кыргызстане от {min} сом | Банки КР',
+   desc='Пополнение Monochrome и Inter-Knot Membership для Zenless Zone Zero (ZZZ) в Кыргызстане. Оплата по QR через банки КР, пополнение по UID без пароля.',
    kw='zenless zone zero кыргызстан, zzz донат, monochrome купить, inter-knot membership купить, пополнение zzz mbank, зензлесс зон зиро донат',
    idinfo='UID указан в меню игры (Настройки). Выберите свой сервер: America, Asia, Europe или TW, HK, MO.',
    needs='UID и сервер', extra='Есть Inter-Knot Membership.', dev='HoYoverse', fresh=''),
  'bloodstrike': dict(name='Blood Strike', short='Blood Strike', unit='BC', cur='BC', icon='🎯',
    h1='Пополнение BC Blood Strike (Блад Страйк) в Кыргызстане',
-   title='Купить BC Blood Strike в Кыргызстане от {min} сом | Mbank, O!Банк',
-   desc='Пополнение BC и пассов Blood Strike в Кыргызстане по ID игрока: оплата Mbank и O!Банк, зачисление за 5–10 минут, без пароля от аккаунта.',
+   title='Купить BC Blood Strike в Кыргызстане от {min} сом | Банки КР',
+   desc='Пополнение BC и пассов Blood Strike в Кыргызстане по ID игрока: оплата по QR через банки КР, зачисление за 5–10 минут, без пароля от аккаунта.',
    kw='blood strike кыргызстан, блад страйк донат, blood strike bc купить, пополнение blood strike mbank, strike pass blood strike, блад страйк бишкек',
    idinfo='Откройте профиль в Blood Strike: ID игрока указан рядом с ником (только цифры).',
    needs='ID игрока', extra='Есть Level Up Pass и Strike Pass.', dev='NetEase', fresh=''),
  'tgstars': dict(name='Telegram Stars', short='Telegram Stars', unit='звёзд', cur='звёзды', icon='⭐', cta='Купить', 
    h1='Купить Telegram Stars (звёзды Телеграм) в Кыргызстане',
-   title='Купить Telegram Stars в Кыргызстане от {min} сом | Mbank, O!Банк',
-   desc='Telegram Stars за сомы: покупка звёзд Телеграм в Кыргызстане через Mbank и O!Банк. Звёзды приходят прямо на ваш @username, без кодов и паролей.',
+   title='Купить Telegram Stars в Кыргызстане от {min} сом | Банки КР',
+   desc='Telegram Stars за сомы: покупка звёзд Телеграм в Кыргызстане по QR через банки КР. Звёзды приходят прямо на ваш @username, без кодов и паролей.',
    kw='telegram stars кыргызстан, купить звезды телеграм, telegram stars mbank, звёзды телеграм бишкек, телеграм старс купить за сомы',
    idinfo='Ваш @username — в Telegram: Настройки → Имя пользователя.',
    needs='Telegram @username', extra='Звёзды отправляются на ваш @username автоматически.', dev='Telegram', fresh='',
@@ -93,8 +93,8 @@ G = {
    h2price='Цены на Telegram Stars в сомах'),
  'tgpremium': dict(name='Telegram Premium', short='Telegram Premium', unit='мес.', cur='подписки', icon='✈️', cta='Купить',
    h1='Купить Telegram Premium в Кыргызстане за сомы',
-   title='Купить Telegram Premium в Кыргызстане от {min} сом | Mbank, O!Банк',
-   desc='Telegram Premium на 3, 6 и 12 месяцев в Кыргызстане: оплата Mbank и O!Банк, подписка подключается прямо на ваш @username, без кодов и паролей.',
+   title='Купить Telegram Premium в Кыргызстане от {min} сом | Банки КР',
+   desc='Telegram Premium на 3, 6 и 12 месяцев в Кыргызстане: оплата по QR через банки КР, подписка подключается прямо на ваш @username, без кодов и паролей.',
    kw='telegram premium кыргызстан, купить телеграм премиум, telegram premium mbank, телеграм премиум бишкек, подписка telegram premium за сомы',
    idinfo='Ваш @username — в Telegram: Настройки → Имя пользователя.',
    needs='Telegram @username', extra='Подписка на 3, 6 или 12 месяцев подключается на ваш @username автоматически.', dev='Telegram', fresh='',
@@ -102,8 +102,8 @@ G = {
    h2price='Цены на Telegram Premium в сомах'),
  'roblox': dict(name='Roblox Gift Card', short='Roblox Gift Card', unit='Robux', cur='Robux', icon='🧱', code=True, cta='Купить', noid=True,
    h1='Купить Robux Roblox (Роблокс) в Кыргызстане за сомы',
-   title='Купить Robux Roblox в Кыргызстане от {min} сом | Mbank, O!Банк',
-   desc='Robux для Roblox в Кыргызстане: оплата Mbank и O!Банк, вы получаете код и активируете его на roblox.com/redeem. Без пароля от аккаунта.',
+   title='Купить Robux Roblox в Кыргызстане от {min} сом | Банки КР',
+   desc='Robux для Roblox в Кыргызстане: оплата по QR через банки КР, вы получаете код и активируете его на roblox.com/redeem. Без пароля от аккаунта.',
    kw='robux кыргызстан, купить робуксы бишкек, roblox robux mbank, роблокс донат кыргызстан, roblox gift card за сомы, робуксы за сомы',
    idinfo='Вводить ничего не нужно: вы получите код и активируете его на roblox.com/redeem.',
    needs='ничего, кроме оплаты', extra='Покупка идёт кодом: после оплаты вы получаете код и активируете его на своём аккаунте Roblox.', dev='Roblox Corporation', fresh='',
@@ -129,14 +129,14 @@ def faq(g):
     if d.get('code'):
         return [
          (f"Как купить {n} в Кыргызстане?", f"Нажмите «Купить», выберите пакет и оплатите по QR в приложении любого банка. {d['howto']}"),
-         (f"Какие способы оплаты {n} доступны?", "Оплата по QR в приложении любого банка Кыргызстана, включая Mbank и O!Банк. Цены указаны в сомах, комиссий сверх цены пакета нет."),
+         (f"Какие способы оплаты {n} доступны?", "Оплата по QR в приложении любого банка Кыргызстана, а также из России. Цены указаны в сомах, комиссий сверх цены пакета нет."),
          (f"Нужен ли пароль от аккаунта {n}?", "Нет. Пароль не нужен и мы его никогда не просим. " + d['idinfo']),
          ("Сколько ждать код?", "Обычно 5–10 минут после проверки оплаты."),
          ("Что делать, если код не пришёл или не подошёл?", "Напишите нам в WhatsApp с кодом заказа. Если выдать код не получится, мы вернём деньги."),
         ]
     return [
-     (f"Как пополнить {d['cur']} {n} в Кыргызстане?", f"Нажмите «Купить», введите {d['needs']}, выберите пакет и переведите сумму через Mbank или O!Банк. Затем отправьте чек в WhatsApp — {d['cur']} придут на аккаунт обычно за 5–10 минут."),
-     (f"Какие способы оплаты {n} доступны?", "Оплата по QR в приложении любого банка Кыргызстана, включая Mbank и O!Банк. Цены указаны в сомах, комиссий сверх цены пакета нет."),
+     (f"Как пополнить {d['cur']} {n} в Кыргызстане?", f"Нажмите «Купить», введите {d['needs']}, выберите пакет и оплатите по QR в приложении банка — {d['cur']} придут на аккаунт обычно за 5–10 минут."),
+     (f"Какие способы оплаты {n} доступны?", "Оплата по QR в приложении любого банка Кыргызстана, а также из России. Цены указаны в сомах, комиссий сверх цены пакета нет."),
      (f"Нужен ли пароль от аккаунта {n}?", f"Нет. Пароль не нужен и мы его никогда не просим: пополнение идёт по {d['needs']}. {d['idinfo']}"),
      ("Сколько ждать пополнения?", "Обычно 5–10 минут после проверки оплаты."),
      ("Что делать, если пополнение не пришло?", "Напишите нам в WhatsApp с кодом заказа. Если пополнение невозможно (например, указан неверный ID), мы вернём деньги."),
@@ -158,7 +158,7 @@ def page(g):
     lo = min(ps, key=lambda x: x[1]); hi = max(ps, key=lambda x: x[1]); fmt = lambda n: f"{n:,}".replace(',', ' ')
     d['title'] = d['title'].replace('{min}', fmt(lo[1]))
     fq.insert(1, (f"Сколько стоят {d['cur']} {d['name']} в Кыргызстане?",
-        f"Цены в сомах: от {fmt(lo[1])} сом ({lo[0]}) до {fmt(hi[1])} сом ({hi[0]}). Оплата через Mbank и O!Банк, без дополнительных комиссий. Полный список цен — в таблице на этой странице."))
+        f"Цены в сомах: от {fmt(lo[1])} сом ({lo[0]}) до {fmt(hi[1])} сом ({hi[0]}). Оплата по QR через банки КР, без дополнительных комиссий. Полный список цен — в таблице на этой странице."))
     rows = ''.join(f"<tr><td>{e(n)}</td><td class='p'>{pr:,} сом</td></tr>".replace(',', ' ') for n, pr, _ in ps)
     ld = [
      {"@context": "https://schema.org", "@type": "Service", "name": d['h1'], "serviceType": f"Пополнение {d['name']}", "description": d['desc'],
@@ -171,9 +171,9 @@ def page(g):
     ]
     others = ''.join(f"<a href='/{SLUG[k]}/'><img class='oi' src='/img/games/{k}.webp' width='22' height='22' alt=''> {e(G[k]['name'])}</a>" for k in G if k != g)
     intro = (f"Нужно пополнить {d['name']} в Кыргызстане и не хочется возиться с зарубежными картами? Здесь можно купить {d['cur']} за сомы: "
-             f"по QR через приложение банка (Mbank, O!Банк и другие). Пополнение идёт по {d['needs']}, пароль от аккаунта не нужен. {d['extra']}")
+             f"по QR через приложение банка (любой банк КР, а также из России). Пополнение идёт по {d['needs']}, пароль от аккаунта не нужен. {d['extra']}")
     if d.get('code'):
-        intro = (f"Нужны {d['name']}, а зарубежной карты нет? Здесь можно купить их за сомы: по QR через приложение банка (Mbank, O!Банк и другие). "
+        intro = (f"Нужны {d['name']}, а зарубежной карты нет? Здесь можно купить их за сомы: по QR через приложение банка (любой банк КР, а также из России). "
                  f"{d['extra']} Пароль от аккаунта не нужен.")
     cta = d.get('cta', 'Пополнить')
     h2price = d.get('h2price') or f"Цены на {d['cur']} {d['name']} в сомах"
@@ -182,12 +182,12 @@ def page(g):
         steps = (f"<ol><li>Нажмите «{cta}» и выберите нужный пакет.</li>{needs_step}<li>Нажмите «Оплатить по QR» и оплатите в приложении любого банка.</li>"
                  f"<li>Код сразу появится на странице заказа. {e(d['howto'])}</li></ol>")
         night = ""
-        why = "Оплата в сомах через Mbank и O!Банк, без зарубежной карты. Никаких паролей от аккаунта. Код показывается на странице заказа и в истории после входа через Google. Если выдать код не получится, возвращаем деньги."
+        why = "Оплата в сомах по QR через банки КР, без зарубежной карты. Никаких паролей от аккаунта. Код показывается на странице заказа и в истории после входа через Google. Если выдать код не получится, возвращаем деньги."
         h2steps = f"Как купить {d['name']}: шаги"
     else:
         steps = (f"<ol><li>Нажмите «Пополнить» и выберите нужный пакет.</li><li>Введите {e(d['needs'])}. {e(d['idinfo'])}</li><li>Нажмите «Оплатить по QR» и оплатите в приложении любого банка. Чек не нужен.</li><li>После оплаты {e(d['cur'])} поступят на аккаунт автоматически, обычно за несколько минут.</li></ol>")
         night = "Заказы выдаются автоматически после оплаты. Оплатить можно в любое время."
-        why = f"Оплата в сомах через Mbank и O!Банк, без зарубежной карты. Никаких паролей от аккаунта: нужен только {d['needs']}. Заказ получает код, статус можно уточнить в WhatsApp. Если пополнение невозможно, возвращаем деньги."
+        why = f"Оплата в сомах по QR через банки КР, без зарубежной карты. Никаких паролей от аккаунта: нужен только {d['needs']}. Заказ получает код, статус можно уточнить в WhatsApp. Если пополнение невозможно, возвращаем деньги."
         h2steps = f"Как пополнить {d['name']}: 4 шага"
     body = f"""<h1><img class="gic" src="/img/games/{g}.webp" width="48" height="48" alt="{e(d['short'])}"> {e(d['h1'])}</h1>
 <p class="lead">{e(intro)}</p>

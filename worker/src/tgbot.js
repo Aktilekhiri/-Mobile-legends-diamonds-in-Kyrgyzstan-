@@ -32,8 +32,6 @@ const kb = rows => ({ inline_keyboard: rows });
 const CHANNEL = 'https://t.me/topupdiamondskg';
 const MENU = kb([[btn('🎮 Пополнить игру', 'games')], [btn('🛒 Купить аккаунт', 'acc'), btn('💼 Продать аккаунт', 'sell')], [btn('📋 Мои заказы', 'orders'), btn('💬 Поддержка', 'help')], [btn('🎁 Промокод', 'promo')], [{ text: '📣 Наш канал', url: CHANNEL }]]);
 const CANCEL = [btn('❌ Отмена', 'menu')];
-const isNight = () => ((new Date().getUTCHours() + 6) % 24) < 8;
-const NIGHT = '\n\n🌙 Сейчас ночь: заказы с 00:00 до 08:00 по Бишкеку выдаём утром.';
 const money = n => Number(n).toLocaleString('ru-RU').replace(/ /g, ' ');
 
 // показать экран: редактируем прошлое сообщение (если пришли из кнопки), иначе новое
@@ -148,7 +146,7 @@ async function finishReceipt(env, chat, from, msg, st) {
   if (env.TELEGRAM_CHAT_ID) await tgApi(env, 'sendPhoto', { chat_id: env.TELEGRAM_CHAT_ID, photo: fileId, caption, reply_markup: kb([buttons]) });
 
   await setSt(env, chat, {});
-  await send(env, chat, `✅ <b>Чек по заказу ${esc(r.id)} получен.</b>\nПроверяем оплату, обычно это 5–10 минут. Напишем сюда, как только заказ будет выдан.` + (isNight() ? NIGHT : ''), { reply_markup: kb([[btn('📋 Мои заказы', 'orders'), btn('🎮 Ещё заказ', 'games')]]) });
+  await send(env, chat, `✅ <b>Чек по заказу ${esc(r.id)} получен.</b>\nПроверяем оплату, обычно это 5–10 минут. Напишем сюда, как только заказ будет выдан.`, { reply_markup: kb([[btn('📋 Мои заказы', 'orders'), btn('🎮 Ещё заказ', 'games')]]) });
 }
 
 // ---------- кнопки админа под чеком ----------

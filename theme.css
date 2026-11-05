@@ -487,3 +487,17 @@ body .night-note:not(.on){display:none!important}
 .steps-bar .sb.done{color:inherit}
 #page-topup[data-step="data"] #stepGame,#page-topup[data-step="data"] #stepPkg,#page-topup[data-step="data"] .game-about{display:none}
 #stepData[hidden]{display:none!important}
+
+/* баланс в профиле */
+.auth-card{max-height:92vh;overflow:auto}
+.wal{border:1px solid var(--line,#dfe3ee);border-radius:14px;padding:12px;margin:14px 0;background:var(--surface,transparent)}
+.wal-top{display:flex;justify-content:space-between;align-items:baseline;font-weight:700}
+.wal-top b{font-size:1.3rem}
+.wal-row{display:flex;gap:8px;margin:10px 0 6px}
+.wal-row input{flex:1;min-width:0}
+.wal-msg{font-size:.85rem;min-height:1em;margin-bottom:6px;word-break:break-word}
+.wal-hist{font-size:.82rem;margin-top:8px}
+.wal-hist div{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px solid var(--line,#dfe3ee)}
+.wal-hist div span:last-child{opacity:.7;text-align:right}
+.wal-row input{flex:1 1 110px}
+.wal-row .btn-primary{flex:0 0 auto;width:auto;padding:0 18px;min-height:46px}

@@ -204,7 +204,7 @@ def page(g):
 {''.join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in fq)}
 <section id="rv" hidden><h2>Отзывы покупателей</h2><div id="rvBox"></div></section>
 <h2>Другие игры</h2><div class="games">{others}</div>
-<p class="note" style="margin-top:20px">Diamond.kg — неофициальный сервис. Не связан с {e(d['dev'])}; все названия и товарные знаки принадлежат их владельцам.</p>"""
+<p class="note" style="margin-top:20px">Diamond.kg не связан с {e(d['dev'])}. Все названия и товарные знаки принадлежат их владельцам.</p>"""
     return f"""<!DOCTYPE html>
 <html lang="ru"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">

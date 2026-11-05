@@ -2,7 +2,7 @@
 // и сами подтверждаем заказ. Документация: https://www.finik.kg/documentation/web-sdk/
 // Секреты Cloudflare: FINIK_API_KEY, FINIK_PRIVATE_KEY (PEM), FINIK_PUBLIC_KEY (PEM от Finik, для проверки вебхуков),
 // FINIK_ACCOUNT_ID, FINIK_QR_NAME; необязательно: FINIK_BASE (адрес API, по умолчанию боевой), FINIK_FEE_PCT (комиссия, по умолчанию 0.02).
-import { createOrder, confirmOrder } from './orders.js';
+import { createOrder, confirmOrder, orderCard } from './orders.js';
 import { notify } from './notify.js';
 
 const PROD_BASE = 'https://api.acquiring.averspay.kg';
@@ -111,7 +111,7 @@ export async function finikWebhook(env, req) {
   await env.DB.prepare('UPDATE orders SET fee_kgs = ?, updated_at = ? WHERE id = ?').bind(fee, Date.now(), o.id).run();
 
   if (o.status === 'new') {
-    await notify(env, `💳 Finik: заказ ${o.id} оплачен (${o.pkg_label}, ${o.price_kgs} сом). Выдаю автоматически.`);
+    await notify(env, `💳 Заказ ${o.id} оплачен (Finik)\n${orderCard({ ...o, fee_kgs: fee })}\n⏳ Выдаю автоматически.`);
     const r = await confirmOrder(env, o.id);
     if (r.error) await notify(env, `⚠️ Заказ ${o.id} оплачен, но авто-выдача не удалась: ${r.error}. Выдайте вручную в админке.`);
   } else {

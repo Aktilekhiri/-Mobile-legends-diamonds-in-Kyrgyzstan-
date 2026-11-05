@@ -23,7 +23,7 @@ import { redeemPromo } from './promo.js';
 import { aiChat, aiReady } from './aichat.js';
 import { SHOP } from './shop_data.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
-import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, blacklistOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
+import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, refundToBalance, markManualDone, cancelOrder, blacklistOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
 
 function cors(req) {
   const o = req.headers.get('Origin') || '';
@@ -394,9 +394,9 @@ export default {
           if (!rc) return err(req, 'Чека нет', 404);
           return new Response(rc.bytes, { headers: { 'Content-Type': rc.mime, 'Cache-Control': 'private, max-age=3600', ...cors(req) } });
         }
-        mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9]{4,20})\/(confirm|refresh|refunded|manual-done|cancel|blacklist)$/);
+        mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9]{4,20})\/(confirm|refresh|refunded|to-balance|manual-done|cancel|blacklist)$/);
         if (mm && m === 'POST') {
-          const fn = { confirm: confirmOrder, refresh: refreshOrder, refunded: markRefunded, 'manual-done': markManualDone, cancel: cancelOrder, blacklist: blacklistOrder }[mm[2]];
+          const fn = { confirm: confirmOrder, refresh: refreshOrder, refunded: markRefunded, 'to-balance': refundToBalance, 'manual-done': markManualDone, cancel: cancelOrder, blacklist: blacklistOrder }[mm[2]];
           const r = await fn(env, mm[1]);
           return r.error ? err(req, r.error, r.status || 400) : json(req, r);
         }

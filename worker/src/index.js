@@ -181,7 +181,7 @@ export default {
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
       }
       // ИИ-чат: приём заказа в диалоге (история приходит с клиента, цены и оплата считаются на сервере)
-      if (path === '/api/chat/status' && m === 'GET') return json(req, { enabled: true, ai: aiReady(env), pay: gopayPublic(env) ? 'gopay' : (finikReady(env) ? 'finik' : '') }, 200, { 'Cache-Control': 'public, max-age=60' });
+      if (path === '/api/chat/status' && m === 'GET') return json(req, { enabled: aiReady(env), ai: aiReady(env), pay: gopayPublic(env) ? 'gopay' : (finikReady(env) ? 'finik' : '') }, 200, { 'Cache-Control': 'public, max-age=60' });
       if (path === '/api/chat/catalog' && m === 'GET') return json(req, { shop: SHOP }, 200, { 'Cache-Control': 'public, max-age=300' });
       if (path === '/api/chat' && m === 'POST') {
         const b = await req.json().catch(() => ({}));

@@ -12,7 +12,8 @@ import { notify } from './notify.js';
 export const PAY_NUM = '+996 702 097 127', PAY_NAME = 'Актилек К.';
 const WA = '+996 555 920 204';
 // Провайдер: бесплатный Cloudflare Workers AI (binding AI) по умолчанию, платный Anthropic (ANTHROPIC_API_KEY) — если AI_PROVIDER=anthropic или нет binding
-export const aiReady = env => !!(env.AI || env.ANTHROPIC_API_KEY);
+// ИИ-чат выключен, пока не задана переменная AI_ENABLED=1 (включим после автоматизации оплаты)
+export const aiReady = env => String(env.AI_ENABLED || '') === '1' && !!(env.AI || env.ANTHROPIC_API_KEY);
 const useWorkers = env => !!env.AI && (env.AI_PROVIDER || 'workers') !== 'anthropic';
 const fastReady = env => gopayPublic(env) || finikReady(env);
 const money = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script>if(window.parent===window){location.replace('admin.html#'+(location.pathname.indexOf('orders')>-1?'orders':(location.pathname.indexOf('reviews')>-1?'reviews':'accounts')))}</script>
+
+<title>Отзывы — diamond.kg</title>
+<style>
+:root{--bg:#0B1020;--card:#151D33;--line:rgba(170,184,208,.2);--tx:#f0f4ff;--mu:#AAB8D0;--gold:#32D9F5;--blue:#7C83FF;--red:#ff5d5d;--green:#25D366}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px 80px}
+h1{font-size:1.4rem;margin:8px 0 12px}
+a{color:var(--gold)}
+label{display:block;font-size:.85rem;color:var(--mu);margin:12px 0 4px}
+input{width:100%;background:#0B1020;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;min-height:46px}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 16px;cursor:pointer;min-height:46px;color:var(--tx);background:#1D2943}
+button.pri{background:var(--gold);color:#0B1020}
+button.ok{background:var(--green);color:#06210f}
+button.dng{background:#5a1f2a;color:#ffd6d6}
+button:disabled{opacity:.5;cursor:default}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.hidden{display:none}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chips button{min-height:38px;padding:6px 12px;font-size:.9rem}
+.chips button.on{background:var(--gold);color:#0B1020}
+.o-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.o-head b{font-size:1.05rem}
+.o-sum{font-weight:800;color:var(--gold);white-space:nowrap}
+.o-meta{color:var(--mu);font-size:.88rem;margin:4px 0 10px;word-break:break-word}
+.st{font-size:.75rem;padding:2px 8px;border-radius:999px;background:#1D2943;margin-left:6px;white-space:nowrap}
+.st.new{background:#7a5a0a}.st.processing{background:#1D2943}.st.delivered{background:#12633a}
+.st.refund_due{background:#7a1f2a}.st.refunded{background:#555d6e}.st.manual{background:#6b4a12}.st.cancelled{background:#444}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts button{flex:1 1 140px}
+.err{color:#ffd6d6;background:#5a1f2a;padding:10px 12px;border-radius:10px;margin-bottom:12px}
+.good{color:#06210f;background:var(--green);padding:10px 12px;border-radius:10px;margin-bottom:12px}
+.hint{color:var(--mu);padding:8px 0}
+.warn{color:#ffd28a;font-size:.85rem;margin-top:6px}
+.rcpt img{display:block;max-width:100%;max-height:420px;border-radius:10px;border:1px solid var(--line);margin-top:10px;background:#0B1020}
+.rcpt-hint{color:var(--mu);font-size:.85rem;margin-top:6px}
+.stars{color:#F59E0B;letter-spacing:2px}.txt{margin:8px 0;white-space:pre-wrap;word-break:break-word}.st.pending{background:#7a5a0a}.st.approved{background:#12633a}.st.hidden{background:#444}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div id="msg"></div>
+
+  <div class="card hidden" id="loginBox">
+    <label for="pw">Пароль админки</label>
+    <input id="pw" type="password" autocomplete="current-password">
+    <div style="margin-top:10px"><button class="pri" id="loginBtn">Войти</button></div>
+  </div>
+
+  <div id="listBox" class="hidden">
+    <div class="chips" id="chips"></div>
+    <div id="list"></div>
+    <div class="top" style="margin-top:14px"><button id="reload">Обновить</button><button id="logoutBtn">Выйти</button></div>
+  </div>
+</div>
+<script src="api-config.js"></script>
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var TK='dk_admin_token', AK='dk_admin_api';
+  var token='', filter='pending', items=[], timer=null;
+  function sget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
+  function sset(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}
+  function api(){return (window.DK_API||sget(AK)||'').replace(/\/+$/,'')}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function msg(t,k){$('msg').innerHTML=t?'<div class="'+(k||'good')+'">'+esc(t)+'</div>':''}
+  function show(id){['loginBox','listBox'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)})}
+  async function call(method,path,body){
+    var h={}; if(token)h.Authorization='Bearer '+token;
+    var o={method:method,headers:h};
+    if(body!==undefined){h['Content-Type']='application/json';o.body=JSON.stringify(body)}
+    var r=await fetch(api()+path,o), d={}; try{d=await r.json()}catch(e){}
+    if(r.status===401&&path!=='/api/login'){token='';sset(TK,'');show('loginBox');throw new Error('Войдите заново')}
+    if(!r.ok)throw new Error(d.error||('Ошибка '+r.status));
+    return d;
+  }
+  var LBL={pending:'Ждёт проверки',approved:'Опубликован',hidden:'Скрыт'};
+  var FILTERS=[['pending','Ждут проверки'],['approved','Опубликованные'],['hidden','Скрытые'],['all','Все']];
+  function drawChips(){
+    $('chips').innerHTML=FILTERS.map(function(f){return '<button data-f="'+f[0]+'" class="'+(f[0]===filter?'on':'')+'">'+f[1]+'</button>'}).join('');
+    Array.prototype.forEach.call($('chips').querySelectorAll('button'),function(b){b.onclick=function(){filter=b.dataset.f;drawChips();draw()}});
+  }
+  function draw(){
+    var rows=items.filter(function(r){return filter==='all'||r.status===filter});
+    if(!rows.length){$('list').innerHTML='<div class="card hint">Отзывов нет</div>';return}
+    $('list').innerHTML=rows.map(function(r){
+      var acts=r.status!=='approved'?'<button class="ok" data-a="approve" data-id="'+r.id+'">✅ Опубликовать</button>':'';
+      if(r.status!=='hidden')acts+='<button class="dng" data-a="hide" data-id="'+r.id+'">Скрыть</button>';
+      return '<div class="card"><div class="o-head"><div><span class="stars">'+'★'.repeat(r.rating)+'☆'.repeat(5-r.rating)+'</span><span class="st '+r.status+'">'+(LBL[r.status]||r.status)+'</span></div><div class="o-meta" style="margin:0">'+new Date(r.created_at).toLocaleDateString('ru-RU')+'</div></div>'
+        +'<div class="txt">'+esc(r.text)+'</div><div class="o-meta"><b>'+esc(r.name)+'</b> · '+esc(r.game_title||r.game)+' · '+esc(r.pkg_label)+' · заказ '+esc(r.order_id)+'</div>'
+        +'<div class="acts">'+acts+'</div></div>';
+    }).join('');
+    Array.prototype.forEach.call($('list').querySelectorAll('button[data-a]'),function(b){b.onclick=function(){act(b)}});
+  }
+  async function act(b){
+    b.disabled=true;
+    try{await call('POST','/api/admin/reviews/'+b.dataset.id+'/'+b.dataset.a);msg(b.dataset.a==='approve'?'Отзыв опубликован':'Отзыв скрыт','good');await load()}
+    catch(e){msg(e.message,'err');b.disabled=false}
+  }
+  async function load(){
+    try{var d=await call('GET','/api/admin/reviews');items=d.reviews||[];show('listBox');drawChips();draw()}
+    catch(e){msg(e.message,'err')}
+  }
+  function start(){
+    token=sget(TK);msg('');
+    if(!api()){msg('Не задан адрес API (api-config.js)','err');return}
+    if(!token){show('loginBox');return}
+    load();clearInterval(timer);timer=setInterval(function(){if(!document.hidden&&token)load()},30000);
+  }
+  $('loginBtn').onclick=async function(){var b=this;b.disabled=true;try{var d=await call('POST','/api/login',{password:$('pw').value});token=d.token;sset(TK,token);$('pw').value='';start()}catch(e){msg(e.message,'err')}b.disabled=false};
+  $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')$('loginBtn').click()});
+  $('logoutBtn').onclick=function(){token='';sset(TK,'');show('loginBox')};
+  $('reload').onclick=load;
+  start();
+})();
+</script>
+</body>
+</html>

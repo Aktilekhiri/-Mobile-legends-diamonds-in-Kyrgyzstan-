@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script>if(window.parent===window){location.replace('admin.html#'+(location.pathname.indexOf('orders')>-1?'orders':'accounts'))}</script>
+
+<title>Аккаунты — diamond.kg</title>
+<style>
+:root{--bg:#0B1020;--card:#151D33;--line:rgba(170,184,208,.2);--tx:#f0f4ff;--mu:#AAB8D0;--gold:#32D9F5;--blue:#7C83FF;--red:#ff5d5d;--green:#25D366}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px 80px}
+h1{font-size:1.4rem;margin:8px 0 16px}
+h2{font-size:1.1rem;margin:0 0 12px}
+label{display:block;font-size:.85rem;color:var(--mu);margin:12px 0 4px}
+input,select,textarea{width:100%;background:#0B1020;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;min-height:46px}
+textarea{min-height:100px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:1px}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 16px;cursor:pointer;min-height:46px;color:var(--tx);background:#1D2943}
+button.pri{background:var(--gold);color:#0B1020}
+button.dng{background:#5a1f2a;color:#ffd6d6}
+button.sm{min-height:38px;padding:8px 12px;font-size:.9rem}
+button:disabled{opacity:.5;cursor:default}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1 1 140px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.top button{flex:0 0 auto}
+.item{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item img,.item .ph{width:72px;height:54px;object-fit:cover;border-radius:8px;background:#0B1020;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.item .meta{flex:1;min-width:0}
+.item .meta b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .meta span{color:var(--mu);font-size:.85rem}
+.st{font-size:.75rem;padding:2px 8px;border-radius:999px;background:#1D2943;margin-left:6px}
+.st.available{background:#12633a}.st.sold{background:#555d6e}.st.hidden{background:#6b4a12}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.ph-box{position:relative;background:#0B1020;border-radius:10px;overflow:hidden;aspect-ratio:4/3;border:1px solid var(--line)}
+.ph-box img{width:100%;height:100%;object-fit:cover;display:block}
+.ph-box .bar{position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(5,8,16,.8)}
+.ph-box .bar button{flex:1;min-height:34px;padding:4px;border-radius:0;background:transparent;font-size:1rem}
+.ph-box .n{position:absolute;top:4px;left:6px;font-size:.75rem;background:rgba(5,8,16,.8);padding:1px 6px;border-radius:6px}
+.msg{padding:10px 12px;border-radius:10px;margin:10px 0;font-size:.92rem}
+.msg.err{background:#4a1a22;color:#ffd6d6}.msg.ok{background:#124a2c;color:#c9f5db}
+.hint{color:var(--mu);font-size:.82rem;margin-top:4px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div id="msg"></div>
+
+  <!-- адрес API (если не задан в api-config.js) -->
+  <div class="card hidden" id="apiBox">
+    <h2>Адрес API</h2>
+    <label for="apiUrl">Адрес Worker (например https://diamond-kg-api.xxx.workers.dev)</label>
+    <input id="apiUrl" inputmode="url" placeholder="https://...">
+    <div style="margin-top:10px"><button class="pri" id="apiSave">Сохранить адрес</button></div>
+  </div>
+
+  <!-- вход -->
+  <div class="card hidden" id="loginBox">
+    <h2>Вход</h2>
+    <label for="pw">Пароль</label>
+    <input id="pw" type="password" autocomplete="current-password">
+    <div style="margin-top:10px"><button class="pri" id="loginBtn">Войти</button></div>
+  </div>
+
+  <!-- список -->
+  <div id="listBox" class="hidden">
+    <div class="top" style="margin-bottom:12px">
+      <button class="pri" id="newBtn">+ Добавить аккаунт</button>
+      <button class="sm" id="logoutBtn">Выйти</button>
+    </div>
+    <div class="card" id="list"></div>
+  </div>
+
+  <!-- форма -->
+  <div id="formBox" class="hidden">
+    <div class="card">
+      <div class="top"><h2 id="formTitle">Новый аккаунт</h2><button class="sm" id="backBtn">← К списку</button></div>
+
+      <label for="f_title">Название (RU) *</label>
+      <input id="f_title" maxlength="120" placeholder="Mythic аккаунт, 120 героев">
+      <label for="f_title_ky">Название (KY), можно пусто</label>
+      <input id="f_title_ky" maxlength="120">
+
+      <div class="row">
+        <div><label for="f_price">Цена, KGS *</label><input id="f_price" type="number" inputmode="numeric" min="0"></div>
+        <div><label for="f_status">Статус</label>
+          <select id="f_status"><option value="available">В наличии</option><option value="sold">Продан</option><option value="hidden">Скрыт</option></select></div>
+      </div>
+      <div class="row">
+        <div><label for="f_rank">Ранг</label>
+          <input id="f_rank" list="ranks" placeholder="Mythic"><datalist id="ranks"><option>Warrior</option><option>Elite</option><option>Master</option><option>Grandmaster</option><option>Epic</option><option>Legend</option><option>Mythic</option><option>Mythical Honor</option><option>Mythical Glory</option><option>Mythical Immortal</option></datalist></div>
+        <div><label for="f_level">Уровень</label><input id="f_level" type="number" inputmode="numeric" min="0"></div>
+      </div>
+      <div class="row">
+        <div><label for="f_heroes">Героев</label><input id="f_heroes" type="number" inputmode="numeric" min="0"></div>
+        <div><label for="f_skins">Скинов</label><input id="f_skins" type="number" inputmode="numeric" min="0"></div>
+      </div>
+
+      <label for="f_description">Описание (RU): что внутри аккаунта</label>
+      <textarea id="f_description" maxlength="4000"></textarea>
+      <label for="f_description_ky">Описание (KY), можно пусто</label>
+      <textarea id="f_description_ky" maxlength="4000"></textarea>
+
+      <div class="top" style="margin-top:14px"><label style="margin:0">SEO-текст</label><button class="sm" id="seoBtn" type="button">Создать SEO-текст</button></div>
+      <label for="f_seo_ru">SEO (RU)</label>
+      <textarea id="f_seo_ru" maxlength="2000"></textarea>
+      <label for="f_seo_ky">SEO (KY)</label>
+      <textarea id="f_seo_ky" maxlength="2000"></textarea>
+      <div class="hint">Сначала заполните поля выше, потом нажмите «Создать SEO-текст». Текст можно править.</div>
+
+      <label>Фото (до 6)</label>
+      <input id="fileIn" type="file" accept="image/*" multiple>
+      <div class="hint">Фото сжимаются автоматически. Порядок: первое фото будет обложкой.</div>
+      <div class="photos" id="photos"></div>
+
+      <div class="row" style="margin-top:18px">
+        <button class="pri" id="saveBtn">Сохранить</button>
+        <button id="cancelBtn" type="button">Отмена</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="api-config.js"></script>
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var TK='dk_admin_token', AK='dk_admin_api';
+  var token='', accounts=[], editing=null, photos=[]; // photos: {id?, blob?, url}
+  function sget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
+  function sset(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}
+  function api(){return (window.DK_API||sget(AK)||'').replace(/\/+$/,'')}
+  function msg(t,k){var m=$('msg');m.innerHTML=t?'<div class="msg '+(k||'ok')+'">'+esc(t)+'</div>':''; if(t)window.scrollTo(0,0)}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function show(id){['apiBox','loginBox','listBox','formBox'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)})}
+
+  async function call(method,path,body,raw){
+    var h={}; if(token)h.Authorization='Bearer '+token;
+    var o={method:method,headers:h};
+    if(raw){h['Content-Type']=raw.type;o.body=raw}
+    else if(body!==undefined){h['Content-Type']='application/json';o.body=JSON.stringify(body)}
+    var r=await fetch(api()+path,o); var d={}; try{d=await r.json()}catch(e){}
+    if(r.status===401&&path!=='/api/login'){token='';sset(TK,'');show('loginBox');throw new Error('Войдите заново')}
+    if(!r.ok)throw new Error(d.error||('Ошибка '+r.status));
+    return d;
+  }
+
+  function start(){
+    token=sget(TK); msg('');
+    if(!api()){show('apiBox');return}
+    if(!token){show('loginBox');return}
+    loadList();
+  }
+  $('apiSave').onclick=function(){var v=$('apiUrl').value.trim();if(!/^https:\/\//.test(v)){msg('Адрес должен начинаться с https://','err');return}sset(AK,v);start()};
+  $('loginBtn').onclick=async function(){
+    var b=this;b.disabled=true;
+    try{var d=await call('POST','/api/login',{password:$('pw').value});token=d.token;sset(TK,token);$('pw').value='';start()}
+    catch(e){msg(e.message,'err')} b.disabled=false;
+  };
+  $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')$('loginBtn').click()});
+  $('logoutBtn').onclick=function(){token='';sset(TK,'');show('loginBox')};
+
+  var LBL={available:'В наличии',sold:'Продан',hidden:'Скрыт'};
+  async function loadList(){
+    show('listBox');$('list').innerHTML='<div class="hint">Загрузка…</div>';
+    try{accounts=(await call('GET','/api/admin/accounts')).accounts}catch(e){msg(e.message,'err');return}
+    if(!accounts.length){$('list').innerHTML='<div class="hint">Аккаунтов пока нет. Нажмите «Добавить аккаунт».</div>';return}
+    $('list').innerHTML=accounts.map(function(a){
+      return '<div class="item" data-id="'+a.id+'">'+
+        (a.photos.length?'<img src="'+api()+'/img/'+a.photos[0]+'" alt="">':'<div class="ph">🎮</div>')+
+        '<div class="meta"><b>№'+a.id+' '+esc(a.title)+'</b><span>'+Number(a.price).toLocaleString('ru-RU')+' KGS<span class="st '+a.status+'">'+LBL[a.status]+'</span></span></div>'+
+        '<div class="acts"><button class="sm" data-act="edit">Изменить</button><button class="sm dng" data-act="del">Удалить</button></div></div>';
+    }).join('');
+  }
+  $('list').onclick=async function(e){
+    var b=e.target.closest('button');if(!b)return;
+    var id=Number(b.closest('.item').getAttribute('data-id')),a=accounts.filter(function(x){return x.id===id})[0];
+    if(b.dataset.act==='edit')openForm(a);
+    if(b.dataset.act==='del'){
+      if(!confirm('Удалить аккаунт «'+a.title+'» и все его фото? Это нельзя отменить.'))return;
+      try{await call('DELETE','/api/admin/accounts/'+id);msg('Аккаунт удалён');loadList()}catch(er){msg(er.message,'err')}
+    }
+  };
+  $('newBtn').onclick=function(){openForm(null)};
+  $('backBtn').onclick=$('cancelBtn').onclick=function(){msg('');show('listBox')};
+
+  var F=['title','title_ky','price','rank','level','heroes','skins','description','description_ky','seo_ru','seo_ky','status'];
+  function openForm(a){
+    editing=a;msg('');
+    $('formTitle').textContent=a?('Аккаунт №'+a.id):'Новый аккаунт';
+    F.forEach(function(k){$('f_'+k).value=a?(a[k]==null?'':a[k]):(k==='status'?'available':'')});
+    photos=a?a.photos.map(function(id){return{id:id,url:api()+'/img/'+id}}):[];
+    drawPhotos();show('formBox');window.scrollTo(0,0);
+  }
+  function drawPhotos(){
+    $('photos').innerHTML=photos.map(function(p,i){
+      return '<div class="ph-box" data-i="'+i+'"><span class="n">'+(i+1)+'</span><img src="'+p.url+'" alt="">'+
+        '<div class="bar"><button data-m="-1" aria-label="Влево">◀</button><button data-m="del" aria-label="Удалить фото">✕</button><button data-m="1" aria-label="Вправо">▶</button></div></div>';
+    }).join('');
+  }
+  $('photos').onclick=function(e){
+    var b=e.target.closest('button');if(!b)return;var i=Number(b.closest('.ph-box').getAttribute('data-i')),m=b.dataset.m;
+    if(m==='del'){var p=photos.splice(i,1)[0];if(p.blob)URL.revokeObjectURL(p.url)}
+    else{var j=i+Number(m);if(j<0||j>=photos.length)return;var t=photos[i];photos[i]=photos[j];photos[j]=t}
+    drawPhotos();
+  };
+
+  // сжатие: макс. 1280px, WebP (или JPEG), до ~380 КБ
+  async function shrink(file){
+    var bmp=await createImageBitmap(file);var s=Math.min(1,1280/Math.max(bmp.width,bmp.height));
+    var c=document.createElement('canvas');c.width=Math.round(bmp.width*s);c.height=Math.round(bmp.height*s);
+    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    var type='image/webp';
+    var test=await new Promise(function(r){c.toBlob(r,type,.8)});
+    if(!test||test.type!=='image/webp')type='image/jpeg';
+    var q=.85,b;
+    for(var k=0;k<7;k++){b=await new Promise(function(r){c.toBlob(r,type,q)});if(b.size<=380*1024)break;q-=.1}
+    if(b.size>440*1024)throw new Error('Фото слишком тяжёлое даже после сжатия');
+    return b;
+  }
+  $('fileIn').onchange=async function(){
+    var files=Array.prototype.slice.call(this.files);this.value='';
+    for(var i=0;i<files.length;i++){
+      if(photos.length>=6){msg('Максимум 6 фото','err');break}
+      try{var b=await shrink(files[i]);photos.push({blob:b,url:URL.createObjectURL(b)})}
+      catch(e){msg('Не удалось обработать фото: '+e.message,'err')}
+    }
+    drawPhotos();
+  };
+
+  // SEO-текст по полям (как ищут в Кыргызстане)
+  $('seoBtn').onclick=function(){
+    var v=function(k){return $('f_'+k).value.trim()};
+    var tr=v('title'),tk=v('title_ky')||tr,rank=v('rank'),lvl=v('level'),h=v('heroes'),sk=v('skins'),pr=v('price');
+    if(!tr){msg('Сначала заполните название','err');return}
+    var ru='Продаётся аккаунт Mobile Legends: '+tr+'.'+(rank?' Ранг: '+rank+'.':'')+(lvl&&lvl!=='0'?' Уровень '+lvl+'.':'')+(h&&h!=='0'?' Героев: '+h+'.':'')+(sk&&sk!=='0'?' Скинов: '+sk+'.':'')+(pr?' Цена '+Number(pr).toLocaleString('ru-RU')+' сом.':'')+
+      ' Купить аккаунт MLBB в Кыргызстане: быстрая передача, оплата через Mbank и O!Банк, поддержка в WhatsApp и Telegram. Аккаунт Мобайл Легендс в Бишкеке, купить аккаунт млбб недорого.';
+    var ky='Mobile Legends аккаунту сатылат: '+tk+'.'+(rank?' Даража: '+rank+'.':'')+(lvl&&lvl!=='0'?' Деңгээл '+lvl+'.':'')+(h&&h!=='0'?' Баатырлар: '+h+'.':'')+(sk&&sk!=='0'?' Скиндер: '+sk+'.':'')+(pr?' Баасы '+Number(pr).toLocaleString('ru-RU')+' сом.':'')+
+      ' Кыргызстанда MLBB аккаунтун сатып алуу: тез өткөрүп берүү, Mbank жана O!Деңги аркылуу төлөө, WhatsApp жана Telegram аркылуу колдоо. Мобайл Легендс аккаунту Бишкекте, млбб аккаунтун арзан сатып алуу.';
+    $('f_seo_ru').value=ru;$('f_seo_ky').value=ky;
+  };
+
+  $('saveBtn').onclick=async function(){
+    var btn=this;msg('');
+    var body={};F.forEach(function(k){body[k]=$('f_'+k).value});
+    if(!body.title.trim()){msg('Укажите название','err');return}
+    if(body.price===''||Number(body.price)<0){msg('Укажите цену','err');return}
+    btn.disabled=true;btn.textContent='Сохраняем…';
+    try{
+      var id;
+      if(editing){id=editing.id;await call('PUT','/api/admin/accounts/'+id,body)}
+      else{id=(await call('POST','/api/admin/accounts',body)).id}
+      // удалить убранные старые фото
+      var keep={};photos.forEach(function(p){if(p.id)keep[p.id]=1});
+      if(editing)for(var i=0;i<editing.photos.length;i++){if(!keep[editing.photos[i]])await call('DELETE','/api/admin/photos/'+editing.photos[i])}
+      // загрузить новые
+      for(var j=0;j<photos.length;j++){
+        if(photos[j].blob){btn.textContent='Фото '+(j+1)+' из '+photos.length+'…';photos[j].id=(await call('POST','/api/admin/accounts/'+id+'/photos',undefined,photos[j].blob)).id}
+      }
+      await call('PUT','/api/admin/accounts/'+id+'/photo-order',{order:photos.map(function(p){return p.id})});
+      photos.forEach(function(p){if(p.blob)URL.revokeObjectURL(p.url)});
+      msg('Сохранено');await loadList();
+    }catch(e){msg(e.message,'err')}
+    btn.disabled=false;btn.textContent='Сохранить';
+  };
+  start();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Сделка · Diamond.kg</title>
+<link rel="icon" href="favicon-32.png">
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#161a26;--muted:#5d6475;--line:#dfe3ee;--gold:#c47f00;--ok:#13804a;--bad:#b3261e}
+@media (prefers-color-scheme:dark){:root{--bg:#0b0f1a;--card:#141a2a;--text:#eef0f7;--muted:#99a1b6;--line:#26304a;--gold:#f0b429;--ok:#3ecf8e;--bad:#ff7b72}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.35rem;margin:6px 0 2px}
+.sub{color:var(--muted);margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.big{font-size:1.7rem;font-weight:700;color:var(--gold)}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row span{color:var(--muted);font-size:.9rem}
+.row b{word-break:break-all;text-align:right}
+button{font:inherit;cursor:pointer}
+.go{width:100%;min-height:50px;border:0;border-radius:12px;background:var(--gold);color:#fff;font-weight:700;margin-top:10px}
+.go.ghost{background:transparent;color:var(--bad);border:1px solid var(--line);font-weight:600}
+.go:disabled{opacity:.6}
+.cp{border:1px solid var(--line);background:transparent;color:var(--text);border-radius:8px;padding:4px 10px;font-size:.85rem}
+.err{color:var(--bad);margin:10px 0 0}
+.note{color:var(--muted);font-size:.9rem}
+.state{font-weight:600}
+ol{padding-left:20px;margin:8px 0}
+</style>
+</head>
+<body>
+<main>
+  <h1>Сделка через гаранта</h1>
+  <p class="sub" id="sub">Загрузка…</p>
+  <div id="view"></div>
+  <p class="note">Diamond.kg держит деньги у себя, пока вы не убедитесь, что аккаунт ваш. Ссылка личная, не передавайте её другим.</p>
+</main>
+<script src="api-config.js"></script>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), code = q.get('c') || '', sec = q.get('s') || '';
+  var api = (window.DK_API || '').replace(/\/+$/, ''), view = document.getElementById('view'), sub = document.getElementById('sub');
+  var timer = null, busy = false, lastErr = '';
+  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function money(n) { return Number(n).toLocaleString('ru-RU') + ' сом'; }
+  function call(method, path) {
+    return fetch(api + '/api/market/deals/' + encodeURIComponent(code) + path + '?s=' + encodeURIComponent(sec), { method: method, cache: 'no-store' })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || 'Ошибка ' + r.status); return j; }); });
+  }
+  function row(label, value, copy) {
+    var r = el('div', 'row'); r.appendChild(el('span', '', label));
+    var right = el('div'); right.style.cssText = 'display:flex;gap:8px;align-items:center';
+    right.appendChild(el('b', '', value));
+    if (copy) { var c = el('button', 'cp', 'Копировать'); c.type = 'button'; c.onclick = function () { try { navigator.clipboard.writeText(value); c.textContent = 'Готово'; setTimeout(function () { c.textContent = 'Копировать'; }, 1500); } catch (e) {} }; right.appendChild(c); }
+    r.appendChild(right); return r;
+  }
+  function action(label, path, cls, confirmText) {
+    var b = el('button', 'go ' + (cls || ''), label); b.type = 'button';
+    b.onclick = function () {
+      if (busy) return; if (confirmText && !window.confirm(confirmText)) return;
+      busy = true; b.disabled = true; lastErr = '';
+      call('POST', path).then(function () { busy = false; refresh(); }).catch(function (e) { busy = false; lastErr = e.message; refresh(); });
+    };
+    return b;
+  }
+  function draw(d) {
+    view.textContent = ''; sub.textContent = d.title + ' · ' + money(d.price);
+    var st = d.status, c = el('div', 'card');
+    if (st === 'wait_pay') {
+      c.appendChild(el('div', 'big', money(d.price)));
+      c.appendChild(el('p', 'note', 'Переведите точную сумму через Mbank или O!Банк. В комментарии к переводу укажите код сделки.'));
+      c.appendChild(row('Номер', d.pay.num, true)); c.appendChild(row('Получатель', d.pay.name)); c.appendChild(row('Комментарий', d.code, true));
+      c.appendChild(action('Я оплатил', '/paid'));
+    } else if (st === 'pay_check') {
+      c.appendChild(el('div', 'state', '⏳ Проверяем оплату'));
+      c.appendChild(el('p', 'note', 'Обычно это занимает несколько минут. Страница обновится сама, можно её не закрывать.'));
+    } else if (st === 'paid' || st === 'confirmed' || st === 'disputed') {
+      var cr = d.creds;
+      c.appendChild(el('div', 'state', '✅ Оплата подтверждена. Данные для входа:'));
+      if (cr) {
+        c.appendChild(row('Способ входа', cr.method)); c.appendChild(row('Логин', cr.login, true)); c.appendChild(row('Пароль', cr.password, true)); c.appendChild(row('Привязано', cr.bindings));
+      } else c.appendChild(el('p', 'err', 'Данные не загрузились. Напишите нам в WhatsApp +996 555 920 204.'));
+      if (st === 'paid') {
+        var ol = el('ol'); ['Войдите в аккаунт.', 'Привяжите свою почту и телефон, смените пароль.', 'Только после этого нажмите «Зашёл, подтверждаю».'].forEach(function (t) { ol.appendChild(el('li', '', t)); });
+        c.appendChild(ol);
+        c.appendChild(action('Зашёл, подтверждаю', '/confirm', '', 'Подтвердить? После этого мы переведём деньги продавцу.'));
+        c.appendChild(action('Не могу войти', '/problem', 'ghost'));
+      } else if (st === 'confirmed') {
+        c.appendChild(el('p', 'state', 'Вы подтвердили вход. Спасибо!'));
+        c.appendChild(el('p', 'note', 'Деньги продавцу переводим через 72 часа. Если за это время возникнет проблема с аккаунтом, напишите нам в WhatsApp +996 555 920 204.'));
+      } else c.appendChild(el('p', 'state', 'Мы разбираемся с вашим обращением и скоро свяжемся.'));
+    } else if (st === 'paid_out') c.appendChild(el('div', 'state', '🎉 Сделка завершена. Спасибо!'));
+    else if (st === 'refunded') c.appendChild(el('div', 'state', '↩️ Сделка отменена, деньги возвращаем. Мы свяжемся с вами.'));
+    else c.appendChild(el('div', 'state', 'Сделка отменена.'));
+    view.appendChild(c);
+    if (lastErr) view.appendChild(el('p', 'err', lastErr));
+    clearTimeout(timer);
+    if (st === 'pay_check') timer = setTimeout(refresh, 15000);
+  }
+  function refresh() {
+    call('GET', '').then(draw).catch(function (e) { sub.textContent = ''; view.textContent = ''; view.appendChild(el('p', 'err', e.message)); });
+  }
+  if (!code || !sec || !api) { sub.textContent = ''; view.appendChild(el('p', 'err', 'Неверная ссылка сделки.')); } else refresh();
+})();
+</script>
+</body>
+</html>

@@ -10,7 +10,7 @@ const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
 import { loginWithGoogle, getMe, listMyOrders, userFromRequest, adminListUsers } from './auth.js';
 import { maybeSendReport } from './report.js';
-import { financeSummary, maybeSendWeekly } from './finance.js';
+import { financeSummary, maybeSendWeekly, maybeRemindTaxes } from './finance.js';
 import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
@@ -20,7 +20,7 @@ import { startFinikOrder, finikWebhook, cleanupFinik, finikReady } from './finik
 import { startGopayOrder, gopayWebhook, cleanupGopay, gopayReady, gopayPublic } from './gopay.js';
 import { redeemPromo } from './promo.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
-import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
+import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, blacklistOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
 
 function cors(req) {
   const o = req.headers.get('Origin') || '';
@@ -347,9 +347,9 @@ export default {
           if (!rc) return err(req, 'Чека нет', 404);
           return new Response(rc.bytes, { headers: { 'Content-Type': rc.mime, 'Cache-Control': 'private, max-age=3600', ...cors(req) } });
         }
-        mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9]{4,20})\/(confirm|refresh|refunded|manual-done|cancel)$/);
+        mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9]{4,20})\/(confirm|refresh|refunded|manual-done|cancel|blacklist)$/);
         if (mm && m === 'POST') {
-          const fn = { confirm: confirmOrder, refresh: refreshOrder, refunded: markRefunded, 'manual-done': markManualDone, cancel: cancelOrder }[mm[2]];
+          const fn = { confirm: confirmOrder, refresh: refreshOrder, refunded: markRefunded, 'manual-done': markManualDone, cancel: cancelOrder, blacklist: blacklistOrder }[mm[2]];
           const r = await fn(env, mm[1]);
           return r.error ? err(req, r.error, r.status || 400) : json(req, r);
         }
@@ -433,6 +433,7 @@ export default {
     ctx.waitUntil(checkBalance(env).catch(() => {}));
     ctx.waitUntil(maybeSendReport(env).catch(() => {}));
     ctx.waitUntil(maybeSendWeekly(env).catch(() => {}));
+    ctx.waitUntil(maybeRemindTaxes(env).catch(() => {}));
     ctx.waitUntil(remindDeals(env).catch(() => {}));
     ctx.waitUntil(cleanupFinik(env).catch(() => {}));
     ctx.waitUntil(cleanupGopay(env).catch(() => {}));

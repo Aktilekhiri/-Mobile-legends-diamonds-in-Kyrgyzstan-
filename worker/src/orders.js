@@ -210,7 +210,11 @@ export async function syncFromFz(env, o, fz) {
     await notify(env, `⚠️ Заказ ${o.id}: составной пакет выдан частично (FazerCards ${fz.id}). Проверьте вручную, что получил клиент.`);
   } else if (st === 'refund' || st === 'failed') {
     // failed: деньги гарантированно вернутся только при refund, поэтому клиенту возвращаем деньги только после refund
-    if (st === 'refund') {
+    if (st === 'refund' && o.method === 'promo') {
+      await setStatus(env, o.id, { status: 'cancelled', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
+      const back = await releasePromo(env, o.id);
+      await notify(env, `↩️ Промо-заказ ${o.id} не выполнен (FazerCards вернул деньги на баланс).${back ? ' Промокод возвращён, клиент может ввести его снова.' : ' Промокод не найден, проверьте таблицу промокодов.'}\nПричина: ${String(fz.fail_reason || '—').slice(0, 150)}`);
+    } else if (st === 'refund') {
       await setStatus(env, o.id, { status: 'refund_due', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
       await notify(env, `↩️ Заказ ${o.id} не выполнен (FazerCards вернул деньги на баланс).\nВерните клиенту ${o.price_kgs} сом (${o.method}, тел. ${o.phone || '—'}) и нажмите «Деньги возвращены» в админке.\nПричина: ${String(fz.fail_reason || '—').slice(0, 150)}`);
       await tgNotifyOrder(env, o.id, 'refund');
@@ -262,11 +266,27 @@ export async function refreshOrder(env, id) {
   return { ok: true, fz_status: fz.status };
 }
 
+// Промокод освобождаем, когда промо-заказ не выдан (код снова можно использовать)
+async function releasePromo(env, orderId) {
+  try { const r = await env.DB.prepare("UPDATE promo_codes SET used_at = 0, order_id = '' WHERE order_id = ?").bind(orderId).run(); return r.meta.changes > 0; } catch (e) { return false; }
+}
+// Кнопка «В чёрный список» в админке: блокируем телефон заказа (последние 9 цифр), как проверяет createOrder
+export async function blacklistOrder(env, id) {
+  const o = await env.DB.prepare('SELECT phone FROM orders WHERE id = ?').bind(id).first();
+  if (!o) return { error: 'Заказ не найден', status: 404 };
+  const v = String(o.phone || '').replace(/\D/g, '').slice(-9);
+  if (v.length < 9) return { error: 'У заказа нет телефона', status: 409 };
+  await env.DB.prepare('CREATE TABLE IF NOT EXISTS blacklist (kind TEXT NOT NULL, value TEXT NOT NULL, reason TEXT NOT NULL DEFAULT \'\', created_at INTEGER NOT NULL, PRIMARY KEY (kind, value))').run();
+  await env.DB.prepare("INSERT OR IGNORE INTO blacklist (kind, value, reason, created_at) VALUES ('phone', ?, ?, ?)").bind(v, 'из админки, заказ ' + id, Date.now()).run();
+  return { ok: true };
+}
+
 export async function markRefunded(env, id) {
   const o = await env.DB.prepare('SELECT status FROM orders WHERE id = ?').bind(id).first();
   if (!o) return { error: 'Заказ не найден', status: 404 };
   if (o.status !== 'refund_due') return { error: 'Возврат не требуется (статус: ' + o.status + ')', status: 409 };
   await setStatus(env, id, { status: 'refunded' });
+  await releasePromo(env, id);
   return { ok: true };
 }
 export async function markManualDone(env, id) {
@@ -283,6 +303,7 @@ export async function cancelOrder(env, id) {
   if (!o) return { error: 'Заказ не найден', status: 404 };
   if (!['new', 'manual'].includes(o.status)) return { error: 'Нельзя отменить (статус: ' + o.status + ')', status: 409 };
   await setStatus(env, id, { status: 'cancelled', finished_at: Date.now() });
+  await releasePromo(env, id);
   await tgNotifyOrder(env, id, 'cancelled');
   return { ok: true };
 }

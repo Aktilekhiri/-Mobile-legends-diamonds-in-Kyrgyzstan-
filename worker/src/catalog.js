@@ -1,47 +1,47 @@
 // Соответствие пакетов сайта и офферов FazerCards (регион Global).
 // cost — ожидаемая себестоимость в USD (Gold-цены). Нет записи = выдача вручную.
 export const GLOBAL_CATALOG = {
-  '13+1':   { offer: '14_diamonds', cost: 0.23 },
-  '38+4':   { offer: '42_diamonds', cost: 0.69 },
-  '50+5':   { offer: '50_5_diamonds_first_top_up_bonus', cost: 0.7578 },
+  '13+1':   { offer: '14_diamonds', cost: 0.2317 },
+  '38+4':   { offer: '42_diamonds', cost: 0.6952 },
+  '50+5':   { offer: '50_5_diamonds_first_top_up_bonus', cost: 0.7093 },
   '51+5':   { offer: '51_5_diamonds', cost: 1.209 }, // обычный пакет (не только на 1-е пополнение), 56 алмазов
-  '64+6':   { offer: '70_diamonds', cost: 1.15 },
-  '78+8':   { offer: '78_8_diamonds', cost: 1.189 },
-  '156+16': { offer: '156_16_diamonds', cost: 2.2367 },
-  '234+23': { offer: '234_23_diamonds', cost: 3.417 },
+  '64+6':   { offer: '70_diamonds', cost: 1.1586 },
+  '78+8':   { offer: '78_8_diamonds', cost: 1.1173 },
+  '156+16': { offer: '156_16_diamonds', cost: 2.2137 },
+  '234+23': { offer: '234_23_diamonds', cost: 3.1857 },
   // составной пакет: два оффера подряд (234+23 и 78+8 = 343), 'a|b' = несколько заказов FazerCards
-  '253+23': { offer: '234_23_diamonds|19_diamonds', cost: 3.754 }, // 276 = 257 + 19
-  '312+31': { offer: '234_23_diamonds|78_8_diamonds', cost: 4.606 },
-  '310+34': { offer: '234_23_diamonds|78_8_diamonds', cost: 4.606 }, // старый ключ (заказы, созданные до замены)
-  '1294+81':  { offer: '625_81_diamonds|429_diamonds|240_diamonds', cost: 19.133 }, // 1375 = 706 + 429 + 240
-  '1679+162': { offer: '625_81_diamonds|625_81_diamonds|429_diamonds', cost: 24.351 }, // 1841 = 706 + 706 + 429
-  '284+0':  { offer: '284_diamonds', cost: 4.6345 },
-  '2015+383': { offer: '2015_383_diamonds', cost: 33.7311 },
-  '317+38': { offer: '355_diamonds', cost: 5.75 },
-  '383+46': { offer: '429_diamonds', cost: 5.804 },
-  '625+81': { offer: '625_81_diamonds', cost: 9.273 },
-  '500+500': { offer: '500_65_diamonds_first_top_up_bonus', cost: 7.5225 }, // бонус x2 только на первое пополнение этого номинала
-  '1000+160': { offer: '1007_156_diamonds', cost: 18.76 },
-  '1252+194': { offer: '1446_diamonds', cost: 22.93 },
-  '1860+335': { offer: '1860_335_diamonds', cost: 28.069 },
-  '2500+475': { offer: '2976_diamonds', cost: 45.98 },
-  '3099+589': { offer: '3099_589_diamonds', cost: 46.827 },
-  '4649+883': { offer: '4649_883_diamonds', cost: 70.703 },
-  '7502+0': { offer: '7502_diamonds', cost: 115.5703 },
-  '7740+1548': { offer: '7740_1548_diamonds', cost: 117.433 },
-  'Weekly Diamond Pass': { offer: 'weekly_pass', cost: 1.4777 },
-  'Weekly Elite Pack': { offer: 'weekly_elite_pack', cost: 0.7759 },
-  'Monthly Elite Pack': { offer: 'monthly_elite_pack', cost: 3.8321 },
-  'Twilight Pass': { offer: 'twilight_pass', cost: 7.8305 },
+  '253+23': { offer: '234_23_diamonds|19_diamonds', cost: 3.5252 }, // 276 = 257 + 19
+  '312+31': { offer: '234_23_diamonds|78_8_diamonds', cost: 4.303 },
+  '310+34': { offer: '234_23_diamonds|78_8_diamonds', cost: 4.303 }, // старый ключ (заказы, созданные до замены)
+  '1294+81':  { offer: '625_81_diamonds|429_diamonds|240_diamonds', cost: 18.1441 }, // 1375 = 706 + 429 + 240
+  '1679+162': { offer: '625_81_diamonds|625_81_diamonds|429_diamonds', cost: 22.8048 }, // 1841 = 706 + 706 + 429
+  '284+0':  { offer: '284_diamonds', cost: 4.6446 },
+  '2015+383': { offer: '2015_383_diamonds', cost: 32.1997 },
+  '317+38': { offer: '355_diamonds', cost: 5.8032 },
+  '383+46': { offer: '429_diamonds', cost: 5.4052 },
+  '625+81': { offer: '625_81_diamonds', cost: 8.6998 },
+  '500+500': { offer: '500_65_diamonds_first_top_up_bonus', cost: 7.0082 }, // бонус x2 только на первое пополнение этого номинала
+  '1000+160': { offer: '1007_156_diamonds', cost: 18.2257 },
+  '1252+194': { offer: '1446_diamonds', cost: 23.1423 },
+  '1860+335': { offer: '1860_335_diamonds', cost: 26.332 },
+  '2500+475': { offer: '2976_diamonds', cost: 46.4155 },
+  '3099+589': { offer: '3099_589_diamonds', cost: 43.929 },
+  '4649+883': { offer: '4649_883_diamonds', cost: 66.3288 },
+  '7502+0': { offer: '7502_diamonds', cost: 115.8222 },
+  '7740+1548': { offer: '7740_1548_diamonds', cost: 110.1671 },
+  'Weekly Diamond Pass': { offer: 'weekly_pass', cost: 1.3773 },
+  'Weekly Elite Pack': { offer: 'weekly_elite_pack', cost: 0.7219 },
+  'Monthly Elite Pack': { offer: 'monthly_elite_pack', cost: 3.5824 },
+  'Twilight Pass': { offer: 'twilight_pass', cost: 7.3275 },
 };
 // Регион Россия (категория mobile_legends_ru)
 export const RU_CATALOG = {
-  '35+0': { offer: '35_diamonds', cost: 0.596 }, '55+0': { offer: '55_diamonds', cost: 0.9373 },
-  '165+0': { offer: '165_diamonds', cost: 2.8168 }, '275+0': { offer: '275_diamonds', cost: 4.6963 },
-  '565+0': { offer: '565_diamonds', cost: 9.447 }, '1155+0': { offer: '1155_diamonds', cost: 18.955 },
-  '1765+0': { offer: '1765_diamonds', cost: 28.341 }, '2975+0': { offer: '2975_diamonds', cost: 47.286 },
-  '6000+0': { offer: '6000_diamonds', cost: 94.45 },
-  'Diamond Pass (weekly)': { offer: 'weekly_pass', cost: 1.89 },
+  '35+0': { offer: '35_diamonds', cost: 0.6105 }, '55+0': { offer: '55_diamonds', cost: 0.9646 },
+  '165+0': { offer: '165_diamonds', cost: 2.8714 }, '275+0': { offer: '275_diamonds', cost: 4.7856 },
+  '565+0': { offer: '565_diamonds', cost: 9.6216 }, '1155+0': { offer: '1155_diamonds', cost: 19.3138 },
+  '1765+0': { offer: '1765_diamonds', cost: 28.8649 }, '2975+0': { offer: '2975_diamonds', cost: 48.1787 },
+  '6000+0': { offer: '6000_diamonds', cost: 96.2163 },
+  'Diamond Pass (weekly)': { offer: 'weekly_pass', cost: 1.9344 },
 };
 // Игры (не MLBB): категория FazerCards, поле сервера, каталог офферов (ключ = offer_id).
 export const GAMES = {
@@ -50,7 +50,7 @@ export const GAMES = {
     '325_uc': { offer: '325_uc', cost: 4.4229 },
     '660_uc': { offer: '660_uc', cost: 8.8559 },
     '1800_uc': { offer: '1800_uc', cost: 22.1348 },
-    '3850_uc': { offer: '3850_uc', cost: 44.2696 },
+    '3850_uc': { offer: '3850_uc', cost: 44.2337 },
     '8100_uc': { offer: '8100_uc', cost: 88.529 },
     'prime_1_month': { offer: 'prime_1_month', cost: 0.8866 },
     'elite_pass_lv1_50': { offer: 'elite_pass_lv1_50', cost: 5.3398 },
@@ -171,13 +171,13 @@ export const GAMES = {
   } },
   arena: { category: 'arena_breakout', serverField: null, servers: null, catalog: {
     '66_bonds': { offer: '66_bonds', cost: 0.7909 },
-    '335_bonds': { offer: '335_bonds', cost: 3.9897 },
-    '675_bonds': { offer: '675_bonds', cost: 7.9089 },
-    '1690_bonds': { offer: '1690_bonds', cost: 19.7571 },
-    '3400_bonds': { offer: '3400_bonds', cost: 39.3429 },
+    '335_bonds': { offer: '335_bonds', cost: 3.9877 },
+    '675_bonds': { offer: '675_bonds', cost: 7.9744 },
+    '1690_bonds': { offer: '1690_bonds', cost: 19.9364 },
+    '3400_bonds': { offer: '3400_bonds', cost: 39.9343 },
     'beginner_select': { offer: 'beginner_select', cost: 0.7194 },
-    'monthly_advanced_battle_pass_activation_pass': { offer: 'monthly_advanced_battle_pass_activation_pass', cost: 0.8735 },
-    'monthly_premium_battle_pass_activation_pass': { offer: 'monthly_premium_battle_pass_activation_pass', cost: 3.494 },
+    'monthly_advanced_battle_pass_activation_pass': { offer: 'monthly_advanced_battle_pass_activation_pass', cost: 0.8634 },
+    'monthly_premium_battle_pass_activation_pass': { offer: 'monthly_premium_battle_pass_activation_pass', cost: 3.5041 },
     'bulletproof_case_30d': { offer: 'bulletproof_case_30d', cost: 2.1681 },
   } },
   tgstars: { category: 'telegram_stars', serverField: null, servers: null, type: 'gift_cards', direct: 'stars', kind: 'username', catalog: {
@@ -197,8 +197,8 @@ export const GAMES = {
   roblox: { category: 'roblox_global', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
     '50_robux': { offer: '50_robux', cost: 1.5264 },
     '800_robux': { offer: '800_robux', cost: 9.0675 },
-    '1000_robux': { offer: '1000_robux', cost: 11.0825 },
-    '2000_robux': { offer: '2000_robux', cost: 22.165 },
+    '1000_robux': { offer: '1000_robux', cost: 10.692 },
+    '2000_robux': { offer: '2000_robux', cost: 22.2952 },
     '2500_robux': { offer: '2500_robux', cost: 25.7564 },
     '3000_robux': { offer: '3000_robux', cost: 34.7247 },
     '4500_robux': { offer: '4500_robux', cost: 47.8563 },

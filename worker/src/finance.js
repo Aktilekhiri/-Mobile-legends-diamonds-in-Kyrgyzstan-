@@ -110,3 +110,31 @@ export async function maybeSendWeekly(env, nowMs = Date.now()) {
   await env.DB.prepare("INSERT INTO meta (k,v) VALUES ('finance_week_sent', ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v").bind(key).run();
   await notify(env, weeklyText(await financeSummary(env, nowMs)));
 }
+
+// Напоминания о взносах и налоге (из cron каждую минуту, шлём в 10:00 по Бишкеку, каждое напоминание один раз):
+// • Соцфонд: 13, 19 и 20 числа каждого месяца, взнос SOCIAL_MONTH сом до 20 числа;
+// • налог за квартал: 1, 10 и 18 числа апреля/июля/октября/января, сумма 2% с выручки прошедшего квартала (кварталы с 2027 года).
+const TAX_FROM = Date.UTC(2027, 0, 1) - TZ;
+export async function maybeRemindTaxes(env, nowMs = Date.now()) {
+  const local = new Date(nowMs + TZ);
+  if (local.getUTCHours() < 10) return;
+  const y = local.getUTCFullYear(), m = local.getUTCMonth(), d = local.getUTCDate();
+  const todo = [];
+  if ([13, 19, 20].includes(d)) todo.push({ k: `soc-${y}-${pad(m + 1)}-${d}`, t: `🧾 Соцфонд: взнос ${fmt(SOCIAL_MONTH)} сом нужно оплатить до 20 числа${d === 20 ? ' (сегодня последний день)' : d === 19 ? ' (завтра последний день)' : ''}.` });
+  if (m % 3 === 0 && [1, 10, 18].includes(d)) {
+    const qStart = Date.UTC(m === 0 ? y - 1 : y, m === 0 ? 9 : m - 3, 1) - TZ, qEnd = Date.UTC(y, m, 1) - TZ;
+    if (qStart >= TAX_FROM) {
+      const q = await sums(env, qStart, qEnd), tax = Math.round(Math.max(0, q.rev) * TAX_PCT);
+      todo.push({ k: `tax-${y}-${pad(m + 1)}-${d}`, t: `🧾 Налог за прошедший квартал: ${fmt(tax)} сом (2% с выручки ${fmt(q.rev)} сом). Срок оплаты уточните в налоговой, деньги отложены на карте-сейфе.` });
+    }
+  }
+  if (!todo.length) return;
+  await env.DB.prepare('CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT)').run();
+  for (const x of todo) {
+    const key = 'remind_' + x.k;
+    const r = await env.DB.prepare('SELECT v FROM meta WHERE k = ?').bind(key).first();
+    if (r) continue;
+    await env.DB.prepare('INSERT OR IGNORE INTO meta (k,v) VALUES (?, ?)').bind(key, '1').run();
+    await notify(env, x.t);
+  }
+}

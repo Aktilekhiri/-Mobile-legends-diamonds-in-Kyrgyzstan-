@@ -8,7 +8,7 @@ const TZ = 6 * 3600 * 1000;            // Бишкек = UTC+6
 const DAY = 86400000;
 export const RESERVE_PCT = 0.03;       // 3% выручки остаётся на карте приёма: комиссии сети, курс, возвраты
 export const TAX_PCT = 0.02;           // единый налог ИП: 2% от выручки (за вычетом возвратов), платится раз в квартал
-export const SOCIAL_MONTH = 1257;      // взнос в Соцфонд в месяц, сом
+export const SOCIAL_MONTH = 1800;      // взнос в Соцфонд в месяц, сом (с запасом: официально 1257)
 export const SOCIAL_WEEK = Math.round(SOCIAL_MONTH * 12 / 52); // недельная доля взноса
 export const MIN_BALANCE_USD = 60;     // не опускаем баланс FazerCards ниже (запас на ~4 дня)
 export const MIN_DEPOSIT_USD = 50;     // меньше не пополняем: комиссия 1 USDT съест слишком много

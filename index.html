@@ -1992,9 +1992,10 @@ function renderPackages() {
   tabsEl.innerHTML = useTabs ? cats.map(c => `<button type="button" role="tab" aria-selected="${c === pkgTab}" class="pkg-tab${c === pkgTab ? ' on' : ''}" onclick="setPkgTab(this.dataset.t)" data-t="${esc(c)}">${esc(c)}</button>`).join('') : '';
   const list = useTabs ? packages.filter(p => pkgCat(p) === pkgTab) : packages;
   let lastType = null, lastOut = false;
+  const oneGroup = list.length > 0 && list.every(p => p.type === list[0].type);   // один тип пакетов: заголовок группы не нужен (например, Robux)
   grid.innerHTML = list.map(p => {
     let head = '';
-    if (!useTabs && p.type !== lastType) { head = `<div class="pkg-group">${p.type === 'pass' ? pkgIcon(p) + ' Пассы и наборы' : pkgIcon(p) + ' ' + (p.unit ? p.unit.charAt(0).toUpperCase() + p.unit.slice(1) : 'Алмазы')}</div>`; lastOut = false; }
+    if (!useTabs && !oneGroup && p.type !== lastType) { head = `<div class="pkg-group">${p.type === 'pass' ? pkgIcon(p) + ' Пассы и наборы' : pkgIcon(p) + ' ' + (p.unit ? p.unit.charAt(0).toUpperCase() + p.unit.slice(1) : 'Алмазы')}</div>`; lastOut = false; }
     if (p.out && !lastOut) head += `<div class="pkg-group">⏳ Нет в наличии</div>`;
     lastType = p.type; lastOut = !!p.out;
     return head + `

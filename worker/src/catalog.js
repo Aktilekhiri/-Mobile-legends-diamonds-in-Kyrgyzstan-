@@ -247,6 +247,7 @@ export const GAMES = {
     '5_usd': { offer: '5_usd' },
     '10_usd': { offer: '10_usd' },
     '20_usd': { offer: '20_usd' },
+    '35_usd': { offer: '35_usd' },
     '50_usd': { offer: '50_usd' },
   } },
   valorant: { category: 'valorant_ru', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {

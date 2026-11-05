@@ -1581,12 +1581,12 @@
     <div class="payment-confirm" id="walletPay" hidden><div class="card-title">💰 Оплата с баланса</div>
       <div class="method-note" id="walletNote" style="margin:0 0 10px"></div>
       <div id="walletForm">
-      <label for="walletPhone">Номер телефона</label><input type="tel" class="input-field" id="walletPhone" placeholder="700 123 456" autocomplete="tel" oninput="syncPhones(this)">
+      <label for="walletPhone">Номер телефона (необязательно)</label><input type="tel" class="input-field" id="walletPhone" placeholder="700 123 456" autocomplete="tel" oninput="syncPhones(this)">
       <button class="btn-primary btn-full" id="walletBtn" onclick="payWithWallet()">💰 Оплатить балансом</button>
       <div id="walletMsg" class="receipt-msg" role="alert" aria-live="polite"></div></div></div>
     <div class="payment-confirm" id="finikBox" hidden><div class="card-title">⚡ Быстрая оплата</div>
       <p class="method-note" style="margin:0 0 10px">Оплата в приложении банка или по QR.</p>
-      <label for="finikPhone">Номер телефона</label><input type="tel" class="input-field" id="finikPhone" placeholder="700 123 456" autocomplete="tel" oninput="syncPhones(this)">
+      <label for="finikPhone">Номер телефона (необязательно)</label><input type="tel" class="input-field" id="finikPhone" placeholder="700 123 456" autocomplete="tel" oninput="syncPhones(this)">
       <button class="btn-primary btn-full" id="finikBtn" onclick="payWithFinik()">⚡ Оплатить по QR</button>
       <div id="finikMsg" class="receipt-msg" role="alert" aria-live="polite"></div>
       <div class="method-note" style="margin-top:12px;text-align:center">Проблема с оплатой? <a href="https://wa.me/996555920204" target="_blank" rel="noopener">WhatsApp</a></div></div>
@@ -2471,7 +2471,7 @@ async function payWithFinik() {
   const set = (t, c) => { msg.textContent = t; msg.className = 'receipt-msg' + (c ? ' ' + c : ''); };
   const phone = document.getElementById('finikPhone').value.trim();
   if (!currentOrder) { set('Ошибка: нет данных заказа', 'err'); return; }
-  if (!phoneOk(phone)) { set('Укажите номер телефона (например 700 123 456)', 'err'); document.getElementById('finikPhone').focus(); return; }
+  if (phone && !phoneOk(phone)) { set('Проверьте номер телефона (например 700 123 456) или оставьте поле пустым', 'err'); document.getElementById('finikPhone').focus(); return; }
   btn.disabled = true; set('Создаём оплату…', '');
   try {
     const resp = await fetch(API_BASE() + '/api/orders/' + (window.FAST_PAY || 'finik'), { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
@@ -2542,7 +2542,7 @@ async function payWithWallet() {
   const set = (t, c) => { msg.textContent = t; msg.className = 'receipt-msg' + (c ? ' ' + c : ''); };
   const phone = document.getElementById('walletPhone').value.trim();
   if (!currentOrder) { set('Ошибка: нет данных заказа', 'err'); return; }
-  if (!phoneOk(phone)) { set('Укажите номер телефона (например 700 123 456)', 'err'); document.getElementById('walletPhone').focus(); return; }
+  if (phone && !phoneOk(phone)) { set('Проверьте номер телефона (например 700 123 456) или оставьте поле пустым', 'err'); document.getElementById('walletPhone').focus(); return; }
   btn.disabled = true; set('Оплачиваем с баланса…', '');
   try {
     const resp = await fetch(API_BASE() + '/api/orders/wallet', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },

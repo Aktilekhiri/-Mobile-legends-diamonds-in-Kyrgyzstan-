@@ -13,8 +13,6 @@ import { notify } from './notify.js';
 import { aiChat, aiReady } from './aichat.js';
 import { checkPromo, redeemPromo, normCode } from './promo.js';
 
-const PAY_NUM = '+996 702 097 127', PAY_NAME = 'Актилек К.';
-const METHODS = { M: 'Mbank', O: 'O!Банк' };
 const PAGE = 8;
 const ST_LABEL = { new: 'Ждёт проверки оплаты', manual: 'Ждёт выдачи', processing: 'Зачисляется', delivered: 'Выдан ✅', refund_due: 'Возврат', refunded: 'Деньги возвращены', cancelled: 'Отменён' };
 const WA = '+996 555 920 204';
@@ -47,7 +45,7 @@ async function show(env, chat, msgId, text, markup) {
   await send(env, chat, text, { reply_markup: markup });
 }
 
-const welcome = chat => `<b>Diamond.kg</b>: пополнение игр за сомы\nMobile Legends, PUBG, Free Fire, Genshin и другие. Оплата через Mbank или O!Банк, зачисление 5–10 минут. Пароль от аккаунта не нужен.`;
+const welcome = chat => `<b>Diamond.kg</b>: пополнение игр за сомы\nMobile Legends, PUBG, Free Fire, Genshin и другие. Оплата по QR в приложении любого банка Кыргызстана, заказ выдаётся автоматически. Пароль от аккаунта не нужен.`;
 
 async function showGames(env, chat, msgId) {
   const rows = []; for (let i = 0; i < SHOP.length; i += 2) rows.push(SHOP.slice(i, i + 2).map(g => btn(g.name, 'g:' + g.id)));
@@ -85,8 +83,8 @@ async function showSummary(env, chat, msgId, st) {
 
 async function showMethods(env, chat, msgId, st) {
   st.step = 'method'; await setSt(env, chat, st);
-  const fin = fastReady(env);
-  await show(env, chat, msgId, fin ? '<b>Как оплатить?</b>\n⚡ <b>Быстрая оплата</b>: платите в приложении любого банка или по QR, заказ выдаётся сам, чек не нужен.\nИли переведите вручную через Mbank / O!Банк и пришлите чек.' : '<b>Выберите банк</b>, через который переведёте оплату:', kb([...(fin ? [[btn('⚡ Оплатить по QR', 'mf')]] : []), [btn('Mbank', 'm:M'), btn('O!Банк', 'm:O')], CANCEL]));
+  if (!fastReady(env)) { await show(env, chat, msgId, `<b>Оплата временно недоступна</b>\nПопробуйте позже или напишите нам в WhatsApp ${WA}.`, kb([CANCEL])); return; }
+  await show(env, chat, msgId, '<b>Оплата</b>\n⚡ Платите в приложении любого банка Кыргызстана или по QR. Заказ выдаётся автоматически, чек не нужен.', kb([[btn('⚡ Оплатить по QR', 'mf')], CANCEL]));
 }
 
 async function payFinikBot(env, cq, st) {
@@ -102,11 +100,8 @@ async function payFinikBot(env, cq, st) {
   await send(env, chat, `<b>Заказ ${esc(r.id)}</b>: ${esc(g.name)}, ${esc(p.l)} · ${money(p.p)} сом\n\nНажмите кнопку, выберите банк или отсканируйте QR. После оплаты заказ придёт автоматически, мы напишем сюда.\n⏱ Ссылка действует 1 час.`, { reply_markup: { inline_keyboard: [[{ text: '⚡ Перейти к оплате', url: r.url }], [btn('« Меню', 'menu')]] } });
 }
 
-async function showPay(env, chat, msgId, st) {
-  const g = SHOP.find(x => x.id === st.g), p = g.packs[st.i];
-  st.step = 'receipt'; await setSt(env, chat, st);
-  await show(env, chat, msgId, `<b>Оплата · ${esc(st.method)}</b>\n\n1. Переведите <b>${money(p.p)} сом</b> на номер:\n<code>${PAY_NUM}</code> (${PAY_NAME})\n2. Сделайте скриншот чека и <b>отправьте его сюда фото</b>.\n\nПосле проверки оплаты заказ выдаётся за 5–10 минут.` + (isNight() ? NIGHT : ''), kb([CANCEL]));
-}
+// ручной перевод отключён: старые кнопки выбора банка ведут на оплату через Finik
+async function showPay(env, chat, msgId, st) { return showMethods(env, chat, msgId, st); }
 
 async function showOrders(env, chat, msgId) {
   const { results } = await env.DB.prepare('SELECT id, pkg_label, price_kgs, status, created_at FROM orders WHERE tg_chat = ? ORDER BY created_at DESC LIMIT 5').bind(chat).all();
@@ -342,7 +337,7 @@ async function onCallback(env, cq) {
   if (d === 'ed' && st.g) return askId(env, chat, mid, st);
   if (d === 'ok' && st.g && st.step === 'confirm') return showMethods(env, chat, mid, st);
   if (d === 'mf' && st.g && st.step === 'method') return payFinikBot(env, cq, st);
-  if ((x = d.match(/^m:([MO])$/)) && st.g) { st.method = METHODS[x[1]]; return showPay(env, chat, mid, st); }
+  if (/^m:[MO]$/.test(d) && st.g) return showPay(env, chat, mid, st);
 }
 
 async function onMessage(env, msg) {

@@ -100,7 +100,7 @@ G = {
    needs='Telegram @username', extra='Подписка на 3, 6 или 12 месяцев подключается на ваш @username автоматически.', dev='Telegram', fresh='',
    howto='Введите свой @username, выберите срок и оплатите. После проверки оплаты Premium подключится к вашему аккаунту Telegram.',
    h2price='Цены на Telegram Premium в сомах'),
- 'roblox': dict(name='Roblox', short='Roblox', unit='Robux', cur='Robux', icon='🧱', code=True, cta='Купить', noid=True,
+ 'roblox': dict(name='Roblox Gift Card', short='Roblox Gift Card', unit='Robux', cur='Robux', icon='🧱', code=True, cta='Купить', noid=True,
    h1='Купить Robux Roblox (Роблокс) в Кыргызстане за сомы',
    title='Купить Robux Roblox в Кыргызстане от {min} сом | Mbank, O!Банк',
    desc='Robux для Roblox в Кыргызстане: оплата Mbank и O!Банк, вы получаете код и активируете его на roblox.com/redeem. Без пароля от аккаунта.',

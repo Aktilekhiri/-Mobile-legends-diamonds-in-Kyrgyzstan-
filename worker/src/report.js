@@ -1,6 +1,6 @@
 // Ежедневный отчёт о прибыли в Telegram (в 23:55 по Бишкеку; в последний день месяца — итог месяца).
 // Считаются только доставленные заказы: прибыль = цена − себестоимость по каталогу (cost_usd × курс).
-import { USD_KGS } from './catalog.js';
+import { USD_KGS, FIN_WHERE } from './catalog.js';
 import { notify } from './notify.js';
 
 const TZ = 6 * 3600 * 1000; // Бишкек = UTC+6
@@ -26,7 +26,7 @@ async function sums(env, from, to) {
             COALESCE(SUM(CASE WHEN ${NP} AND NOT cost_usd > 0 THEN 1 ELSE 0 END),0) AS nocost,
             COALESCE(SUM(CASE WHEN ${NP} THEN 0 ELSE 1 END),0) AS promo_n,
             COALESCE(SUM(CASE WHEN ${NP} THEN 0 ELSE cost_usd * ? END),0) AS promo_cost
-       FROM orders WHERE status = 'delivered'
+       FROM orders WHERE status = 'delivered' AND ${FIN_WHERE}
         AND COALESCE(NULLIF(finished_at,0), created_at) >= ? AND COALESCE(NULLIF(finished_at,0), created_at) < ?`
   ).bind(USD_KGS, USD_KGS, from, to).first();
   return r || { n: 0, rev: 0, profit: 0, nocost: 0, promo_n: 0, promo_cost: 0 };

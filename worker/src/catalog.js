@@ -208,3 +208,8 @@ export const GAMES = {
 export const CATALOGS = { global: GLOBAL_CATALOG, russia: RU_CATALOG, ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.catalog])) };
 export const USD_KGS = 90; // курс для расчёта прибыли в уведомлениях (обновляйте вручную)
 export const MAX_AUTO_COST_USD = 60; // дороже — только вручную
+
+// Финансы с чистого листа: в выручку, прибыль и отчёты входят только заказы, созданные с этого момента (5.11.2026, 00:00 Бишкека)
+// и оплаченные через Finik (или с баланса, который пополняется через Finik). Старые заказы остаются в базе, но в отчёты не попадают.
+export const FIN_START_MS = 1793815200000;
+export const FIN_WHERE = "created_at >= " + FIN_START_MS + " AND COALESCE(method,'') IN ('Finik','Баланс','promo')";

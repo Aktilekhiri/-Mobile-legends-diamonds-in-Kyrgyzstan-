@@ -17,6 +17,7 @@ import { defer } from './notify.js';
 import { ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
 import { createDeal, viewDeal, dealPaid, dealConfirm, dealProblem, remindDeals } from './deals.js';
 import { startFinikOrder, finikWebhook, cleanupFinik, finikReady } from './finik.js';
+import { startGopayOrder, gopayWebhook, cleanupGopay, gopayReady, gopayPublic } from './gopay.js';
 import { redeemPromo } from './promo.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, markManualDone, cancelOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
@@ -170,6 +171,17 @@ export default {
         const b = await req.json().catch(() => ({}));
         const r = await startFinikOrder(env, req.headers.get('CF-Connecting-IP') || '', b, await userFromRequest(req, env));
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      // оплата через GoPay (ELQR): то же самое, вебхук events_url подтверждает оплату сам
+      if (path === '/api/orders/gopay' && m === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const r = await startGopayOrder(env, req.headers.get('CF-Connecting-IP') || '', b, await userFromRequest(req, env));
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
+      }
+      if (path === '/api/gopay/status' && m === 'GET') return json(req, { enabled: gopayPublic(env), ready: gopayReady(env) }, 200, { 'Cache-Control': 'public, max-age=60' });
+      if (path === '/api/gopay/webhook' && m === 'POST') {
+        const r = await gopayWebhook(env, req);
+        return new Response(r.body, { status: r.status });
       }
       if (path === '/api/finik/status' && m === 'GET') return json(req, { enabled: finikReady(env) }, 200, { 'Cache-Control': 'public, max-age=60' });
       if (path === '/api/finik/webhook' && m === 'POST') {
@@ -423,5 +435,6 @@ export default {
     ctx.waitUntil(maybeSendWeekly(env).catch(() => {}));
     ctx.waitUntil(remindDeals(env).catch(() => {}));
     ctx.waitUntil(cleanupFinik(env).catch(() => {}));
+    ctx.waitUntil(cleanupGopay(env).catch(() => {}));
   },
 };

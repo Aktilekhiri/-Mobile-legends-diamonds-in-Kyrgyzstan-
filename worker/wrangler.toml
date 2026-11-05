@@ -22,3 +22,8 @@ enabled = true
 # Оплата через Finik (включается, когда заданы все четыре секрета; пока пусто, кнопка оплаты скрыта):
 # FINIK_API_KEY, FINIK_PRIVATE_KEY (PEM, наш приватный ключ), FINIK_PUBLIC_KEY (PEM, публичный ключ Finik для проверки вебхуков), FINIK_ACCOUNT_ID.
 # Необязательно: FINIK_QR_NAME (имя QR, по умолчанию diamondkg), FINIK_BASE (https://beta.api.acquiring.averspay.kg для тестов), FINIK_FEE_PCT (по умолчанию 0.02).
+
+# Оплата через GoPay (ELQR, любой банковский приложение КР; включается, когда заданы три секрета):
+# GOPAY_API_KEY, GOPAY_SECRET_KEY (ключ и секрет из кабинета, Test или Live), GOPAY_WEBHOOK_SECRET (Developer → Webhooks).
+# Необязательно: GOPAY_PUBLIC=1 (показать кнопку клиентам; пока пусто, тест по ссылке diamond.kg/?gopaytest=1),
+# GOPAY_FEE_PCT (комиссия, по умолчанию 0.02). Вебхук: https://<воркер>/api/gopay/webhook, событие payment.committed.

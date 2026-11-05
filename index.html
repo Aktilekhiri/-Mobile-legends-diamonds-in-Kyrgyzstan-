@@ -1567,7 +1567,7 @@
     <div class="payment-confirm" id="finikBox" hidden><div class="card-title">⚡ Быстрая оплата</div>
       <p class="method-note" style="margin:0 0 10px">Оплатите в приложении любого банка Кыргызстана или по QR. Заказ выдаётся автоматически, чек не нужен.</p>
       <label for="finikPhone">Номер телефона</label><input type="tel" class="input-field" id="finikPhone" placeholder="700 123 456" autocomplete="tel">
-      <button class="btn-primary btn-full" id="finikBtn" onclick="payWithFinik()">⚡ Оплатить через Finik</button>
+      <button class="btn-primary btn-full" id="finikBtn" onclick="payWithFinik()">⚡ Оплатить по QR</button>
       <div id="finikMsg" class="receipt-msg" role="alert" aria-live="polite"></div>
       <div class="method-note" style="margin-top:12px;text-align:center">или переведите вручную в Mbank / O!Банк ниже</div></div>
     <div class="payment-methods"><div class="card-title">🏦 Выберите банк для перевода</div><div class="method-grid" id="methodsGrid"></div><div id="qrContainer" style="text-align:center; margin-top:15px;"></div></div>
@@ -2444,7 +2444,7 @@ async function payWithFinik() {
   if (!phoneOk(phone)) { set('Укажите номер телефона (например 700 123 456)', 'err'); document.getElementById('finikPhone').focus(); return; }
   btn.disabled = true; set('Создаём оплату…', '');
   try {
-    const resp = await fetch(API_BASE() + '/api/orders/finik', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    const resp = await fetch(API_BASE() + '/api/orders/' + (window.FAST_PAY || 'finik'), { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ playerId: currentOrder.playerId, serverId: currentOrder.serverId, region: currentOrder.region, pkg: currentOrder.packageName, pkgLabel: currentOrder.label, price: currentOrder.price, phone }) });
     const d = await resp.json().catch(() => ({}));
     if (!resp.ok || !d.url) { set(d.error || 'Не удалось создать оплату. Переведите вручную ниже.', 'err'); btn.disabled = false; return; }
@@ -2453,7 +2453,9 @@ async function payWithFinik() {
     location.href = d.url;
   } catch (e) { set('Нет связи с сервером. Переведите вручную ниже.', 'err'); btn.disabled = false; }
 }
-document.addEventListener('DOMContentLoaded', () => { try { if (window.DK_API) fetch(API_BASE() + '/api/finik/status').then(r => r.json()).then(j => { if (j && j.enabled) { const b = document.getElementById('finikBox'); if (b) b.hidden = false; } }).catch(() => {}); } catch (e) {} });
+document.addEventListener('DOMContentLoaded', () => { try { if (!window.DK_API) return; const show = p => { window.FAST_PAY = p; const b = document.getElementById('finikBox'); if (b) b.hidden = false; };
+  const test = /[?&]gopaytest=1/.test(location.search);   // владелец проверяет GoPay до публичного запуска
+  fetch(API_BASE() + '/api/gopay/status').then(r => r.json()).then(j => { if (j && (j.enabled || (test && j.ready))) show('gopay'); else return fetch(API_BASE() + '/api/finik/status').then(r => r.json()).then(f => { if (f && f.enabled) show('finik'); }); }).catch(() => {}); } catch (e) {} });
 // Возврат со страницы оплаты Finik: показываем статус заказа и обновляем, пока он не выдан
 (function () {
   try {

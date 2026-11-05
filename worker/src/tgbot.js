@@ -6,6 +6,8 @@ import { createOrder, saveReceipt, confirmOrder, markManualDone, cancelOrder, al
 import { CATALOGS, MAX_AUTO_COST_USD } from './catalog.js';
 import { adminDeal, createDeal } from './deals.js';
 import { startFinikOrder, finikReady } from './finik.js';
+import { startGopayOrder, gopayPublic } from './gopay.js';
+const fastReady = env => gopayPublic(env) || finikReady(env);
 import { publishOffer, rejectOffer, createOffer, addOfferPhoto, submitOffer, markup as sellMarkup, GAMES as SELL_GAMES } from './market.js';
 import { notify } from './notify.js';
 import { checkPromo, redeemPromo, normCode } from './promo.js';
@@ -82,8 +84,8 @@ async function showSummary(env, chat, msgId, st) {
 
 async function showMethods(env, chat, msgId, st) {
   st.step = 'method'; await setSt(env, chat, st);
-  const fin = finikReady(env);
-  await show(env, chat, msgId, fin ? '<b>Как оплатить?</b>\n⚡ <b>Finik</b>: платите в приложении любого банка или по QR, заказ выдаётся сам, чек не нужен.\nИли переведите вручную через Mbank / O!Банк и пришлите чек.' : '<b>Выберите банк</b>, через который переведёте оплату:', kb([...(fin ? [[btn('⚡ Оплатить через Finik', 'mf')]] : []), [btn('Mbank', 'm:M'), btn('O!Банк', 'm:O')], CANCEL]));
+  const fin = fastReady(env);
+  await show(env, chat, msgId, fin ? '<b>Как оплатить?</b>\n⚡ <b>Быстрая оплата</b>: платите в приложении любого банка или по QR, заказ выдаётся сам, чек не нужен.\nИли переведите вручную через Mbank / O!Банк и пришлите чек.' : '<b>Выберите банк</b>, через который переведёте оплату:', kb([...(fin ? [[btn('⚡ Оплатить по QR', 'mf')]] : []), [btn('Mbank', 'm:M'), btn('O!Банк', 'm:O')], CANCEL]));
 }
 
 async function payFinikBot(env, cq, st) {
@@ -91,7 +93,7 @@ async function payFinikBot(env, cq, st) {
   if (!g || !p) { await send(env, chat, 'Сессия устарела. Начните заново.', { reply_markup: MENU }); return; }
   const recent = await env.DB.prepare('SELECT COUNT(*) AS c FROM orders WHERE tg_chat = ? AND created_at > ?').bind(chat, Date.now() - 3600000).first();
   if (recent && recent.c >= 5) { await send(env, chat, 'Слишком много заказов за час. Попробуйте позже или напишите в WhatsApp ' + WA + '.'); return; }
-  const r = await startFinikOrder(env, '', { region: g.region, pkg: p.k, pkgLabel: p.l, price: p.p, phone: '000' + String(chat), playerId: g.none ? '' : st.pid, serverId: st.srv || '' }, null);
+  const r = await (gopayPublic(env) ? startGopayOrder : startFinikOrder)(env, '', { region: g.region, pkg: p.k, pkgLabel: p.l, price: p.p, phone: '000' + String(chat), playerId: g.none ? '' : st.pid, serverId: st.srv || '' }, null);
   if (r.error) { await send(env, chat, '⚠️ ' + esc(r.error), { reply_markup: kb([[btn('✏️ Изменить ID', 'ed')], CANCEL]) }); return; }
   const from = cq.from || {}, who = from.username ? '@' + from.username : (from.first_name || 'клиент');
   await env.DB.prepare('UPDATE orders SET tg_chat = ?, tg_user = ? WHERE id = ?').bind(chat, who, r.id).run();

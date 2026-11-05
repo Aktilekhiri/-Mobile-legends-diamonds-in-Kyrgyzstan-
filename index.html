@@ -688,6 +688,9 @@
     footer { grid-template-columns: 1fr; }
   }
   @media (max-width: 640px) {
+    .packages-grid { grid-template-columns: repeat(2,1fr); }
+  }
+  @media (max-width: 1180px) {
     .nav-links { display: none; }
     .hamburger { display: flex; }
     .packages-grid { grid-template-columns: repeat(2,1fr); }
@@ -1319,7 +1322,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=93">
-<link rel="stylesheet" href="theme.css?v=31">
+<link rel="stylesheet" href="theme.css?v=32">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1347,7 +1350,8 @@
     <button type="button" class="user-name" id="userNameDisplay" onclick="toggleAuthModal()">👤 Войти</button>
     <a href="#" class="nav-cta" onclick="showPage('catalog')">💎 Купить →</a>
   </div>
-  <button type="button" class="nav-bal" id="navBal" hidden onclick="toggleAuthModal()" aria-label="Баланс">💰 <span id="navBalV">0</span> сом</button>
+  <div class="lang-toggle nav-lang-m"><button class="active">RU</button><button>KY</button></div>
+  <button type="button" class="nav-bal" id="navBal" hidden onclick="toggleAuthModal()" aria-label="Баланс">💰 <span id="navBalV">0</span><span class="nb-s"> сом</span></button>
   <button class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></button>
 </nav>
 <div class="mobile-menu" id="mobileMenu">

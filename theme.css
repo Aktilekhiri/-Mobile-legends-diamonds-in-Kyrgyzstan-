@@ -34,7 +34,7 @@ body.v2 .nav-links a.nav-cta:hover{color:#fff;filter:brightness(1.08)}
 body.v2 .hamburger{width:44px;height:44px;display:none;align-items:center;justify-content:center;gap:5px;flex-direction:column}
 body.v2 .mobile-menu{top:64px;margin:0;left:0;right:0;border-radius:0;background:var(--surface);border-bottom:1px solid var(--line)}
 body.v2 .mobile-menu a{min-height:48px;display:flex;align-items:center;padding:0 20px;color:var(--text)}
-@media (max-width:900px){body.v2 .hamburger{display:flex}}
+@media (max-width:1180px){body.v2 .hamburger{display:flex}}
 
 /* ---------- buttons ---------- */
 body.v2 .btn-primary,body.v2 .btn-secondary,body.v2 .btn-wa{min-height:48px;border-radius:14px;font-weight:800;transition:transform .15s,filter .15s,border-color .15s}
@@ -505,3 +505,24 @@ body .night-note:not(.on){display:none!important}
 /* баланс в шапке */
 .nav-bal{margin-left:10px;display:inline-flex;align-items:center;gap:4px;padding:0 12px;min-height:38px;border-radius:999px;border:1px solid var(--line,#dfe3ee);background:var(--card,#fff);color:inherit;font:inherit;font-weight:800;font-size:.9rem;cursor:pointer;white-space:nowrap;flex:none}
 .nav-bal[hidden]{display:none}
+
+/* меню: ничего не слипается и не обрезается */
+body.v2 .nav-links{flex-wrap:nowrap;flex:0 1 auto;min-width:0}
+body.v2 .nav-links a,body.v2 .user-name,body.v2 .nav-cta{white-space:nowrap}
+body.v2 .nav-links a{padding:0 10px}
+body.v2 .nav-links .lang-toggle,body.v2 .nav-links .user-name,body.v2 .nav-links .online-dot{flex:none;margin-left:6px}
+.nav-lang-m{display:none}
+.nav-bal{margin-left:8px}
+@media (max-width:1280px){body.v2 .nav-links .online-dot{display:none}}
+@media (max-width:1180px){
+  .nav-lang-m{display:flex;margin-left:auto;flex:none}
+  body.v2 .nav-lang-m button{min-width:38px;min-height:38px;padding:0 8px}
+  .nav-bal{margin-left:8px}
+  body.v2 .hamburger{flex:none;margin-left:4px}
+}
+@media (max-width:480px){
+  .nav-bal .nb-s{display:none}
+  .nav-bal{padding:0 10px;margin-left:6px}
+  body.v2 .nav-lang-m button{min-width:34px;padding:0 6px}
+  body.v2 .nav-logo{font-size:1.2rem}
+}

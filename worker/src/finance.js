@@ -1,6 +1,6 @@
 // Финансы: выручка, себестоимость, прибыль и недельный план переводов.
 // Считаются только выданные заказы; себестоимость = cost_usd × курс (USD_KGS) по каталогу, как в ежедневном отчёте.
-import { USD_KGS, FIN_WHERE } from './catalog.js';
+import { USD_KGS, FIN_WHERE, FIN_START_MS } from './catalog.js';
 import { fzGetBalance } from './fazercards.js';
 import { notify } from './notify.js';
 
@@ -27,6 +27,7 @@ async function sums(env, from, to) {
     `SELECT COALESCE(SUM(CASE WHEN ${NP} THEN 1 ELSE 0 END),0) AS n,
             COALESCE(SUM(CASE WHEN ${NP} THEN price_kgs - refund_kgs ELSE 0 END),0) AS rev,
             COALESCE(SUM(CASE WHEN ${NP} THEN cost_usd ELSE 0 END),0) AS cost_usd,
+            COALESCE(SUM(CASE WHEN ${NP} THEN fee_kgs ELSE 0 END),0) AS fee,
             COALESCE(SUM(CASE WHEN ${NP} AND cost_usd > 0 THEN price_kgs - refund_kgs - fee_kgs - cost_usd * ? ELSE 0 END),0) AS profit,
             COALESCE(SUM(CASE WHEN ${NP} AND NOT cost_usd > 0 THEN 1 ELSE 0 END),0) AS nocost,
             COALESCE(SUM(CASE WHEN ${NP} THEN 0 ELSE 1 END),0) AS promo_n,
@@ -34,8 +35,8 @@ async function sums(env, from, to) {
        FROM orders WHERE status = 'delivered' AND ${FIN_WHERE}
         AND COALESCE(NULLIF(finished_at,0), created_at) >= ? AND COALESCE(NULLIF(finished_at,0), created_at) < ?`
   ).bind(USD_KGS, from, to).first();
-  const s = r || { n: 0, rev: 0, cost_usd: 0, profit: 0, nocost: 0, promo_n: 0, promo_usd: 0 };
-  return { n: s.n, rev: Math.round(s.rev), cost: Math.round(s.cost_usd * USD_KGS), cost_usd: Number(s.cost_usd.toFixed(2)), profit: Math.round(s.profit), nocost: s.nocost,
+  const s = r || { n: 0, rev: 0, fee: 0, cost_usd: 0, profit: 0, nocost: 0, promo_n: 0, promo_usd: 0 };
+  return { n: s.n, rev: Math.round(s.rev), fee: Math.round(s.fee), cost: Math.round(s.cost_usd * USD_KGS), cost_usd: Number(s.cost_usd.toFixed(2)), profit: Math.round(s.profit), nocost: s.nocost,
     promo_n: s.promo_n, promo_cost: Math.round(s.promo_usd * USD_KGS), promo_usd: Number(s.promo_usd.toFixed(2)) };
 }
 
@@ -73,11 +74,20 @@ export async function financeSummary(env, nowMs = Date.now()) {
     sums(env, monthStart, dayEnd), sums(env, 0, dayEnd), sums(env, dayEnd - 7 * DAY, dayEnd), sums(env, quarterStart, dayEnd),
   ]);
   const qMonths = (m % 3) + 1;     // сколько месяцев квартала уже идёт (для начисленного взноса в Соцфонд)
+  // прозрачная таблица по неделям (с понедельника): выручка, комиссия Finik, закупка, налог, Соцфонд, чистая прибыль
+  const startLocal = new Date(FIN_START_MS + TZ), sdow = (startLocal.getUTCDay() + 6) % 7;
+  const firstWeek = Date.UTC(startLocal.getUTCFullYear(), startLocal.getUTCMonth(), startLocal.getUTCDate()) - TZ - sdow * DAY;
+  const weeks = [];
+  for (let ws = weekStart, i = 0; ws >= firstWeek && i < 12; ws -= 7 * DAY, i++) {
+    const w = await sums(env, ws, Math.min(ws + 7 * DAY, dayEnd));
+    const tax = Math.round(Math.max(0, w.rev) * TAX_PCT), social = SOCIAL_WEEK;
+    weeks.push({ from: ws + TZ, n: w.n, rev: w.rev, fee: w.fee, cost: w.cost, promo: w.promo_cost, tax, social, profit: w.profit, net: w.profit - w.promo_cost - tax - social, current: ws === weekStart });
+  }
   const spend7 = r7.cost_usd + r7.promo_usd;                                        // реальный темп расхода: последние 7 дней
   return {
     rate: USD_KGS, balance_usd: balance, balance_kgs: balance == null ? null : Math.round(balance * USD_KGS),
     spend_per_day_usd: Number((spend7 / 7).toFixed(2)), days_left: spend7 > 0 && balance != null ? Number((balance / (spend7 / 7)).toFixed(1)) : null,
-    today, week: thisWeek, last_week: lastWeek, month, all,
+    weeks, today, week: thisWeek, last_week: lastWeek, month, all,
     quarter: { ...quarter, tax: Math.round(Math.max(0, quarter.rev) * TAX_PCT), social: SOCIAL_MONTH * 3, social_accrued: SOCIAL_MONTH * qMonths },
     plan_week: plan({ ...thisWeek, cost_usd: Math.max(thisWeek.cost_usd + thisWeek.promo_usd, spend7) }, balance),
     plan_last: plan({ ...lastWeek, cost_usd: Math.max(lastWeek.cost_usd + lastWeek.promo_usd, spend7) }, balance),

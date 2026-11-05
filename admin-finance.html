@@ -88,6 +88,29 @@ button:disabled{opacity:.5;cursor:default}
   function period(title,s){return '<div class="card"><div class="o-head"><b>'+title+'</b><span class="o-meta" style="margin:0">'+s.n+' зак.</span></div>'
     +'<div class="row"><span>Выручка</span><b>'+n(s.rev)+' сом</b></div><div class="row"><span>Себестоимость</span><b>'+n(s.cost)+' сом</b></div><div class="row"><span>Прибыль</span>'+pr(s.profit)+'</div>'
     +(s.promo_n?'<div class="row"><span>Промо ('+s.promo_n+' шт)</span><b class="neg">−'+n(s.promo_cost)+' сом</b></div><div class="warn">Бесплатные Weekly Pass: в прибыль не входят, но деньги потрачены.</div>':'')+(s.nocost?'<div class="warn">У '+s.nocost+' заказ(ов) нет себестоимости: они не входят в прибыль.</div>':'')+'</div>'}
+  function wdate(ms){var d=new Date(ms),e=new Date(ms+6*86400000);function f(x){return ('0'+x.getUTCDate()).slice(-2)+'.'+('0'+(x.getUTCMonth()+1)).slice(-2)}return f(d)+' – '+f(e)}
+  function weeksCard(f){
+    var ws=f.weeks||[]; if(!ws.length) return '';
+    var t={rev:0,fee:0,cost:0,promo:0,tax:0,social:0,net:0};
+    var h='<div class="card"><div class="o-head"><b>По неделям: куда уходят деньги</b></div><div class="o-meta">Чистая прибыль = выручка − комиссия Finik − закупка − налог 2% − Соцфонд'+'</div>';
+    ws.forEach(function(w){
+      ['rev','fee','cost','promo','tax','social','net'].forEach(function(k){t[k]+=w[k]||0});
+      h+='<div style="padding:10px 0;border-top:1px solid var(--line)"><div class="o-head"><b>'+wdate(w.from)+(w.current?' (идёт)':'')+'</b><span class="o-meta" style="margin:0">'+w.n+' зак.</span></div>'
+        +'<div class="row"><span>Выручка</span><b>'+n(w.rev)+' сом</b></div>'
+        +'<div class="row"><span>Комиссия Finik</span><b class="neg">−'+n(w.fee)+' сом</b></div>'
+        +'<div class="row"><span>Закупка у поставщика</span><b class="neg">−'+n(w.cost)+' сом</b></div>'
+        +(w.promo?'<div class="row"><span>Промо</span><b class="neg">−'+n(w.promo)+' сом</b></div>':'')
+        +'<div class="row"><span>Налог 2% (отложить)</span><b class="neg">−'+n(w.tax)+' сом</b></div>'
+        +'<div class="row"><span>Соцфонд (отложить)</span><b class="neg">−'+n(w.social)+' сом</b></div>'
+        +'<div class="row"><span><b>Чистая прибыль</b></span>'+pr(w.net)+'</div></div>';
+    });
+    h+='<div style="padding:10px 0;border-top:2px solid var(--line)"><div class="o-head"><b>Итого за период</b></div>'
+      +'<div class="row"><span>Выручка</span><b>'+n(t.rev)+' сом</b></div><div class="row"><span>Комиссия Finik</span><b class="neg">−'+n(t.fee)+' сом</b></div>'
+      +'<div class="row"><span>Налог 2%</span><b class="neg">−'+n(t.tax)+' сом</b></div><div class="row"><span>Соцфонд</span><b class="neg">−'+n(t.social)+' сом</b></div>'
+      +'<div class="row"><span><b>Чистая прибыль</b></span>'+pr(t.net)+'</div></div>'
+      +'<div class="warn">Налог и Соцфонд здесь «отложить»: платятся не каждую неделю, а раз в квартал и раз в месяц. Соцфонд в расчёте '+n(f.constants.social_month)+' сом/мес с запасом.</div></div>';
+    return h;
+  }
   function render(){
     var f=data, p=wk==='week'?f.plan_week:f.plan_last, w=wk==='week'?f.week:f.last_week, h='';
     h+='<div class="card"><div class="o-head"><b>FazerCards</b><span class="o-meta" style="margin:0">курс '+f.rate+'</span></div>'
@@ -104,6 +127,7 @@ button:disabled{opacity:.5;cursor:default}
       +'<div class="step"><span class="n">2</span><div>Остальное оставьте на Mbank и O!Банк<div class="o-meta" style="margin:2px 0 0">Это оборотные деньги на закупку: '+n(p.keep)+' сом</div></div></div>'
       +'<div class="step"><span class="n">3</span><div>'+(p.buy_usd>0?'Докупите USDT для FazerCards<div class="big">$'+p.buy_usd+' ≈ '+n(p.buy_kgs)+' сом</div><div class="o-meta" style="margin:0">Одним платежом: комиссия сети 1 USDT одна. Расход за неделю ≈ $'+p.weekly_spend_usd+', держим запас не ниже $'+f.constants.min_balance_usd+'</div>':'Пополнять FazerCards пока не нужно<div class="o-meta" style="margin:2px 0 0">Баланса хватает с запасом (расход за неделю ≈ $'+p.weekly_spend_usd+')</div>')+'</div></div>'
       +'<div class="warn">Это оценка по каталожным ценам. Каждый понедельник в 14:00 в Telegram приходит план по итогам прошлой недели.</div></div>';
+    h+=weeksCard(f);
     var q=f.quarter; if(q) h+='<div class="card"><div class="o-head"><b>Налоги за квартал</b></div><div class="row"><span>Выручка за квартал</span><b>'+n(q.rev)+' сом</b></div><div class="row"><span>Налог 2% (к оплате раз в квартал)</span><b>'+n(q.tax)+' сом</b></div><div class="row"><span>Соцфонд (начислено, '+n(f.constants.social_month)+' сом/мес)</span><b>'+n(q.social_accrued)+' сом</b></div><div class="warn">Эти деньги должны лежать на карте-сейфе до оплаты. Сумма налога примерная: считается по выручке за вычетом возвратов.</div></div>';
     h+=period('Сегодня',f.today)+period('Эта неделя (с понедельника)',f.week)+period('Прошлая неделя',f.last_week)+period('С начала месяца',f.month)+period('За всё время',f.all);
     $('fin').innerHTML=h;

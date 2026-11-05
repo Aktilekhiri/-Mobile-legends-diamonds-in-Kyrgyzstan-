@@ -300,6 +300,18 @@ export async function markRefunded(env, id) {
   await releasePromo(env, id);
   return { ok: true };
 }
+// Возврат на баланс сайта по решению админа: заказ завис (processing), нужен ручной разбор (manual) или ждёт возврата (refund_due).
+// Статус 'balance' в финансы не попадает (там только delivered). Зачисление идемпотентно: повторное нажатие деньги не удвоит.
+export async function refundToBalance(env, id) {
+  const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(id).first();
+  if (!o) return { error: 'Заказ не найден', status: 404 };
+  if (!['processing', 'manual', 'refund_due'].includes(o.status)) return { error: 'Нельзя вернуть на баланс (статус: ' + o.status + ')', status: 409 };
+  if (o.method === 'promo') return { error: 'Промо-заказ: используйте «Отменить», промокод вернётся сам', status: 409 };
+  if (!(await refundOrderToWallet(env, o))) return { error: 'У заказа нет аккаунта (гость): баланс положить некуда. Верните деньги вручную и нажмите «Деньги возвращены»', status: 409 };
+  await setStatus(env, id, { status: 'balance', fail_reason: ((o.fail_reason || '') + ' [возврат на баланс админом]').trim().slice(0, 300), finished_at: Date.now() });
+  await releasePromo(env, id);
+  return { ok: true };
+}
 export async function markManualDone(env, id) {
   const o = await env.DB.prepare('SELECT status FROM orders WHERE id = ?').bind(id).first();
   if (!o) return { error: 'Заказ не найден', status: 404 };

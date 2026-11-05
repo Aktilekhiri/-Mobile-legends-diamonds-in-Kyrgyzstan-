@@ -106,9 +106,9 @@ button:disabled{opacity:.5;cursor:default}
       var acts='';
       if(unpaid(o))acts='<button class="dng" data-a="cancel" data-id="'+o.id+'">Отменить</button>';
       else if(o.status==='new')acts='<button class="ok" data-a="confirm" data-id="'+o.id+'">✅ Деньги пришли — выдать</button><button class="dng" data-a="cancel" data-id="'+o.id+'">Отменить</button>';
-      else if(o.status==='manual')acts='<button class="ok" data-a="manual-done" data-id="'+o.id+'">Выдал вручную</button><button class="dng" data-a="cancel" data-id="'+o.id+'">Отменить</button>';
-      else if(o.status==='processing')acts='<button data-a="refresh" data-id="'+o.id+'">Проверить статус</button>';
-      else if(o.status==='refund_due')acts='<button class="ok" data-a="refunded" data-id="'+o.id+'">Деньги клиенту возвращены</button>';
+      else if(o.status==='manual')acts='<button class="ok" data-a="manual-done" data-id="'+o.id+'">Выдал вручную</button><button class="dng" data-a="to-balance" data-id="'+o.id+'">↩️ Вернуть на баланс</button><button class="dng" data-a="cancel" data-id="'+o.id+'">Отменить</button>';
+      else if(o.status==='processing')acts='<button data-a="refresh" data-id="'+o.id+'">Проверить статус</button><button class="dng" data-a="to-balance" data-id="'+o.id+'">↩️ Вернуть на баланс</button>';
+      else if(o.status==='refund_due')acts='<button class="ok" data-a="refunded" data-id="'+o.id+'">Деньги клиенту возвращены</button><button data-a="to-balance" data-id="'+o.id+'">↩️ Вернуть на баланс</button>';
       if(o.phone&&String(o.phone).replace(/\D/g,'').length>=9&&o.status!=='new')acts+='<button class="dng" data-a="blacklist" data-id="'+o.id+'">🚫 В чёрный список</button>';
       var hasR=o.receipt_at>0, canR=(o.status==='new'||o.status==='manual');
       if(hasR)acts='<button data-a="receipt" data-id="'+o.id+'">📎 '+(rcOpen[o.id]?'Скрыть чек':'Показать чек')+'</button>'+acts;
@@ -147,9 +147,10 @@ button:disabled{opacity:.5;cursor:default}
     if(a==='confirm'&&!confirm('Заказ '+id+': '+o.pkg_label+'\nID '+o.player_id+' ('+o.server_id+')\nСумма '+o.price_kgs+' сом\n\nДеньги на счёт точно поступили? Алмазы будут выданы сразу.'))return;
     if(a==='cancel'&&!confirm('Отменить заказ '+id+'?'))return;
     if(a==='refunded'&&!confirm('Вы вернули клиенту деньги за заказ '+id+'?'))return;
+    if(a==='to-balance'&&!confirm('Вернуть '+o.price_kgs+' сом клиенту на баланс сайта за заказ '+id+'?\n\nСначала проверьте у поставщика (FazerCards), что заказ не выдан и не выдастся: иначе клиент получит и товар, и деньги.'))return;
     if(a==='blacklist'&&!confirm('Занести телефон '+(o.phone||'')+' в чёрный список? С этого номера больше нельзя будет создать заказ.'))return;
     b.disabled=true;
-    try{var d=await call('POST','/api/admin/orders/'+id+'/'+a);msg(a==='confirm'?'Заказ '+id+' отправлен на выдачу':a==='blacklist'?'Телефон занесён в чёрный список':'Готово','good');await load()}
+    try{var d=await call('POST','/api/admin/orders/'+id+'/'+a);msg(a==='confirm'?'Заказ '+id+' отправлен на выдачу':a==='blacklist'?'Телефон занесён в чёрный список':a==='to-balance'?'Вернули на баланс клиента, он получил уведомление':'Готово','good');await load()}
     catch(e){msg(e.message,'err');b.disabled=false}
   }
   async function load(){

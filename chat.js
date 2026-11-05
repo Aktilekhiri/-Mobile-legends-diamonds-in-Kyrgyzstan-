@@ -84,7 +84,7 @@
   // ===== сценарий заказа (без ИИ: быстро и предсказуемо) =====
   var SHOP = [], PAY = '', AI = false, S = { step: 'menu' };
   var QUICK = ['mlbb', 'tgstars', 'roblox', 'pubg', 'freefire', 'tgpremium'];
-  var ALIAS = { global: 'млбб mlbb mobile legends мобайл легенд алмазы', russia: 'россия russia мл ру', pubg: 'пубг пабг pubg uc', freefire: 'фри фаер фф free fire', hok: 'хок honor of kings', genshin: 'геншин genshin', wuwa: 'wuthering waves вува', hsr: 'honkai star rail хср', zzz: 'zenless зенлесс', tgstars: 'звезды звёзды stars телеграм старс', tgpremium: 'премиум premium', roblox: 'роблокс roblox робукс robux', mchess: 'magic chess мэджик', deltaforce: 'delta force', marvel: 'marvel rivals', arena: 'arena breakout', bloodstrike: 'blood strike' };
+  var ALIAS = { global: 'млбб mlbb mobile legends мобайл легенд алмазы', russia: 'россия russia мл ру', pubg: 'пубг пабг pubg uc', freefire: 'фри фаер фф free fire', hok: 'хок honor of kings', genshin: 'геншин genshin', wuwa: 'wuthering waves вува', hsr: 'honkai star rail хср', zzz: 'zenless зенлесс', tgstars: 'звезды звёзды stars телеграм старс', tgpremium: 'премиум premium', roblox: 'роблокс roblox робукс robux', mchess: 'magic chess мэджик', deltaforce: 'delta force', marvel: 'marvel rivals', whiteout: 'whiteout survival вайтаут', lords: 'lords mobile лордс', identityv: 'identity v', fortnite: 'fortnite фортнайт', arena: 'arena breakout', bloodstrike: 'blood strike' };
   function gameById(id) { return SHOP.filter(function (g) { return g.id === id; })[0]; }
   function findGame(t) {
     t = t.toLowerCase().replace(/ё/g, 'е');

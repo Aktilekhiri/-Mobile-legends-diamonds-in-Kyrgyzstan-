@@ -1984,6 +1984,8 @@ function pkgImg(p) {
     dir = 'genshin';
     if (p.type === 'pass') f = 'gs-moon';
     else { const t = p.totalDiamonds || p.diam || 0; f = (GS_TIERS.find(x => t < x[0]) || GS_TIERS[GS_TIERS.length - 1])[1]; }
+  } else if (currentGame === 'identityv') {
+    return `<img class="pkg-img" src="/img/packs/identityv/${p.key}.webp?v=1" width="104" height="104" alt="${esc(p.name || (p.totalDiamonds + ' Echoes'))}" loading="lazy" decoding="async">`;
   } else if (currentGame === 'lords') {
     return `<img class="pkg-img" src="/img/packs/lords/${p.key}.webp?v=1" width="104" height="104" alt="${esc(p.name || (p.totalDiamonds + ' Diamonds'))}" loading="lazy" decoding="async">`;
   } else if (currentGame === 'whiteout') {

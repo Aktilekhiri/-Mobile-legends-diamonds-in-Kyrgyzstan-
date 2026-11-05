@@ -106,11 +106,15 @@ export async function getMe(env, sub) {
 }
 
 // История заказов пользователя: только безопасные поля (без телефона, IP, чека и себестоимости).
+let payCols = false;
 export async function listMyOrders(env, sub) {
   await ensureReviewsTable(env);
+  if (!payCols) { for (const c of ['pay_url TEXT', 'pay_exp INTEGER']) { try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN ' + c).run(); } catch (e) { /* уже есть */ } } payCols = true; }
   const { results } = await env.DB.prepare(
-    'SELECT id, created_at, region, pkg_label, price_kgs, method, status, player_id, server_id, delivery, (SELECT 1 FROM reviews r WHERE r.order_id = orders.id) AS reviewed FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 100'
+    'SELECT id, created_at, region, pkg_label, price_kgs, method, status, player_id, server_id, delivery, pay_url, pay_exp, (SELECT 1 FROM reviews r WHERE r.order_id = orders.id) AS reviewed FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 100'
   ).bind(sub).all();
+  const now = Date.now();
+  for (const o of results) { if (!(o.status === 'new' && o.pay_url && o.pay_exp > now)) { o.pay_url = null; } }   // ссылка нужна только пока заказ ждёт оплаты и время не вышло
   return { orders: results };
 }
 

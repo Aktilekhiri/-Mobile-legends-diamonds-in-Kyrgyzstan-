@@ -1322,7 +1322,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=93">
-<link rel="stylesheet" href="theme.css?v=32">
+<link rel="stylesheet" href="theme.css?v=33">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -2878,12 +2878,15 @@ async function renderOrders() {
     const orders = (await r.json()).orders || [];
     if (!orders.length) { container.innerHTML = ''; noMsg.style.display = 'block'; return; }
     container.innerHTML = orders.map(o => {
-      const st = ORDER_STATUS[o.status] || [o.status, 'wait'];
+      let st = ORDER_STATUS[o.status] || [o.status, 'wait'];
+      if (o.method === 'Finik' && o.status === 'new') st = o.pay_url ? ['Ожидает оплаты', 'wait'] : (Date.now() - o.created_at > 30 * 60000 ? ['Время оплаты вышло', 'bad'] : st);
+      const mins = o.pay_url ? Math.max(1, Math.ceil((o.pay_exp - Date.now()) / 60000)) : 0;
       const when = new Date(o.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       const srv = o.server_id && o.server_id !== '-' ? ` (${esc(o.server_id)})` : '';
       return `<div class="hist-card"><div class="hist-top"><strong>${esc(o.pkg_label)}</strong><span class="hist-price">${esc(o.price_kgs)} Сом</span></div>
         ${o.player_id && o.player_id !== '-' ? `<div class="hist-mid">${(gamesData[o.region] || {}).kind === 'username' ? 'Telegram' : 'ID'}: ${esc(o.player_id)}${srv}</div>` : ''}
         ${o.delivery && o.status === 'delivered' ? `<div class="suc-delivery" id="dl-${esc(o.id)}"></div>` : ''}
+        ${o.pay_url ? `<div class="hist-pay"><a class="btn-primary" href="${esc(o.pay_url)}" rel="noopener">💳 Оплатить ${esc(o.price_kgs)} сом</a><span class="hist-pay-t">Осталось ~${mins} мин</span></div>` : ''}
         ${o.status === 'delivered' && !o.reviewed ? `<div class="rv-slot" id="rv-${esc(o.id)}"><button type="button" class="link-btn" onclick="reviewWidget(document.getElementById('rv-${esc(o.id)}'),'${esc(o.id)}','')">⭐ Оставить отзыв</button></div>` : ''}
         <div class="hist-bot"><span class="hist-st ${st[1]}">${esc(st[0])}</span><span>${esc(when)} · ${esc(o.method)} · №${esc(o.id)}</span></div></div>`;
     }).join('');

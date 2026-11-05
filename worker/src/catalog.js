@@ -201,7 +201,8 @@ export const GAMES = {
     '2000_robux': { offer: '2000_robux', cost: 22.2952 },
     '4500_robux': { offer: '4500_robux', cost: 47.8563 },
     '10000_robux': { offer: '10000_robux', cost: 98.2313 },
-  } },  steam: { category: 'steam_cis', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+  } },
+  steam: { category: 'steam_cis', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
     '5': { offer: '5', cost: 4.875 },
     '10': { offer: '10', cost: 9.75 },
     '15': { offer: '15', cost: 14.625 },

@@ -528,3 +528,4 @@ body.v2 .nav-links .lang-toggle,body.v2 .nav-links .user-name,body.v2 .nav-links
 }
 
 .hist-pay{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0}.hist-pay .btn-primary{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;text-decoration:none}.hist-pay-t{color:var(--muted);font-size:.85rem}
+.pkg-img.gc{width:auto;height:92px;max-width:100%;object-fit:contain;border-radius:8px;margin:0 auto;display:block}@media (min-width:600px){.pkg-img.gc{height:104px;width:auto}}

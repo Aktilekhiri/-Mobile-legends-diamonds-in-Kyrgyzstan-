@@ -398,7 +398,7 @@ async function onMessage(env, msg) {
     const hist = Array.isArray(st.ai) ? st.ai : [];
     hist.push({ role: 'user', content: text });
     const from = msg.from || {};
-    const r = await aiChat(env, { history: hist, ip: 'tg:' + chat, channel: 'tg', sid: String(chat), tgChat: chat, tgUser: from.username ? '@' + from.username : (from.first_name || '') });
+    const r = await aiChat(env, { history: hist, ip: 'tg:' + chat, channel: 'tg', qa: true, sid: String(chat), tgChat: chat, tgUser: from.username ? '@' + from.username : (from.first_name || '') });
     const reply = r.reply || r.error || 'Не получилось ответить.';
     hist.push({ role: 'assistant', content: reply });
     st.ai = hist.slice(-14); await setSt(env, chat, st);

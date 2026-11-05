@@ -42,6 +42,14 @@ function profitText(price, cat) {
 const GAME_TITLE = { mchess: 'Magic Chess Go Go', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', bloodstrike: 'Blood Strike', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox Gift Card', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', global: 'Mobile Legends' };
 const gameTitle = region => GAME_TITLE[region] || 'Mobile Legends';
 
+// Карточка заказа для уведомлений владельцу: игра, пакет, ID, сумма и прибыль (с учётом комиссии оплаты, если она известна)
+export function orderCard(o) {
+  const cat = (CATALOGS[o.region] || {})[o.pkg] || null;
+  const fee = Number(o.fee_kgs) || 0;
+  const pr = cat && cat.cost > 0 ? Math.round(o.price_kgs - cat.cost * USD_KGS - fee) : null;
+  return `🎮 ${gameTitle(o.region)} · ${o.pkg_label}\nID ${o.player_id}${!o.server_id || o.server_id === '-' ? '' : ' (' + o.server_id + ')'}\n💰 ${o.price_kgs} сом` + (pr === null ? '' : ` · прибыль ${pr >= 0 ? '+' : '−'}${Math.abs(pr)} сом`) + (fee ? ` (комиссия ${fee} сом)` : '');
+}
+
 // Кнопки под уведомлением: подтверждение/отказ прямо в Telegram (обрабатывает /api/tg/orders-webhook)
 export function adminButtons(o) {
   const row = o.status === 'new' ? [{ text: '✅ Подтвердить и выдать', callback_data: 'ok:' + o.id }, { text: '❌ Отказать', callback_data: 'no:' + o.id }] : o.status === 'manual' ? [{ text: '✅ Выдано вручную', callback_data: 'mn:' + o.id }, { text: '❌ Отказать', callback_data: 'no:' + o.id }] : null;
@@ -203,7 +211,7 @@ export async function syncFromFz(env, o, fz) {
     if (!upd.meta.changes) return;
     await sendOrderMail(env, o.id, 'delivered', gameTitle);
     await tgNotifyOrder(env, o.id, 'delivered');
-    await notify(env, `✅ Заказ ${o.id} выдан (${o.pkg_label}, ${o.price_kgs} сом).${isCode ? ' Код показан клиенту на сайте.' : ''}`);
+    await notify(env, `✅ Заказ ${o.id} выдан\n${orderCard(o)}${isCode ? '\n🔑 Код показан клиенту на сайте.' : ''}`);
   } else if (st === 'partial') {
     // составной пакет: часть выдана, часть возвращена — разбирать вручную
     await setStatus(env, o.id, { status: 'manual', fz_status: st, fz_order_id: fz.id || o.fz_order_id, fail_reason: 'Частично выдан: ' + String(fz.fail_reason || '').slice(0, 200), finished_at: Date.now() });

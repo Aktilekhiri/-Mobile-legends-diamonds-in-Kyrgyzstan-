@@ -100,13 +100,13 @@ button:disabled{opacity:.5;cursor:default}
         +'<div class="row"><span>Комиссия Finik</span><b class="neg">−'+n(w.fee)+' сом</b></div>'
         +'<div class="row"><span>Закупка у поставщика</span><b class="neg">−'+n(w.cost)+' сом</b></div>'
         +(w.promo?'<div class="row"><span>Промо</span><b class="neg">−'+n(w.promo)+' сом</b></div>':'')
-        +'<div class="row"><span>Налог 2% (отложить)</span><b class="neg">−'+n(w.tax)+' сом</b></div>'
+        +'<div class="row"><span>Налог 2% (с 2027 года, сейчас 0)</span><b class="neg">−'+n(w.tax)+' сом</b></div>'
         +'<div class="row"><span>Соцфонд (отложить)</span><b class="neg">−'+n(w.social)+' сом</b></div>'
         +'<div class="row"><span><b>Чистая прибыль</b></span>'+pr(w.net)+'</div></div>';
     });
     h+='<div style="padding:10px 0;border-top:2px solid var(--line)"><div class="o-head"><b>Итого за период</b></div>'
       +'<div class="row"><span>Выручка</span><b>'+n(t.rev)+' сом</b></div><div class="row"><span>Комиссия Finik</span><b class="neg">−'+n(t.fee)+' сом</b></div>'
-      +'<div class="row"><span>Налог 2%</span><b class="neg">−'+n(t.tax)+' сом</b></div><div class="row"><span>Соцфонд</span><b class="neg">−'+n(t.social)+' сом</b></div>'
+      +'<div class="row"><span>Налог 2% (с 2027 года)</span><b class="neg">−'+n(t.tax)+' сом</b></div><div class="row"><span>Соцфонд</span><b class="neg">−'+n(t.social)+' сом</b></div>'
       +'<div class="row"><span><b>Чистая прибыль</b></span>'+pr(t.net)+'</div></div>'
       +'<div class="warn">Налог и Соцфонд здесь «отложить»: платятся не каждую неделю, а раз в квартал и раз в месяц. Соцфонд в расчёте '+n(f.constants.social_month)+' сом/мес с запасом.</div></div>';
     return h;

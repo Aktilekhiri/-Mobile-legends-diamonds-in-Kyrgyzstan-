@@ -1322,7 +1322,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=93">
-<link rel="stylesheet" href="theme.css?v=44">
+<link rel="stylesheet" href="theme.css?v=45">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1399,6 +1399,15 @@
     <button type="button" class="gg-skip" onclick="guestGateContinue()">Продолжить без входа</button>
   </div>
 </div>
+<div id="ocModal" role="dialog" aria-modal="true" aria-labelledby="ocTitle" hidden onclick="if(event.target===this)closeOrderChat()">
+  <div class="oc-card">
+    <div class="oc-head"><div><strong id="ocTitle">Чат по заказу</strong><div class="oc-sub" id="ocSub"></div></div><button type="button" class="auth-x" aria-label="Закрыть" onclick="closeOrderChat()">✕</button></div>
+    <div class="oc-list" id="ocList" aria-live="polite"></div>
+    <form class="oc-form" onsubmit="sendOrderChat(event)"><input id="ocInput" class="input-field" maxlength="500" placeholder="Напишите сообщение" aria-label="Сообщение" autocomplete="off"><button type="submit" class="btn-primary" id="ocSend">Отправить</button></form>
+    <div class="oc-note">Отвечаем в течение дня. Для срочных вопросов: WhatsApp +996 555 920 204.</div>
+  </div>
+</div>
+<div id="dkToast" role="status" hidden></div>
 <div id="authModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="authTitle" onclick="if(event.target===this)closeAuthModal()">
   <div class="auth-card">
     <button type="button" class="auth-x" aria-label="Закрыть" onclick="closeAuthModal()">✕</button>
@@ -2643,6 +2652,77 @@ document.addEventListener('DOMContentLoaded', () => { try { if (!window.DK_API) 
   const test = /[?&]gopaytest=1/.test(location.search);   // владелец проверяет GoPay до публичного запуска
   fetch(API_BASE() + '/api/gopay/status').then(r => r.json()).then(j => { if (j && (j.enabled || (test && j.ready))) show('gopay'); else return fetch(API_BASE() + '/api/finik/status').then(r => r.json()).then(f => { if (f && f.enabled) show('finik'); else off(); }); }).catch(off); } catch (e) {} });
 
+
+// ---------- Чат по заказу, баннер, уведомления ----------
+var ocId = '', ocTimer = null, ocLast = 0, unreadSeen = -1, unreadTimer = null;
+function dkBeep() { try { const C = window.AudioContext || window.webkitAudioContext, c = new C(), o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.value = 880; g.gain.value = .07; o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + .18); setTimeout(() => { try { c.close(); } catch (e) {} }, 400); } catch (e) {} }
+function dkToast(text, onClick) { const t = document.getElementById('dkToast'); if (!t) return; t.textContent = text; t.hidden = false; t.onclick = () => { t.hidden = true; if (onClick) onClick(); }; clearTimeout(t._h); t._h = setTimeout(() => { t.hidden = true; }, 9000); }
+function ocRender(msgs) {
+  const l = document.getElementById('ocList'); if (!l) return;
+  l.innerHTML = msgs.length ? msgs.map(m => `<div class="oc-m ${m.side === 'a' ? 'a' : 'c'}"><div>${esc(m.text).replace(/\n/g, '<br>')}</div><span>${new Date(m.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span></div>`).join('') : '<div class="orders-empty">Напишите, если что-то не так с заказом. Ответим сюда.</div>';
+  l.scrollTop = l.scrollHeight;
+}
+async function ocLoad(first) {
+  if (!ocId) return;
+  try {
+    const r = await fetch(API_BASE() + '/api/orders/' + ocId + '/msgs', { headers: authHeaders() });
+    if (r.status === 401) { closeOrderChat(); toggleAuthModal(); return; }
+    if (!r.ok) { if (first) document.getElementById('ocList').innerHTML = '<div class="orders-empty">Чат доступен только для ваших заказов. Войдите в тот аккаунт, с которого оформляли.</div>'; return; }
+    const d = await r.json(), msgs = d.msgs || [], last = msgs.length ? msgs[msgs.length - 1].id : 0;
+    if (first || last !== ocLast) { ocLast = last; ocRender(msgs); }
+    unreadPoll();
+  } catch (e) {}
+}
+function openOrderChat(id, label) {
+  if (!getCurrentUser()) { toggleAuthModal(); return; }
+  ocId = id; ocLast = -1;
+  document.getElementById('ocSub').textContent = (label ? label + ' · ' : '') + '№' + id;
+  document.getElementById('ocList').innerHTML = '<div class="orders-empty">Загружаем…</div>';
+  document.getElementById('ocModal').hidden = false;
+  try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch (e) {}
+  ocLoad(true); clearInterval(ocTimer); ocTimer = setInterval(() => { if (!document.hidden) ocLoad(false); }, 7000);
+  setTimeout(() => { const i = document.getElementById('ocInput'); if (i) i.focus(); }, 50);
+}
+function closeOrderChat() { ocId = ''; clearInterval(ocTimer); const m = document.getElementById('ocModal'); if (m) m.hidden = true; }
+async function sendOrderChat(ev) {
+  ev.preventDefault();
+  const i = document.getElementById('ocInput'), b = document.getElementById('ocSend'), text = i.value.trim(); if (!text || !ocId) return;
+  b.disabled = true;
+  try {
+    const r = await fetch(API_BASE() + '/api/orders/' + ocId + '/msgs', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ text }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { dkToast(d.error || 'Не удалось отправить'); } else { i.value = ''; await ocLoad(true); }
+  } catch (e) { dkToast('Нет связи с сервером'); }
+  b.disabled = false; i.focus();
+}
+async function unreadPoll() {
+  if (!getCurrentUser() || !window.DK_API) return;
+  try {
+    const r = await fetch(API_BASE() + '/api/my/msgs/unread', { headers: authHeaders() });
+    if (!r.ok) return;
+    const d = await r.json(), total = ocId ? 0 : (d.total || 0);
+    document.querySelectorAll('#bn-profile, #navBal').forEach(e => e.classList.toggle('has-new', total > 0));
+    if (total > 0 && total !== unreadSeen && unreadSeen !== -2) {
+      const f = (d.unread || [])[0] || {};
+      if (unreadSeen !== -1 || total > 0) { dkBeep(); dkToast('💬 Новое сообщение от поддержки по заказу ' + (f.order_id || ''), () => f.order_id && openOrderChat(f.order_id, '')); try { if ('Notification' in window && Notification.permission === 'granted' && document.hidden) new Notification('Diamond.kg', { body: String(f.text || 'Новое сообщение по заказу').slice(0, 120) }); } catch (e) {} }
+    }
+    unreadSeen = total;
+  } catch (e) {}
+}
+async function loadBanner() {
+  try {
+    const r = await fetch(API_BASE() + '/api/banner'); if (!r.ok) return;
+    const d = await r.json(), t = String(d.text || '').trim(); let el = document.getElementById('siteBanner');
+    let hid = ''; try { hid = sessionStorage.getItem('dk_banner_x') || ''; } catch (e) {}
+    if (!t || hid === t + d.updated_at) { if (el) el.remove(); return; }
+    if (!el) { el = document.createElement('div'); el.id = 'siteBanner'; el.setAttribute('role', 'status'); document.body.insertBefore(el, document.body.firstChild); }
+    el.innerHTML = '<span></span><button type="button" aria-label="Скрыть">✕</button>'; el.firstChild.textContent = '📢 ' + t;
+    el.lastChild.onclick = () => { try { sessionStorage.setItem('dk_banner_x', t + d.updated_at); } catch (e) {} el.remove(); };
+  } catch (e) {}
+}
+window.addEventListener('load', () => { if (!window.DK_API) return; loadBanner(); setInterval(loadBanner, 60000); setTimeout(unreadPoll, 1500); unreadTimer = setInterval(() => { if (!document.hidden) unreadPoll(); }, 25000); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOrderChat(); });
+
 // ---------- Кабинет ----------
 function acToggle(id) { const e = document.getElementById(id); if (e) { e.hidden = !e.hidden; if (!e.hidden && id === 'acTopForm') { const i = document.getElementById('walAmt'); if (i) i.focus(); } } }
 async function renderAccount() {
@@ -2662,7 +2742,7 @@ async function renderAccount() {
     box.innerHTML = orders.length ? orders.map(o => {
       const st = ORDER_STATUS[o.status] || [o.status, 'wait'];
       const when = new Date(o.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-      return `<div class="ac-ord"><div><strong>${esc(o.pkg_label)}</strong><span>${esc(when)} · №${esc(o.id)}</span></div><div class="ac-ord-r"><b>${esc(o.price_kgs)} сом</b><span class="hist-st ${st[1]}">${esc(st[0])}</span></div></div>`;
+      return `<div class="ac-ord"><div><strong>${esc(o.pkg_label)}</strong><span>${esc(when)} · №${esc(o.id)}</span></div><div class="ac-ord-r"><b>${esc(o.price_kgs)} сом</b><span class="hist-st ${st[1]}">${esc(st[0])}</span><button type="button" class="oc-open" onclick="openOrderChat('${esc(o.id)}','${esc(o.pkg_label)}')">💬 Написать</button></div></div>`;
     }).join('') : '<div class="orders-empty">Заказов пока нет. <button type="button" class="link-btn" onclick="showPage(\'catalog\')">Выбрать игру</button></div>';
   } catch (e) { box.innerHTML = '<div class="orders-empty">Не удалось загрузить заказы.</div>'; }
 }
@@ -3101,7 +3181,7 @@ async function checkOrderStatus() {
       <div class="hist-mid">${esc(STATUS_TEXT[o.status] || st[0])}</div>
       <div class="suc-delivery" id="statusDelivery" hidden></div>
       <div class="rv-slot" id="statusReview"></div>
-      <div class="hist-bot"><span class="hist-st ${st[1]}">${esc(st[0])}</span><span>${esc(when)} · №${esc(o.id)}</span></div></div>`;
+      <div class="hist-bot"><span class="hist-st ${st[1]}">${esc(st[0])}</span><span>${esc(when)} · №${esc(o.id)}</span></div>${getCurrentUser() ? `<button type="button" class="oc-open" onclick="openOrderChat('${esc(o.id)}','${esc(o.pkg_label)}')">💬 Написать по заказу</button>` : ""}</div>`;
     if (o.delivery) renderDelivery(document.getElementById('statusDelivery'), o.region, o.delivery);
     if (o.status === 'delivered' && !o.reviewed && (sec || getCurrentUser())) { const sr = document.getElementById('statusReview'); if (sr) { delete sr.dataset.on; showReviewOnce('statusReview', o.id, sec); } }
   } catch (e) {
@@ -3135,7 +3215,7 @@ async function renderOrders() {
         ${o.delivery && o.status === 'delivered' ? `<div class="suc-delivery" id="dl-${esc(o.id)}"></div>` : ''}
         ${o.pay_url ? `<div class="hist-pay"><a class="btn-primary" href="${esc(o.pay_url)}" rel="noopener">💳 Оплатить ${esc(o.price_kgs)} сом</a><span class="hist-pay-t">Осталось ~${mins} мин</span></div>` : ''}
         ${o.status === 'delivered' && !o.reviewed ? `<div class="rv-slot" id="rv-${esc(o.id)}"><button type="button" class="link-btn" onclick="reviewWidget(document.getElementById('rv-${esc(o.id)}'),'${esc(o.id)}','')">⭐ Оставить отзыв</button></div>` : ''}
-        <div class="hist-bot"><span class="hist-st ${st[1]}">${esc(st[0])}</span><span>${esc(when)} · ${esc(o.method)} · №${esc(o.id)}</span></div></div>`;
+        <div class="hist-bot"><span class="hist-st ${st[1]}">${esc(st[0])}</span><span>${esc(when)} · ${esc(o.method)} · №${esc(o.id)}</span></div><button type="button" class="oc-open" onclick="openOrderChat('${esc(o.id)}','${esc(o.pkg_label)}')">💬 Написать по заказу</button></div>`;
     }).join('');
     orders.forEach(o => { if (o.delivery && o.status === 'delivered') { const el = document.getElementById('dl-' + o.id); if (el) renderDelivery(el, o.region, o.delivery); } });
   } catch (e) {

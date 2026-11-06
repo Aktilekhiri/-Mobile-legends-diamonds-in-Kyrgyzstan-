@@ -729,3 +729,28 @@ html[data-theme="dark"] #dust i,html[data-theme="blue"] #dust i{opacity:.8}
 .ac-ord span{display:block;font-size:.78rem;opacity:.65;margin-top:2px}
 .ac-ord-r{text-align:right}
 @media(min-width:1100px){.ac-wrap{max-width:900px}.ac-tiles{grid-template-columns:repeat(4,1fr)}.ac-btns{flex-direction:row}.ac-btn{flex:1}}
+
+/* --- Чат по заказу, баннер, тост --- */
+#siteBanner{display:flex;gap:10px;align-items:center;justify-content:center;padding:10px 14px;background:#FFC83D;color:#1b1500;font-weight:700;font-size:.92rem;text-align:center;position:relative;z-index:60}
+#siteBanner button{background:none;border:0;color:inherit;font-size:1rem;cursor:pointer;padding:4px 8px}
+#ocModal{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
+#ocModal[hidden],#dkToast[hidden]{display:none}
+.oc-card{width:100%;max-width:520px;height:min(86vh,640px);display:flex;flex-direction:column;background:var(--bg);color:var(--text,inherit);border:1px solid var(--line);border-radius:22px 22px 0 0;padding:14px}
+@media(min-width:700px){#ocModal{align-items:center}.oc-card{border-radius:22px}}
+.oc-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
+.oc-sub{font-size:.8rem;opacity:.65}
+.oc-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px}
+.oc-m{max-width:82%;padding:9px 12px;border-radius:16px;word-break:break-word;font-size:.95rem}
+.oc-m span{display:block;font-size:.68rem;opacity:.6;margin-top:3px}
+.oc-m.c{align-self:flex-end;background:var(--accent);color:var(--on-accent);border-bottom-right-radius:5px}
+.oc-m.a{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:5px}
+.oc-form{display:flex;gap:8px;margin-top:10px}
+.oc-form input{flex:1;min-width:0}
+.oc-form .btn-primary{width:auto;flex:0 0 auto;padding:0 18px;min-height:46px}
+.oc-note{font-size:.72rem;opacity:.6;margin-top:6px;text-align:center}
+.oc-open{margin-top:10px;background:none;border:1px solid var(--line);color:inherit;border-radius:12px;padding:8px 12px;font:inherit;font-size:.85rem;cursor:pointer}
+.ac-ord-r .oc-open{margin-top:6px}
+#dkToast{position:fixed;left:12px;right:12px;bottom:88px;max-width:460px;margin:0 auto;z-index:310;background:var(--accent);color:var(--on-accent);padding:13px 16px;border-radius:16px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.3);cursor:pointer}
+.has-new{position:relative}
+.has-new::after{content:"";position:absolute;top:4px;right:calc(50% - 20px);width:10px;height:10px;border-radius:50%;background:#ff4d4d;box-shadow:0 0 0 2px var(--bg)}
+.nav-bal.has-new::after{right:2px;top:-2px}

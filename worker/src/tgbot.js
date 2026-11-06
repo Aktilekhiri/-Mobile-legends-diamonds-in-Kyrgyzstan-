@@ -10,6 +10,7 @@ import { startGopayOrder, gopayPublic } from './gopay.js';
 const fastReady = env => gopayPublic(env) || finikReady(env);
 import { publishOffer, rejectOffer, createOffer, addOfferPhoto, submitOffer, markup as sellMarkup, GAMES as SELL_GAMES } from './market.js';
 import { notify } from './notify.js';
+import { adminSend, getBanner, setBanner } from './msgs.js';
 import { startTopup, startWalletOrder, linkTelegram, TOPUP_MIN, TOPUP_MAX } from './wallet.js';
 import { ownerForTg, balanceOf, history as walletHistory } from './ledger.js';
 import { aiChat, aiReady } from './aichat.js';
@@ -206,9 +207,29 @@ async function adminAction(env, cq, act, id, token) {
   else await call('editMessageText', { chat_id: chat, message_id: mid, text: ((m.text || '') + mark).slice(0, 3900), reply_markup: { inline_keyboard: [] } });
 }
 
-// Бот «Diamond KG Заказы» (уведомления владельцу): только нажатия кнопок под заказами
+// Сообщения владельца боту заказов: ответ реплаем на «💬 DK…» уходит клиенту в чат; /banner текст — баннер на сайте; /banner off — убрать
+async function ordersBotMessage(env, m) {
+  const token = env.TELEGRAM_BOT_TOKEN, adm = String(env.TELEGRAM_CHAT_ID || '');
+  if (!adm || !m.from || String(m.from.id) !== adm || !m.text) return;
+  const say = t => tgApi(env, 'sendMessage', { chat_id: adm, text: t, reply_to_message_id: m.message_id }, 10000, token);
+  const b = m.text.match(/^\/banner(?:@\w+)?(?:\s+([\s\S]*))?$/);
+  if (b) {
+    const t = (b[1] || '').trim();
+    if (!t) { const cur = await getBanner(env); await say(cur.text ? 'Сейчас на сайте: ' + cur.text + '\n\nУбрать: /banner off' : 'Баннера нет. Задать: /banner Текст'); return; }
+    await setBanner(env, /^(off|выкл|убрать)$/i.test(t) ? '' : t);
+    await say(/^(off|выкл|убрать)$/i.test(t) ? 'Баннер убран' : 'Баннер на сайте: ' + t);
+    return;
+  }
+  const src = m.reply_to_message && m.reply_to_message.text; const id = src && (src.match(/DK[A-Z0-9]{8}/) || [])[0];
+  if (!id) return;
+  const r = await adminSend(env, id, m.text);
+  await say(r.error ? 'Не отправлено: ' + r.error : '✅ Отправлено клиенту по заказу ' + id);
+}
+
+// Бот «Diamond KG Заказы» (уведомления владельцу): нажатия кнопок под заказами и ответы клиентам
 export async function handleOrdersBotUpdate(env, u) {
   try {
+    if (u && u.message) { await ordersBotMessage(env, u.message); return; }
     const cq = u && u.callback_query; if (!cq) return;
     const token = env.TELEGRAM_BOT_TOKEN, adm = String(env.TELEGRAM_CHAT_ID || '');
     const m = String(cq.data || '').match(/^(ok|mn|no|mp|mr|dp|dn|dd|dr):([A-Z0-9]{4,20})$/);

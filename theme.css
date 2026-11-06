@@ -683,3 +683,7 @@ body.v2 .nav-links a:hover,body.v2 .nav-links a.active{background:color-mix(in s
 html[data-theme="dark"] #dust i,html[data-theme="blue"] #dust i{opacity:.8}
 @keyframes dustFloat{0%{transform:translate(0,0) scale(1);opacity:.45}50%{opacity:1}100%{transform:translate(var(--x,18px),var(--y,-40px)) scale(1.4);opacity:.55}}
 @media (prefers-reduced-motion:reduce){#dust i{animation:none}}
+/* Иконки тем: один цвет */
+.tp-sw.l,.theme-btn .tb-sw{background:#FFFFFF}
+.tp-sw.d,html[data-theme="dark"] .theme-btn .tb-sw{background:#000000}
+.tp-sw.b,html[data-theme="blue"] .theme-btn .tb-sw{background:#1D4ED8}

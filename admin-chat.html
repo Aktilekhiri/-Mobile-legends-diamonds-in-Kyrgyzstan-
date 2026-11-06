@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script>if(window.parent===window){location.replace('admin.html#chat')}</script>
+<title>Чат — diamond.kg</title>
+<style>
+:root{--bg:#0B1020;--card:#151D33;--line:rgba(170,184,208,.2);--tx:#f0f4ff;--mu:#AAB8D0;--gold:#32D9F5;--red:#ff5d5d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px 40px}
+h1{font-size:1.4rem;margin:8px 0 12px}h2{font-size:1.05rem;margin:0 0 8px}
+input,textarea{width:100%;background:#0B1020;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 16px;cursor:pointer;min-height:46px;color:var(--tx);background:#1D2943}
+button.pri{background:var(--gold);color:#0B1020}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.row{display:flex;gap:8px}.row>input{flex:1}
+.th{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);margin-bottom:8px;font-weight:400}
+.th b{display:flex;justify-content:space-between;gap:8px}.th small{color:var(--mu)}
+.dot{background:var(--red);color:#fff;border-radius:999px;padding:0 7px;font-size:.78rem;font-weight:700}
+.m{max-width:85%;padding:8px 12px;border-radius:14px;margin:6px 0;word-break:break-word}
+.m.c{background:#1D2943}.m.a{background:var(--gold);color:#0B1020;margin-left:auto}
+.m span{display:block;font-size:.68rem;opacity:.65}
+.hidden{display:none}.msg{color:var(--mu);margin:6px 0;min-height:1.2em}
+</style>
+</head>
+<body><div class="wrap">
+<h1>💬 Чат с клиентами</h1>
+<div id="msg" class="msg"></div>
+<div id="login" class="card hidden">Сначала войдите во вкладке «Заказы», затем вернитесь сюда.</div>
+<div id="main" class="hidden">
+  <div class="card"><h2>📢 Баннер на сайте (виден всем)</h2>
+    <div class="row"><input id="bn" maxlength="200" placeholder="Например: Free Fire временно не работает, чиним"><button class="pri" id="bnSet">Показать</button><button id="bnOff">Убрать</button></div></div>
+  <div class="card"><h2>Написать клиенту по заказу</h2>
+    <div class="row"><input id="nid" placeholder="Номер заказа, DK…" maxlength="10"><button id="nOpen">Открыть</button></div>
+    <p style="color:#AAB8D0;font-size:.85rem;margin:8px 0 0">Клиент увидит сообщение, если вошёл в свой аккаунт: придёт звук и уведомление.</p></div>
+  <div id="threads"></div>
+  <div id="thread" class="card hidden"><h2 id="tt"></h2><div id="tm"></div>
+    <textarea id="tx" rows="3" maxlength="1000" placeholder="Сообщение клиенту"></textarea>
+    <div class="row" style="margin-top:8px"><button class="pri" id="send" style="flex:1">Отправить</button><button id="back">Назад</button></div></div>
+</div>
+</div>
+<script src="api-config.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},TK='dk_admin_token',cur='',timer=null;
+function sget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
+function api(){return (window.DK_API||sget('dk_admin_api')||'').replace(/\/+$/,'')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function say(t){$('msg').textContent=t||''}
+async function call(m,p,b){var h={Authorization:'Bearer '+sget(TK)},o={method:m,headers:h};if(b!==undefined){h['Content-Type']='application/json';o.body=JSON.stringify(b)}
+  var r=await fetch(api()+p,o),d={};try{d=await r.json()}catch(e){}if(r.status===401){$('main').classList.add('hidden');$('login').classList.remove('hidden');throw new Error('Войдите заново')}
+  if(!r.ok)throw new Error(d.error||('Ошибка '+r.status));return d}
+function fmt(t){return new Date(t).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}
+async function list(){try{var d=await call('GET','/api/admin/chats');
+  $('threads').innerHTML=(d.threads||[]).length?d.threads.map(function(t){return '<button class="th" data-id="'+esc(t.order_id)+'"><b><span>'+esc(t.order_id)+' · '+esc(t.pkg_label||'')+'</span>'+(t.unread?'<span class="dot">'+t.unread+'</span>':'')+'</b><small>'+(t.last_side==='a'?'Вы: ':'')+esc(String(t.last_text||'').slice(0,80))+' · '+fmt(t.last_at)+'</small></button>'}).join(''):'<div class="card">Сообщений пока нет.</div>';
+  Array.prototype.forEach.call($('threads').querySelectorAll('.th'),function(b){b.onclick=function(){open(b.dataset.id)}})}catch(e){say(e.message)}}
+async function load(){try{var d=await call('GET','/api/admin/chats/'+cur);
+  $('tm').innerHTML=(d.msgs||[]).map(function(m){return '<div class="m '+m.side+'">'+esc(m.text).replace(/\n/g,'<br>')+'<span>'+fmt(m.created_at)+'</span></div>'}).join('')||'<div class="msg">Пока пусто</div>'}catch(e){say(e.message)}}
+function open(id){cur=id;$('tt').textContent='Заказ '+id;$('threads').classList.add('hidden');$('thread').classList.remove('hidden');load();clearInterval(timer);timer=setInterval(load,8000)}
+$('back').onclick=function(){cur='';clearInterval(timer);$('thread').classList.add('hidden');$('threads').classList.remove('hidden');list()};
+$('send').onclick=async function(){var t=$('tx').value.trim();if(!t||!cur)return;$('send').disabled=true;try{await call('POST','/api/admin/chats/'+cur,{text:t});$('tx').value='';say('Отправлено');await load()}catch(e){say(e.message)}$('send').disabled=false};
+$('nOpen').onclick=function(){var id=$('nid').value.trim().toUpperCase();if(!/^DK[A-Z0-9]{8}$/.test(id)){say('Номер выглядит так: DK и 8 символов');return}say('');open(id)};
+$('bnSet').onclick=async function(){try{await call('POST','/api/admin/banner',{text:$('bn').value});say($('bn').value.trim()?'Баннер показан на сайте':'Баннер убран')}catch(e){say(e.message)}};
+$('bnOff').onclick=async function(){try{await call('POST','/api/admin/banner',{text:''});$('bn').value='';say('Баннер убран')}catch(e){say(e.message)}};
+if(!sget(TK)){$('login').classList.remove('hidden')}else{$('main').classList.remove('hidden');call('GET','/api/admin/banner').then(function(d){$('bn').value=d.text||''}).catch(function(){});list();setInterval(function(){if(!cur&&!document.hidden)list()},15000)}
+})();
+</script></body></html>

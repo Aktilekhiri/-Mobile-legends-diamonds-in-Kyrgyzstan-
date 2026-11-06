@@ -12,6 +12,7 @@ import { loginWithGoogle, getMe, listMyOrders, userFromRequest, adminListUsers }
 import { maybeSendReport } from './report.js';
 import { financeSummary, maybeSendWeekly, maybeRemindTaxes } from './finance.js';
 import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
+import { clientThread, clientSend, clientUnread, adminSend, adminThreads, adminThread, getBanner, setBanner } from './msgs.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
 import { ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
@@ -152,6 +153,21 @@ export default {
         const sub = await userFromRequest(req, env);
         if (!sub) return err(req, 'Нужен вход', 401);
         return json(req, await listMyOrders(env, sub));
+      }
+
+      // ----- баннер сайта и чат по заказу -----
+      if (path === '/api/banner' && m === 'GET') return json(req, await getBanner(env), 200, { 'Cache-Control': 'public, max-age=20' });
+      if (path === '/api/my/msgs/unread' && m === 'GET') {
+        const sub = await userFromRequest(req, env);
+        if (!sub) return err(req, 'Нужен вход', 401);
+        return json(req, await clientUnread(env, sub));
+      }
+      let mq = path.match(/^\/api\/orders\/(DK[A-Z0-9]{8})\/msgs$/);
+      if (mq) {
+        const sub = await userFromRequest(req, env);
+        if (!sub) return err(req, 'Нужен вход', 401);
+        if (m === 'GET') { const r = await clientThread(env, sub, mq[1]); return r.error ? err(req, r.error, r.status || 400) : json(req, r); }
+        if (m === 'POST') { const b = await req.json().catch(() => ({})); const r = await clientSend(env, sub, mq[1], b.text); return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201); }
       }
 
       // ----- баланс клиента (нужен вход через Google) -----
@@ -341,6 +357,12 @@ export default {
         if (path === '/api/admin/orders' && m === 'GET') {
           return json(req, { orders: await listOrders(env, url.searchParams.get('status') || 'all') });
         }
+        if (path === '/api/admin/chats' && m === 'GET') return json(req, await adminThreads(env));
+        if (path === '/api/admin/banner' && m === 'GET') return json(req, await getBanner(env));
+        if (path === '/api/admin/banner' && m === 'POST') { const b = await req.json().catch(() => ({})); return json(req, await setBanner(env, b.text)); }
+        { const ma = path.match(/^\/api\/admin\/chats\/(DK[A-Z0-9]{8})$/);
+          if (ma && m === 'GET') { const r = await adminThread(env, ma[1]); return r.error ? err(req, r.error, 400) : json(req, r); }
+          if (ma && m === 'POST') { const b = await req.json().catch(() => ({})); const r = await adminSend(env, ma[1], b.text); return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201); } }
         if (path === '/api/admin/finance' && m === 'GET') return json(req, await financeSummary(env));
         if (path === '/api/admin/tg' && m === 'GET') {
           let orders = null;
@@ -361,7 +383,7 @@ export default {
         }
         if (path === '/api/admin/tg/orders-setup' && m === 'POST') {
           if (!env.TELEGRAM_BOT_TOKEN) return err(req, 'Секрет TELEGRAM_BOT_TOKEN не задан', 400);
-          const r = await tgApi(env, 'setWebhook', { url: url.origin + '/api/tg/orders-webhook', secret_token: await webhookSecret(env), allowed_updates: ['callback_query'] }, 10000, env.TELEGRAM_BOT_TOKEN);
+          const r = await tgApi(env, 'setWebhook', { url: url.origin + '/api/tg/orders-webhook', secret_token: await webhookSecret(env), allowed_updates: ['message', 'callback_query'] }, 10000, env.TELEGRAM_BOT_TOKEN);
           return r && r.ok ? json(req, { ok: true }) : err(req, (r && r.description) || 'Не удалось подключить', 400);
         }
         if (path === '/api/admin/tg/orders-remove' && m === 'POST') {

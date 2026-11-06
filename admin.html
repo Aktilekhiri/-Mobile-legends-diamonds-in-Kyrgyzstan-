@@ -10,7 +10,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 nav.bn{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(16,24,43,.97);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom));backdrop-filter:blur(8px)}
-.bar{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.bar{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .tab{position:relative;font:inherit;font-weight:700;font-size:.72rem;min-height:56px;padding:6px 4px;border:0;border-radius:14px;background:transparent;color:var(--mu);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
 .tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tab[aria-selected="true"]{background:rgba(50,217,245,.14);color:var(--cy)}
@@ -30,6 +30,7 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
   <iframe id="f-clients" class="hidden" src="admin-clients.html" title="Клиенты"></iframe>
   <iframe id="f-bot" class="hidden" src="admin-bot.html" title="Бот"></iframe>
   <iframe id="f-accounts" class="hidden" src="admin-accounts.html" title="Аккаунты"></iframe>
+  <iframe id="f-chat" class="hidden" src="admin-chat.html" title="Чат"></iframe>
   <iframe id="f-finance" class="hidden" src="admin-finance.html" title="Финансы"></iframe>
 </div>
 <nav class="bn" aria-label="Разделы админки"><div class="bar" role="tablist">
@@ -38,6 +39,7 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
   <button class="tab" role="tab" id="t-clients" aria-selected="false" data-t="clients"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.7a3.5 3.5 0 010 6.6M18 14.8c2 .7 3.2 2.4 3.5 5.2"/></svg><span>Клиенты</span></button>
   <button class="tab" role="tab" id="t-accounts" aria-selected="false" data-t="accounts"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="12" r="2.2"/><path d="M14 10h4M14 14h4"/></svg><span>Аккаунты</span></button>
   <button class="tab" role="tab" id="t-bot" aria-selected="false" data-t="bot"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 16.5h6"/></svg><span>Бот</span></button>
+  <button class="tab" role="tab" id="t-chat" aria-selected="false" data-t="chat"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><span>Чат</span><span class="badge" id="chBadge"></span></button>
   <button class="tab" role="tab" id="t-finance" aria-selected="false" data-t="finance"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M21 19H3"/></svg><span>Финансы</span></button>
 </div></nav>
 <script src="api-config.js"></script>
@@ -47,7 +49,7 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
   function sget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
   function show(t){
     cur=t;
-    ['orders','reviews','clients','bot','accounts','finance'].forEach(function(x){
+    ['orders','reviews','clients','bot','accounts','chat','finance'].forEach(function(x){
       document.getElementById('f-'+x).classList.toggle('hidden',x!==t);
       document.getElementById('t-'+x).setAttribute('aria-selected',x===t?'true':'false');
     });
@@ -76,9 +78,15 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
       el.textContent=n;el.classList.toggle('on',n>0);
     }catch(e){}
   }
+  async function chBadge(){
+    var tk=sget('dk_admin_token'),api=(window.DK_API||sget('dk_admin_api')||'').replace(/\/+$/,''),el=document.getElementById('chBadge');
+    if(!tk||!api||document.hidden)return;
+    try{var r=await fetch(api+'/api/admin/chats',{headers:{Authorization:'Bearer '+tk}});if(!r.ok)return;var d=await r.json();el.textContent=d.unread;el.classList.toggle('on',d.unread>0)}catch(e){}
+  }
+  chBadge();setInterval(chBadge,20000);
   badge();setInterval(badge,20000);
   window.addEventListener('storage',badge);
-  show(location.hash==='#finance'?'finance':location.hash==='#accounts'?'accounts':(location.hash==='#reviews'?'reviews':(location.hash==='#clients'?'clients':(location.hash==='#bot'?'bot':'orders'))));
+  show(location.hash==='#chat'?'chat':location.hash==='#finance'?'finance':location.hash==='#accounts'?'accounts':(location.hash==='#reviews'?'reviews':(location.hash==='#clients'?'clients':(location.hash==='#bot'?'bot':'orders'))));
 })();
 </script>
 </body>

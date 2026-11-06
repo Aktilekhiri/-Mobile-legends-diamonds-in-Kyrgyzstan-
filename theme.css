@@ -687,3 +687,45 @@ html[data-theme="dark"] #dust i,html[data-theme="blue"] #dust i{opacity:.8}
 .tp-sw.l,.theme-btn .tb-sw{background:#FFFFFF}
 .tp-sw.d,html[data-theme="dark"] .theme-btn .tb-sw{background:#000000}
 .tp-sw.b,html[data-theme="blue"] .theme-btn .tb-sw{background:#1D4ED8}
+
+/* --- Кабинет и блок «Не нашли игру» --- */
+.cat-help{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:28px 0 8px;padding:20px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+.cat-help .ch-ic{flex:0 0 52px;height:52px;border-radius:16px;display:grid;place-items:center;background:var(--grad);color:var(--on-accent)}
+.cat-help .ch-tx{flex:1 1 220px;min-width:0}
+.cat-help h3{margin:0 0 4px;font-size:1.15rem}
+.cat-help p{margin:0;opacity:.75}
+.cat-help .btn-primary{flex:0 0 auto;width:auto;padding:0 22px}
+@media(max-width:600px){.cat-help .btn-primary{width:100%}}
+.ac-wrap{max-width:720px;margin:0 auto;padding:6px 5% 110px}
+.ac-prof{display:flex;align-items:center;gap:12px;margin:8px 0 14px}
+.ac-prof img{border-radius:50%;width:44px;height:44px;object-fit:cover}
+.ac-prof>div{flex:1;min-width:0}
+.ac-prof strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac-mail{font-size:.82rem;opacity:.65;overflow:hidden;text-overflow:ellipsis}
+.ac-out{background:none;border:1px solid var(--line);color:inherit;border-radius:12px;padding:8px 14px;cursor:pointer;font:inherit;font-size:.85rem}
+.wal.ac-card{margin:0 0 14px;padding:22px 20px;border:0;border-radius:26px;background:var(--grad);color:var(--on-accent);position:relative;overflow:hidden}
+.ac-card::after{content:"";position:absolute;right:-70px;top:-70px;width:230px;height:230px;border-radius:50%;border:26px solid rgba(255,255,255,.12);box-shadow:0 0 0 30px rgba(255,255,255,.07);pointer-events:none}
+.ac-lab{font-size:.95rem;opacity:.85}
+.ac-bal{margin:6px 0 16px}
+.ac-bal b{font-size:2.3rem;line-height:1.1;letter-spacing:-.02em}
+.ac-btns{display:flex;flex-direction:column;gap:10px;position:relative;z-index:1}
+.ac-btn{min-height:50px;border-radius:16px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.16);color:inherit;font:inherit;font-weight:700;font-size:1rem;cursor:pointer}
+.ac-btn.y{background:#FFC83D;color:#1b1500;border-color:transparent}
+.ac-form{position:relative;z-index:1;margin-top:12px}
+.ac-form[hidden],.wal-hist[hidden]{display:none}
+.ac-card .wal-row{margin:0 0 8px}
+.ac-card .wal-row .btn-primary{background:#FFC83D;color:#1b1500;border:0}
+.ac-card .wal-note{font-size:.78rem;opacity:.85}
+.ac-card .wal-note a,.ac-card .wal-msg{color:inherit}
+.ac-card .wal-msg{position:relative;z-index:1;margin-top:8px}
+.ac-card .wal-hist{position:relative;z-index:1;margin-top:12px;padding-top:4px;border-top:1px solid rgba(255,255,255,.25)}
+.ac-card .wal-hist div{border-top-color:rgba(255,255,255,.18)}
+.ac-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:22px}
+.ac-tiles>*{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:inherit;font:inherit;font-weight:700;text-align:left;text-decoration:none;cursor:pointer}
+.ac-tiles svg{color:var(--accent)}
+.ac-sec{display:flex;justify-content:space-between;align-items:center;margin:0 0 10px}
+.ac-sec h2{margin:0;font-size:1.25rem}
+.ac-ord{display:flex;justify-content:space-between;gap:10px;padding:14px;margin-bottom:8px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.ac-ord span{display:block;font-size:.78rem;opacity:.65;margin-top:2px}
+.ac-ord-r{text-align:right}
+@media(min-width:1100px){.ac-wrap{max-width:900px}.ac-tiles{grid-template-columns:repeat(4,1fr)}.ac-btns{flex-direction:row}.ac-btn{flex:1}}

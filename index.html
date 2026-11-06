@@ -1322,7 +1322,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=93">
-<link rel="stylesheet" href="theme.css?v=43">
+<link rel="stylesheet" href="theme.css?v=44">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1410,14 +1410,6 @@
     </div>
     <div id="authUser" style="display:none">
       <div class="auth-profile"><img id="authAvatar" alt="" width="56" height="56" referrerpolicy="no-referrer"><div><strong id="authName"></strong><div id="authEmail" class="auth-sub"></div></div></div>
-      <div class="wal" id="walBox">
-        <div class="wal-top"><span>💰 Баланс</span><b id="walBal">…</b></div>
-        <div class="wal-row"><input type="number" id="walAmt" class="input-field" inputmode="numeric" min="50" max="20000" placeholder="Сумма, сом" aria-label="Сумма пополнения"><button type="button" class="btn-primary" id="walTop" onclick="walletTopup()">Пополнить</button></div>
-        <div class="wal-note" style="font-size:12px;opacity:.7;margin:2px 0 8px">Пополнение баланса не возвращается, им можно оплатить любой заказ. Исключения: двойная оплата, ошибка в сумме или технический сбой — <a href="/refund/">подробнее</a>.</div>
-        <div class="wal-msg" id="walMsg" role="status"></div>
-        <button type="button" class="btn-secondary btn-full" id="walTg" onclick="walletLinkTg()">✈️ Привязать Telegram</button>
-        <div class="wal-hist" id="walHist"></div>
-      </div>
       <button type="button" class="btn-secondary btn-full" onclick="logout()">Выйти</button>
     </div>
     <div class="auth-links">
@@ -1520,6 +1512,36 @@
   <section class="final-cta"><div class="final-cta-box"><h2 class="sec-title">Готов пополнить <em>алмазы</em>?</h2><button class="btn-primary" onclick="showPage('catalog')">💎 Пополнить сейчас</button></div></section>
 </div>
 
+<!-- ACCOUNT -->
+<div class="page" id="page-account">
+  <div class="page-header" style="padding:30px 5% 14px;"><h1>👤 Кабинет</h1><p>Баланс, заказы и операции на одном экране</p></div>
+  <div class="ac-wrap">
+    <div class="ac-prof"><img id="acAvatar" alt="" width="44" height="44" referrerpolicy="no-referrer"><div><strong id="acName"></strong><div id="acEmail" class="ac-mail"></div></div><button type="button" class="ac-out" onclick="logout()">Выйти</button></div>
+    <div class="wal ac-card" id="walBox">
+      <div class="ac-lab">Баланс diamond.kg</div>
+      <div class="ac-bal"><b id="walBal">…</b></div>
+      <div class="ac-btns">
+        <button type="button" class="ac-btn y" onclick="acToggle('acTopForm')">＋ Пополнить</button>
+        <button type="button" class="ac-btn" onclick="acToggle('walHist')">⇄ История операций</button>
+      </div>
+      <div class="ac-form" id="acTopForm" hidden>
+        <div class="wal-row"><input type="number" id="walAmt" class="input-field" inputmode="numeric" min="50" max="20000" placeholder="Сумма, сом" aria-label="Сумма пополнения"><button type="button" class="btn-primary" id="walTop" onclick="walletTopup()">Оплатить</button></div>
+        <div class="wal-note">Пополнение баланса не возвращается, им можно оплатить любой заказ. Исключения: двойная оплата, ошибка в сумме или технический сбой — <a href="/refund/">подробнее</a>.</div>
+      </div>
+      <div class="wal-msg" id="walMsg" role="status"></div>
+      <div class="wal-hist" id="walHist" hidden></div>
+    </div>
+    <div class="ac-tiles">
+      <button type="button" onclick="showPage('catalog')"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>Каталог игр</button>
+      <button type="button" onclick="showPage('orders')"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Мои заказы</button>
+      <a href="/reviews/"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>Отзывы</a>
+      <button type="button" id="walTg" onclick="walletLinkTg()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4 3 11l6 2 2 6 3-4 5 4z"/></svg><span>Привязать Telegram</span></button>
+    </div>
+    <div class="ac-sec"><h2>Последние заказы</h2><button type="button" class="link-btn" onclick="showPage('orders')">Все заказы →</button></div>
+    <div id="acOrders" class="ac-orders"></div>
+  </div>
+</div>
+
 <!-- TOPUP -->
 <!-- CATALOG -->
 <div class="page" id="page-catalog">
@@ -1527,6 +1549,7 @@
   <div class="catalog-wrap">
     <div class="cat-search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="catSearch" placeholder="Найти игру или сервис" autocomplete="off" aria-label="Поиск игры" oninput="renderCatalog()"></div>
     <div id="catList"></div>
+    <div class="cat-help"><div class="ch-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg></div><div class="ch-tx"><h3>Не нашли свою игру?</h3><p>Напишите в поддержку: подскажем и добавим в каталог.</p></div><button type="button" class="btn-primary" onclick="showPage('support')">Написать в поддержку</button></div>
   </div>
 </div>
 
@@ -2619,6 +2642,30 @@ document.addEventListener('DOMContentLoaded', () => { try { if (!window.DK_API) 
   const off = () => { const o = document.getElementById('finikOff'); if (o) o.hidden = false; };
   const test = /[?&]gopaytest=1/.test(location.search);   // владелец проверяет GoPay до публичного запуска
   fetch(API_BASE() + '/api/gopay/status').then(r => r.json()).then(j => { if (j && (j.enabled || (test && j.ready))) show('gopay'); else return fetch(API_BASE() + '/api/finik/status').then(r => r.json()).then(f => { if (f && f.enabled) show('finik'); else off(); }); }).catch(off); } catch (e) {} });
+
+// ---------- Кабинет ----------
+function acToggle(id) { const e = document.getElementById(id); if (e) { e.hidden = !e.hidden; if (!e.hidden && id === 'acTopForm') { const i = document.getElementById('walAmt'); if (i) i.focus(); } } }
+async function renderAccount() {
+  const user = getCurrentUser();
+  if (!user) { showPage('home'); toggleAuthModal(); return; }
+  document.getElementById('acName').textContent = user.name || 'Профиль';
+  document.getElementById('acEmail').textContent = user.email || '';
+  const av = document.getElementById('acAvatar');
+  if (user.picture && /^https:\/\//.test(user.picture)) { av.src = user.picture; av.style.display = ''; } else { av.style.display = 'none'; }
+  loadWallet();
+  const box = document.getElementById('acOrders');
+  box.innerHTML = '<div class="orders-empty">Загружаем…</div>';
+  try {
+    const r = await fetch(API_BASE() + '/api/my/orders', { headers: authHeaders() });
+    if (!r.ok) throw new Error('fail');
+    const orders = ((await r.json()).orders || []).slice(0, 3);
+    box.innerHTML = orders.length ? orders.map(o => {
+      const st = ORDER_STATUS[o.status] || [o.status, 'wait'];
+      const when = new Date(o.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      return `<div class="ac-ord"><div><strong>${esc(o.pkg_label)}</strong><span>${esc(when)} · №${esc(o.id)}</span></div><div class="ac-ord-r"><b>${esc(o.price_kgs)} сом</b><span class="hist-st ${st[1]}">${esc(st[0])}</span></div></div>`;
+    }).join('') : '<div class="orders-empty">Заказов пока нет. <button type="button" class="link-btn" onclick="showPage(\'catalog\')">Выбрать игру</button></div>';
+  } catch (e) { box.innerHTML = '<div class="orders-empty">Не удалось загрузить заказы.</div>'; }
+}
 // ---------- Баланс клиента ----------
 var walletState = null;
 window.addEventListener('load', () => { if (getCurrentUser()) loadWallet(); });
@@ -2635,9 +2682,9 @@ function renderWallet() {
   set('walBal', e => e.textContent = Number(w.balance).toLocaleString('ru-RU') + ' сом');
   set('navBalV', e => e.textContent = Number(w.balance).toLocaleString('ru-RU'));
   set('navBal', e => e.hidden = !getCurrentUser());
-  set('walTg', e => { e.textContent = w.tg_linked ? '✅ Telegram привязан' : '✈️ Привязать Telegram'; e.disabled = !!w.tg_linked; });
+  set('walTg', e => { const t = e.querySelector('span'); if (t) t.textContent = w.tg_linked ? 'Telegram привязан ✅' : 'Привязать Telegram'; e.disabled = !!w.tg_linked; });
   set('walTop', e => e.disabled = !w.finik);
-  set('walHist', e => e.innerHTML = (w.history || []).slice(0, 5).map(x => `<div><span>${x.amount > 0 ? '+' : '−'}${Math.abs(x.amount).toLocaleString('ru-RU')} сом</span><span>${esc(WAL_KIND[x.kind] || x.kind)} · ${new Date(x.created_at).toLocaleDateString('ru-RU')}</span></div>`).join(''));
+  set('walHist', e => e.innerHTML = (w.history || []).slice(0, 30).map(x => `<div><span>${x.amount > 0 ? '+' : '−'}${Math.abs(x.amount).toLocaleString('ru-RU')} сом</span><span>${esc(WAL_KIND[x.kind] || x.kind)} · ${new Date(x.created_at).toLocaleDateString('ru-RU')}</span></div>`).join(''));
 }
 function updateWalletPay() {
   const box = document.getElementById('walletPay'); if (!box) return;
@@ -2787,12 +2834,13 @@ function showPage(name) {
   const navLink = document.getElementById(`nav-${name === 'topup' || name === 'payment' ? 'catalog' : name}`);
   if (navLink) navLink.classList.add('active');
   document.body.dataset.page = name;
-  { const map = { home:'home', catalog:'topup', topup:'topup', payment:'topup', orders:'orders', status:'orders', accounts:'accounts' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
+  { const map = { home:'home', catalog:'topup', topup:'topup', payment:'topup', orders:'orders', status:'orders', accounts:'accounts', account:'profile' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
   window.scrollTo(0,0);
   if (name === 'payment') { setSteps(3); if (getCurrentUser()) loadWallet(); else updateWalletPay(); }
   if (name === 'topup') renderPackages();
   if (name === 'catalog') renderCatalog();
   if (name === 'orders') renderOrders();
+  if (name === 'account') renderAccount();
   if (name === 'accounts' && window.DKAccounts) DKAccounts.load();
   if (window.DKAccounts && name !== 'accounts') DKAccounts.close();
 }
@@ -2874,6 +2922,7 @@ function showAuthState() {
   }
 }
 function toggleAuthModal() {
+  if (getCurrentUser()) { closeAuthModal(); showPage('account'); return; }
   document.getElementById('authModal').style.display = 'flex';
   showAuthState();
   if (!getCurrentUser()) renderGoogleButton();

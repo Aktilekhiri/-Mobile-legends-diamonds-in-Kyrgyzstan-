@@ -573,3 +573,103 @@ body.v2 .nav-links .lang-toggle,body.v2 .nav-links .user-name,body.v2 .nav-links
 .gr-cta{margin-top:14px}.gr-cta .btn-primary{min-height:44px;padding:0 18px}.gr-hint{color:var(--muted);font-size:.9rem;margin:10px 0 0}
 #gameReviews .lr-grid{grid-template-columns:1fr}@media (min-width:640px){#gameReviews .lr-grid{grid-template-columns:1fr 1fr}}
 @media (max-width:900px){#gameReviews{padding-bottom:90px}}
+
+/* ===== Темы по правилу 60/30/10: фон 60% · основной цвет/текст 30% · акцент 10% ===== */
+:root{
+  --bg:#F5F7F6; --surface:#FFFFFF; --card:#FFFFFF; --card-2:#ECF1EE;
+  --text:#0E1713; --muted:#55645C;
+  --accent:#0B8F8A; --accent-2:#0A736F; --on-accent:#FFFFFF;
+  --cyan:var(--accent); --indigo:var(--accent); --violet:var(--accent-2);
+  --line:rgba(14,23,19,.12); --line-strong:color-mix(in srgb,var(--accent) 55%,transparent);
+  --grad:linear-gradient(135deg,var(--accent) 0%,var(--accent-2) 100%);
+  --navy:var(--bg); --navy-light:var(--surface); --blue:var(--accent); --blue-light:var(--accent);
+  --gold:var(--accent); --gold-dark:var(--accent-2); --white:var(--text); --border:var(--line);
+  --glass-bg:rgba(255,255,255,.92); --glass-bg-strong:rgba(255,255,255,.98);
+  --glass-border:var(--line); --glass-border-hover:color-mix(in srgb,var(--accent) 60%,transparent);
+  --nav-bg:rgba(245,247,246,.9); --nav-bg2:rgba(245,247,246,.97);
+}
+html[data-theme="dark"]{
+  --bg:#07090A; --surface:#111514; --card:#111514; --card-2:#1A201E;
+  --text:#F2F6F4; --muted:#97A39D;
+  --accent:#2BE37E; --accent-2:#17B861; --on-accent:#04130A;
+  --line:rgba(255,255,255,.12);
+  --glass-bg:rgba(17,21,20,.92); --glass-bg-strong:rgba(17,21,20,.98);
+  --nav-bg:rgba(7,9,10,.9); --nav-bg2:rgba(7,9,10,.97); --btn-solid:#26302C;
+}
+html[data-theme="blue"]{
+  --bg:#0A1E4A; --surface:#10306B; --card:#10306B; --card-2:#163C82;
+  --text:#F4F7FF; --muted:#AEC0E3;
+  --accent:#FFB21E; --accent-2:#E89A00; --on-accent:#1A1200;
+  --line:rgba(255,255,255,.18);
+  --glass-bg:rgba(16,48,107,.92); --glass-bg-strong:rgba(16,48,107,.98);
+  --nav-bg:rgba(10,30,74,.92); --nav-bg2:rgba(10,30,74,.98); --btn-solid:#2A56B8;
+}
+body.v2 .nav-cta,body.v2 .nav-links a.nav-cta,body.v2 .btn-primary,body.v2 .step-num{color:var(--on-accent)!important;background:var(--grad)!important}
+body.v2 .btn-primary{box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 28%,transparent)}
+.lang-toggle button.active,body.v2 .lang-toggle button.active{background:var(--accent)!important;color:var(--on-accent)!important}
+body.v2 .user-name{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+body.v2 .user-name:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.bn-item.on .bn-ic{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.gp-item[aria-checked="true"],.tp-btn[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 10%,transparent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 28%,transparent)}
+.steps-bar .sb.on b,.steps-bar .sb.done b{color:var(--on-accent)}
+.tp-sw.l{background:conic-gradient(#F5F7F6 0 60%,#0E1713 0 90%,#0B8F8A 0)}
+.tp-sw.d{background:conic-gradient(#07090A 0 60%,#F2F6F4 0 90%,#2BE37E 0)}
+.tp-sw.b{background:conic-gradient(#0A1E4A 0 60%,#F4F7FF 0 90%,#FFB21E 0)}
+.theme-btn{flex:none;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer;padding:0;margin-left:6px}
+.theme-btn:hover{border-color:var(--accent)}
+.theme-btn .tb-sw{width:24px;height:24px;border-radius:50%;border:1px solid rgba(128,128,128,.5);background:conic-gradient(var(--bg) 0 60%,var(--text) 0 90%,var(--accent) 0)}
+.nav-lang-m+.theme-btn{margin-left:8px}
+@media (max-width:1180px){.nav-links .theme-btn{display:none}}
+@media (min-width:1181px){.theme-btn.m{display:none}}
+
+/* ===== Раскладка для ПК: контент занимает экран, а не только центр ===== */
+@media (min-width:1100px){
+  body.v2 nav{padding:0 max(32px,3vw)}
+  body.v2 .hero,body.v2 section,body.v2 .disclaimer,body.v2 #page-topup .page-header,body.v2 .night-note{max-width:1560px}
+  body.v2 section,body.v2 .hero{padding-left:max(32px,3vw);padding-right:max(32px,3vw)}
+  body.v2 .hero{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:48px;align-items:center;padding-top:56px;padding-bottom:28px}
+  body.v2 .hero h1{font-size:clamp(3rem,4.2vw,4.8rem)!important}
+  body.v2 .games-grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+  body.v2 .trust-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #liveFeed .lf-stats{max-width:none}
+  #liveFeed .lf-marquee{margin:0 calc(-1 * max(32px,3vw))}
+  body.v2 .sec-title{font-size:clamp(2rem,2.6vw,2.8rem)}
+  /* каталог: сетка в 3 колонки */
+  .catalog-wrap{max-width:1560px;padding:18px max(32px,3vw) 48px}
+  .catalog-wrap .cat-search,.catalog-wrap .cat-tabs{max-width:760px;margin-left:auto;margin-right:auto}
+  .catalog-wrap #catList .cat-list,#catList .cat-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .cat-row{padding:14px 18px}
+  .cat-sec,#catList .cat-sec-title{grid-column:1/-1}
+  /* пополнение: слева данные, справа пакеты на всю ширину */
+  body.v2 .steps-bar{max-width:1560px;padding:0 max(32px,3vw)}
+  body.v2 .topup-layout{max-width:1560px!important;padding:0 max(32px,3vw) 28px;grid-template-columns:400px minmax(0,1fr)!important;gap:28px}
+  body.v2 #stepGame{position:sticky;top:84px;grid-column:1}
+  body.v2 #stepPkg{grid-column:2}
+  body.v2 #stepData{grid-column:1/-1;max-width:760px;margin:0 auto;width:100%}
+  body.v2 #pkgGrid,body.v2 .pkg-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))!important}
+  #gameFeed,#gameReviews,.game-about{max-width:1560px;padding-left:max(32px,3vw);padding-right:max(32px,3vw)}
+  #gameFeed .lf-marquee{margin:0 calc(-1 * max(32px,3vw))}
+  .game-about{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:48px}
+  .game-about>h2:first-child{margin-top:10px}
+  #gameReviews .lr-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  body.v2 .payment-layout{max-width:1100px}
+  footer{padding-left:max(32px,3vw);padding-right:max(32px,3vw)}
+}
+@media (min-width:1700px){
+  #catList .cat-list{grid-template-columns:repeat(4,minmax(0,1fr))}
+  body.v2 .topup-layout{grid-template-columns:440px minmax(0,1fr)!important}
+  #gameReviews .lr-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+html[data-theme="dark"],html[data-theme="blue"]{
+  --cyan:var(--accent); --indigo:var(--accent); --violet:var(--accent-2);
+  --line-strong:color-mix(in srgb,var(--accent) 55%,transparent);
+  --grad:linear-gradient(135deg,var(--accent) 0%,var(--accent-2) 100%);
+  --navy:var(--bg); --navy-light:var(--surface); --blue:var(--accent); --blue-light:var(--accent);
+  --gold:var(--accent); --gold-dark:var(--accent-2); --white:var(--text); --border:var(--line);
+  --glass-border:var(--line); --glass-border-hover:color-mix(in srgb,var(--accent) 60%,transparent);
+}
+body.v2 .nav-links a:hover,body.v2 .nav-links a.active{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.giveaway .gw-btn{background:var(--grad)!important;color:var(--on-accent)!important}
+
+@media (min-width:1800px){body.v2 .hero,body.v2 section,body.v2 .disclaimer,body.v2 #page-topup .page-header,body.v2 .night-note,.catalog-wrap,body.v2 .steps-bar,body.v2 .topup-layout,#gameFeed,#gameReviews,.game-about{max-width:1760px!important}}
+@media (min-width:1100px){body.v2 .faq-list{max-width:none!important;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px;align-items:start}body.v2 .faq-list .faq-item{margin:0}}

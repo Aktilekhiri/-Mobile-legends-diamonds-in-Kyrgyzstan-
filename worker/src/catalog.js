@@ -336,3 +336,6 @@ export const MAX_AUTO_COST_USD = 116; // дороже — только вруч�
 // и оплаченные через Finik (или с баланса, который пополняется через Finik). Старые заказы остаются в базе, но в отчёты не попадают.
 export const FIN_START_MS = 1793815200000;
 export const FIN_WHERE = "created_at >= " + FIN_START_MS + " AND COALESCE(method,'') IN ('Finik','Баланс','promo')";
+
+// Временно отключённые пакеты (поставщик отвечает «unavailable»). Формат: 'регион/игра:ключ_пакета'. Убрать строку, чтобы вернуть пакет.
+export const OFF_PKGS = ['freefire:level_up_package_30'];

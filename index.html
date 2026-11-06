@@ -1759,10 +1759,12 @@ const gameIds = {
 Object.keys(gamesData).forEach(k => { regionLabels[k] = gamesData[k].icon + ' ' + gamesData[k].name; });
 function unitOf(regionKey) { return gamesData[regionKey] ? gamesData[regionKey].unit : 'алмазов'; }
 
+// Временно отключённые пакеты (поставщик недоступен). Убрать строку, чтобы вернуть.
+const OFF_PKGS = ['freefire:level_up_package_30'];
 function buildPackages(regionKey) {
   const gd = gamesData[regionKey];
   if (gd) {
-    const items = gd.packs.map((p, i) => p.name
+    const items = gd.packs.filter(p => !OFF_PKGS.includes(regionKey + ':' + p.k)).map((p, i) => p.name
       ? { type:'pass', name:p.name, price:p.price, key:p.k, region:regionKey, id:regionKey + '-' + i, totalDiamonds:0 }
       : { type:'diamond', diam:p.amt, bonus:p.bonus || 0, price:p.price, key:p.k, unit:gd.unit, region:regionKey, id:regionKey + '-' + i, totalDiamonds:p.amt + (p.bonus || 0) });
     return [...items.filter(p => p.type !== 'pass'), ...items.filter(p => p.type === 'pass')];

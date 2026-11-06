@@ -578,7 +578,7 @@ body.v2 .nav-links .lang-toggle,body.v2 .nav-links .user-name,body.v2 .nav-links
 :root{
   --bg:#F5F7F6; --surface:#FFFFFF; --card:#FFFFFF; --card-2:#ECF1EE;
   --text:#0E1713; --muted:#55645C;
-  --accent:#0B8F8A; --accent-2:#0A736F; --on-accent:#FFFFFF;
+  --accent:#1F5FE0; --accent-2:#1749B8; --on-accent:#FFFFFF;
   --cyan:var(--accent); --indigo:var(--accent); --violet:var(--accent-2);
   --line:rgba(14,23,19,.12); --line-strong:color-mix(in srgb,var(--accent) 55%,transparent);
   --grad:linear-gradient(135deg,var(--accent) 0%,var(--accent-2) 100%);
@@ -612,7 +612,7 @@ body.v2 .user-name:hover{background:color-mix(in srgb,var(--accent) 22%,transpar
 .bn-item.on .bn-ic{background:color-mix(in srgb,var(--accent) 16%,transparent)}
 .gp-item[aria-checked="true"],.tp-btn[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 10%,transparent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 28%,transparent)}
 .steps-bar .sb.on b,.steps-bar .sb.done b{color:var(--on-accent)}
-.tp-sw.l{background:conic-gradient(#F5F7F6 0 60%,#0E1713 0 90%,#0B8F8A 0)}
+.tp-sw.l{background:conic-gradient(#F5F7F6 0 60%,#0E1713 0 90%,#1F5FE0 0)}
 .tp-sw.d{background:conic-gradient(#07090A 0 60%,#F2F6F4 0 90%,#2BE37E 0)}
 .tp-sw.b{background:conic-gradient(#0A1E4A 0 60%,#F4F7FF 0 90%,#FFB21E 0)}
 .theme-btn{flex:none;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer;padding:0;margin-left:6px}
@@ -673,3 +673,13 @@ body.v2 .nav-links a:hover,body.v2 .nav-links a.active{background:color-mix(in s
 
 @media (min-width:1800px){body.v2 .hero,body.v2 section,body.v2 .disclaimer,body.v2 #page-topup .page-header,body.v2 .night-note,.catalog-wrap,body.v2 .steps-bar,body.v2 .topup-layout,#gameFeed,#gameReviews,.game-about{max-width:1760px!important}}
 @media (min-width:1100px){body.v2 .faq-list{max-width:none!important;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px;align-items:start}body.v2 .faq-list .faq-item{margin:0}}
+
+/* ===== Неоновая пыль: лёгкие светящиеся точки (синий, зелёный, жёлтый) ===== */
+#dust{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+#dust i{position:absolute;display:block;border-radius:50%;opacity:.75;animation:dustFloat var(--d,14s) ease-in-out var(--dl,0s) infinite alternate}
+#dust i.b{background:#1E90FF;box-shadow:0 0 14px 5px rgba(30,144,255,.8)}
+#dust i.g{background:#2BE37E;box-shadow:0 0 14px 5px rgba(43,227,126,.8)}
+#dust i.y{background:#FFE600;box-shadow:0 0 14px 5px rgba(255,230,0,.8)}
+html[data-theme="dark"] #dust i,html[data-theme="blue"] #dust i{opacity:.8}
+@keyframes dustFloat{0%{transform:translate(0,0) scale(1);opacity:.45}50%{opacity:1}100%{transform:translate(var(--x,18px),var(--y,-40px)) scale(1.4);opacity:.55}}
+@media (prefers-reduced-motion:reduce){#dust i{animation:none}}

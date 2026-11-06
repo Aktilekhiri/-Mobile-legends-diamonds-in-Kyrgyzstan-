@@ -7,7 +7,9 @@ import { notify } from './notify.js';
 const TZ = 6 * 3600 * 1000;            // Бишкек = UTC+6
 const DAY = 86400000;
 export const RESERVE_PCT = 0.03;       // 3% выручки остаётся на карте приёма: комиссии сети, курс, возвраты
+export const TAX_FROM = Date.UTC(2027, 0, 1) - TZ;   // до 1 января 2027 налог 2% не платим, только Соцфонд и комиссия Finik
 export const TAX_PCT = 0.02;           // единый налог ИП: 2% от выручки (за вычетом возвратов), платится раз в квартал
+const taxOf = (rev, ts) => (ts < TAX_FROM ? 0 : Math.round(Math.max(0, rev) * TAX_PCT));
 export const SOCIAL_MONTH = 1800;      // взнос в Соцфонд в месяц, сом (с запасом: официально 1257)
 export const SOCIAL_WEEK = Math.round(SOCIAL_MONTH * 12 / 52); // недельная доля взноса
 export const MIN_BALANCE_USD = 116;    // не опускаем баланс FazerCards ниже (запас на ~4 дня)
@@ -44,7 +46,7 @@ async function sums(env, from, to) {
 function plan(week, balanceUsd) {
   const reserve = Math.round(week.rev * RESERVE_PCT);
   const profitSafe = Math.max(0, week.profit - reserve - (week.promo_cost || 0));   // расход на промо вычитаем: деньги реально потрачены
-  const tax = Math.round(Math.max(0, week.rev) * TAX_PCT), social = SOCIAL_WEEK;   // налог и Соцфонд откладываем на сейф вместе с прибылью
+  const tax = taxOf(week.rev, Date.now()), social = SOCIAL_WEEK;   // налог и Соцфонд откладываем на сейф вместе с прибылью
   const toSafe = Math.max(profitSafe, tax + social);                  // налоги обязательны, даже если прибыли не хватает
   const free = Math.max(0, profitSafe - tax - social);                // прибыль, которую можно тратить
   const weeklySpend = week.cost_usd;                                 // расход на поставщика за неделю, USD
@@ -80,7 +82,7 @@ export async function financeSummary(env, nowMs = Date.now()) {
   const weeks = [];
   for (let ws = weekStart, i = 0; ws >= firstWeek && i < 12; ws -= 7 * DAY, i++) {
     const w = await sums(env, ws, Math.min(ws + 7 * DAY, dayEnd));
-    const tax = Math.round(Math.max(0, w.rev) * TAX_PCT), social = SOCIAL_WEEK;
+    const tax = taxOf(w.rev, ws), social = SOCIAL_WEEK;
     weeks.push({ from: ws + TZ, n: w.n, rev: w.rev, fee: w.fee, cost: w.cost, promo: w.promo_cost, tax, social, profit: w.profit, net: w.profit - w.promo_cost - tax - social, current: ws === weekStart });
   }
   const spend7 = r7.cost_usd + r7.promo_usd;                                        // реальный темп расхода: последние 7 дней
@@ -88,10 +90,10 @@ export async function financeSummary(env, nowMs = Date.now()) {
     rate: USD_KGS, balance_usd: balance, balance_kgs: balance == null ? null : Math.round(balance * USD_KGS),
     spend_per_day_usd: Number((spend7 / 7).toFixed(2)), days_left: spend7 > 0 && balance != null ? Number((balance / (spend7 / 7)).toFixed(1)) : null,
     weeks, today, week: thisWeek, last_week: lastWeek, month, all,
-    quarter: { ...quarter, tax: Math.round(Math.max(0, quarter.rev) * TAX_PCT), social: SOCIAL_MONTH * 3, social_accrued: SOCIAL_MONTH * qMonths },
+    quarter: { ...quarter, tax: taxOf(quarter.rev, Date.now()), social: SOCIAL_MONTH * 3, social_accrued: SOCIAL_MONTH * qMonths },
     plan_week: plan({ ...thisWeek, cost_usd: Math.max(thisWeek.cost_usd + thisWeek.promo_usd, spend7) }, balance),
     plan_last: plan({ ...lastWeek, cost_usd: Math.max(lastWeek.cost_usd + lastWeek.promo_usd, spend7) }, balance),
-    constants: { tax_pct: TAX_PCT, social_month: SOCIAL_MONTH, reserve_pct: RESERVE_PCT, min_balance_usd: MIN_BALANCE_USD, min_deposit_usd: MIN_DEPOSIT_USD },
+    constants: { tax_pct: Date.now() < TAX_FROM ? 0 : TAX_PCT, social_month: SOCIAL_MONTH, reserve_pct: RESERVE_PCT, min_balance_usd: MIN_BALANCE_USD, min_deposit_usd: MIN_DEPOSIT_USD },
   };
 }
 
@@ -124,7 +126,6 @@ export async function maybeSendWeekly(env, nowMs = Date.now()) {
 // Напоминания о взносах и налоге (из cron каждую минуту, шлём в 10:00 по Бишкеку, каждое напоминание один раз):
 // • Соцфонд: 13, 19 и 20 числа каждого месяца, взнос SOCIAL_MONTH сом до 20 числа;
 // • налог за квартал: 1, 10 и 18 числа апреля/июля/октября/января, сумма 2% с выручки прошедшего квартала (кварталы с 2027 года).
-const TAX_FROM = Date.UTC(2027, 0, 1) - TZ;
 export async function maybeRemindTaxes(env, nowMs = Date.now()) {
   const local = new Date(nowMs + TZ);
   if (local.getUTCHours() < 10) return;

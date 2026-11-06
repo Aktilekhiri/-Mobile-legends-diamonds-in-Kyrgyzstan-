@@ -1322,7 +1322,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=93">
-<link rel="stylesheet" href="theme.css?v=37">
+<link rel="stylesheet" href="theme.css?v=38">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1603,7 +1603,9 @@
     </div>
   </div>
 
+  <section id="gameFeed" hidden></section>
   <section class="game-about" id="gameAbout" aria-live="polite"></section>
+  <section id="gameReviews" hidden></section>
 </div>
 
 <!-- PAYMENT -->
@@ -1926,6 +1928,7 @@ function changeGame(g) {
   renderPackages();
   updateBuyBtn();
   renderGameAbout();
+  loadGameFeed(); loadGameReviews();
 }
 // Что считается «ID игрока»: для Telegram — @username, для Roblox ничего не вводится, для остальных — числовой ID
 function getPlayerValue() {
@@ -2898,6 +2901,67 @@ function agoText(sec) {
   const h = Math.round(m / 60); if (h < 24) return h + ' ч назад';
   const d = Math.round(h / 24); return d === 1 ? 'вчера' : d + ' дн. назад';
 }
+function lfCard(i) { return `<div class="lf-item"><img src="/img/games/${esc(i.game)}.webp" width="40" height="40" alt="" loading="lazy" decoding="async"><div class="lf-main"><strong>${esc(i.title)}</strong><span>${esc(i.pkg)}</span>${i.who ? `<span class="lf-who">Получатель: ID ${esc(i.who)}</span>` : ''}</div><div class="lf-meta"><span>${agoText(i.ago)}</span>${i.took ? `<em>за ${i.took} сек</em>` : ''}</div></div>`; }
+function gameKey() { return gamesData[currentGame] ? currentGame : 'mlbb'; }
+async function loadGameFeed() {
+  const box = document.getElementById('gameFeed'); if (!box) return;
+  const g = gameKey(); box.hidden = true; box.innerHTML = '';
+  if (!window.DK_API) return;
+  try {
+    const r = await fetch(API_BASE() + '/api/recent?game=' + encodeURIComponent(g));
+    if (!r.ok || g !== gameKey()) return;
+    const d = await r.json(); const items = d.items || [];
+    if (!items.length) return;
+    const title = '<h2>Последние заказы: ' + esc(items[0].title) + '</h2>';
+    if (items.length >= 4) {
+      const reps = Math.max(1, Math.ceil(1500 / (items.length * 330)));
+      const set = items.map(lfCard).join('').repeat(reps);
+      box.innerHTML = title + `<div class="lf-marquee"><div class="lf-track" style="--lf-dur:${Math.max(24, items.length * reps * 5)}s"><div class="lf-set">${set}</div><div class="lf-set" aria-hidden="true">${set}</div></div></div>`;
+    } else box.innerHTML = title + '<div class="lf-row">' + items.map(lfCard).join('') + '</div>';
+    box.hidden = false;
+  } catch (e) { /* без ленты блок скрыт */ }
+}
+// Заказ этого устройства/аккаунта по игре, который выдан и ещё без отзыва
+async function findReviewableOrder(g) {
+  const same = reg => (reg === 'global' || reg === 'russia' ? 'mlbb' : reg) === g;
+  if (getCurrentUser()) {
+    try {
+      const r = await fetch(API_BASE() + '/api/my/orders', { headers: authHeaders() });
+      if (r.ok) { const o = ((await r.json()).orders || []).find(x => x.status === 'delivered' && !x.reviewed && same(x.region)); if (o) return { id: o.id, sec: '' }; }
+    } catch (e) {}
+  }
+  try {
+    const keys = []; for (let k = 0; k < localStorage.length; k++) { const n = localStorage.key(k); if (n && n.indexOf('dk_sec_') === 0) keys.push(n); }
+    for (const n of keys.slice(-8).reverse()) {
+      const code = n.slice(7), sec = localStorage.getItem(n) || '';
+      const r = await fetch(API_BASE() + '/api/orders/' + encodeURIComponent(code) + '?s=' + encodeURIComponent(sec));
+      if (!r.ok) continue; const o = await r.json();
+      if (o.status === 'delivered' && !o.reviewed && same(o.region)) return { id: o.id, sec };
+    }
+  } catch (e) {}
+  return null;
+}
+async function loadGameReviews() {
+  const box = document.getElementById('gameReviews'); if (!box) return;
+  const g = gameKey(); box.hidden = true; box.innerHTML = '';
+  if (!window.DK_API) return;
+  const gd = gamesData[g], gname = gd ? gd.name : 'Mobile Legends';
+  let d = { count: 0, reviews: [] };
+  try { const r = await fetch(API_BASE() + '/api/reviews?game=' + encodeURIComponent(g) + '&limit=6'); if (r.ok) d = await r.json(); } catch (e) {}
+  if (g !== gameKey()) return;
+  const dt = ts => new Date(ts).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+  const list = (d.count && (d.reviews || []).length)
+    ? `<div class="gr-head"><div class="lr-sum"><strong>${Number(d.avg).toFixed(1)}</strong> из 5 · ${pluralReviews(d.count)}</div></div><div class="lr-grid">` + d.reviews.map(v => `<figure class="lr-card"><div class="lr-stars" aria-label="Оценка ${v.rating} из 5">${'★'.repeat(v.rating)}${'☆'.repeat(5 - v.rating)}</div><blockquote>${esc(v.text)}</blockquote><figcaption><b>${esc(v.name)}</b> · <span>✔ Проверенная покупка · ${esc(dt(v.created_at))}</span></figcaption></figure>`).join('') + '</div>'
+    : '<p class="gr-hint">Пока нет отзывов по этой игре. Станьте первым после выполненного заказа.</p>';
+  box.innerHTML = '<h2>Отзывы: ' + esc(gname) + '</h2>' + list + '<div class="gr-cta"><button type="button" class="btn-primary" id="grBtn">Оставить отзыв</button><div id="grForm"></div></div>';
+  box.hidden = false;
+  document.getElementById('grBtn').onclick = async function () {
+    const b = this, f = document.getElementById('grForm'); b.disabled = true;
+    const o = await findReviewableOrder(g); b.disabled = false;
+    if (o) { b.hidden = true; reviewWidget(f, o.id, o.sec); }
+    else f.innerHTML = '<p class="gr-hint">Отзыв можно оставить после выполненного заказа ' + esc(gname) + ' с этого устройства или аккаунта. Если заказ был с другого устройства, войдите через Google или найдите его по коду в «Проверить заказ».</p>';
+  };
+}
 async function loadRecentOrders() {
   const box = document.getElementById('liveFeed');
   if (!box || !window.DK_API) return;
@@ -2911,7 +2975,7 @@ async function loadRecentOrders() {
     if (d.median_sec) st.push(`<div><strong>~${d.median_sec} сек</strong><span>выдача после подтверждения оплаты</span></div>`);
     st.push('<div><strong>24/7</strong><span>заказы принимаем всегда</span></div>');
     document.getElementById('lfStats').innerHTML = st.join('');
-    const card = i => `<div class="lf-item"><img src="/img/games/${esc(i.game)}.webp" width="40" height="40" alt="" loading="lazy" decoding="async"><div class="lf-main"><strong>${esc(i.title)}</strong><span>${esc(i.pkg)}</span>${i.who ? `<span class="lf-who">Получатель: ID ${esc(i.who)}</span>` : ''}</div><div class="lf-meta"><span>${agoText(i.ago)}</span>${i.took ? `<em>за ${i.took} сек</em>` : ''}</div></div>`;
+    const card = lfCard;
     const one = d.items.map(card).join('');
     const reps = Math.max(1, Math.ceil(1500 / (d.items.length * 330)));
     const set = one.repeat(reps);

@@ -63,9 +63,12 @@ export function alertText(o, cat, auto, withReceipt) {
 }
 
 // GET /api/recent — публично: последние выданные заказы без персональных данных (игра, пакет, время) + счётчики
-export async function listRecentDeliveries(env) {
-  const rows = (await env.DB.prepare("SELECT region, pkg_label, player_id, confirmed_at, finished_at FROM orders WHERE status = 'delivered' AND finished_at > 0 ORDER BY finished_at DESC LIMIT 30").all()).results || [];
-  const total = (await env.DB.prepare("SELECT COUNT(*) AS n FROM orders WHERE status = 'delivered' AND finished_at > 0").first()) || { n: 0 };
+export async function listRecentDeliveries(env, game = '') {
+  game = String(game || '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20);
+  const cond = !game ? '' : game === 'mlbb' ? " AND region IN ('global','russia')" : ' AND region = ?';
+  const bind = game && game !== 'mlbb' ? [game] : [];
+  const rows = (await env.DB.prepare("SELECT region, pkg_label, player_id, confirmed_at, finished_at FROM orders WHERE status = 'delivered' AND finished_at > 0" + cond + " ORDER BY finished_at DESC LIMIT 30").bind(...bind).all()).results || [];
+  const total = (await env.DB.prepare("SELECT COUNT(*) AS n FROM orders WHERE status = 'delivered' AND finished_at > 0" + cond).bind(...bind).first()) || { n: 0 };
   const now = Date.now();
   const took = r => (r.confirmed_at > 0 ? Math.round((r.finished_at - r.confirmed_at) / 1000) : 0);
   const secs = rows.map(took).filter(x => x >= 1 && x <= 600).sort((a, b) => a - b);

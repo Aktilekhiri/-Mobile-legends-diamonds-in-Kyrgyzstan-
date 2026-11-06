@@ -44,11 +44,21 @@ export async function verifyData(pubPem, data, sig) {
 // ---------- создание платежа ----------
 // Возвращает адрес страницы оплаты Finik (HTTP 302 → Location)
 export async function createFinikPayment(env, o, redirectUrl) {
+  // Имя QR в приложении банка: «diamond.kg». Если Finik не принял точку в имени (ошибка 4xx), повторяем с «diamondkg»
+  const names = env.FINIK_QR_NAME ? [env.FINIK_QR_NAME] : ['diamond.kg', 'diamondkg'];
+  let r;
+  for (const nm of names) {
+    r = await createFinikPaymentNamed(env, o, redirectUrl, nm);
+    if (!r.error || !/ошибка 4\d\d|name|имя/i.test(r.error)) return r;
+  }
+  return r;
+}
+async function createFinikPaymentNamed(env, o, redirectUrl, qrName) {
   const base = (env.FINIK_BASE || PROD_BASE).replace(/\/+$/, ''), path = '/v1/payment', host = new URL(base).host;
   const body = {
     Amount: Number(o.price_kgs), CardType: 'FINIK_QR', PaymentId: o.id, RedirectUrl: redirectUrl, Lang: 'ru',
     Data: {
-      accountId: env.FINIK_ACCOUNT_ID, name_en: env.FINIK_QR_NAME || 'diamondkg',
+      accountId: env.FINIK_ACCOUNT_ID, name_en: qrName,
       webhookUrl: (env.origin || '') + '/api/finik/webhook', description: String(o.pkg_label || o.pkg || 'Заказ').slice(0, 100) + ' · ' + o.id,
       endDate: Date.now() + PAY_MIN * 60 * 1000,   // ссылка живёт 30 минут: столько же клиент может оплатить из «Моих заказов»
     },

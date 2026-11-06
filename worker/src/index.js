@@ -246,7 +246,7 @@ export default {
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
       }
       if (path === '/api/recent' && m === 'GET') {
-        return json(req, await listRecentDeliveries(env), 200, { 'Cache-Control': 'public, max-age=30' });
+        return json(req, await listRecentDeliveries(env, url.searchParams.get('game') || ''), 200, { 'Cache-Control': 'public, max-age=30' });
       }
       if (path === '/api/reviews' && m === 'GET') {
         return json(req, await listPublicReviews(env, url.searchParams.get('game') || '', url.searchParams.get('limit')), 200, { 'Cache-Control': 'public, max-age=60' });

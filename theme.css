@@ -383,13 +383,21 @@ body.v2 .pkg-card.popular{padding-top:10px}
 #liveFeed .lf-stats strong{display:block;font-family:'Rajdhani',sans-serif;font-size:1.35rem;color:var(--cyan);line-height:1.2}
 #liveFeed .lf-stats span{display:block;font-size:.75rem;color:var(--muted);line-height:1.3;margin-top:2px}
 #liveFeed .lf-list{list-style:none;margin:0 auto;padding:0;max-width:800px;display:flex;flex-direction:column;gap:8px}
+#gameFeed .lf-list{list-style:none;margin:0 auto;padding:0;max-width:800px;display:flex;flex-direction:column;gap:8px}
 #liveFeed .lf-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+#gameFeed .lf-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
 #liveFeed .lf-item img{width:40px;height:40px;border-radius:10px;object-fit:cover;flex:none}
+#gameFeed .lf-item img{width:40px;height:40px;border-radius:10px;object-fit:cover;flex:none}
 #liveFeed .lf-main{flex:1;min-width:0}
+#gameFeed .lf-main{flex:1;min-width:0}
 #liveFeed .lf-main strong{display:block;font-size:.95rem;line-height:1.25}
+#gameFeed .lf-main strong{display:block;font-size:.95rem;line-height:1.25}
 #liveFeed .lf-main span{display:block;font-size:.85rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#gameFeed .lf-main span{display:block;font-size:.85rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #liveFeed .lf-meta{text-align:right;flex:none;font-size:.8rem;color:var(--muted);line-height:1.3}
+#gameFeed .lf-meta{text-align:right;flex:none;font-size:.8rem;color:var(--muted);line-height:1.3}
 #liveFeed .lf-meta em{display:block;font-style:normal;font-weight:700;color:#0a7a4b}
+#gameFeed .lf-meta em{display:block;font-style:normal;font-weight:700;color:#0a7a4b}
 
 .id-ok{font-weight:500;display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--surface,#f4f6fb);border:1px solid rgba(120,130,160,.35);font-size:.9rem;line-height:1.45;cursor:pointer;text-transform:none;letter-spacing:0}.id-ok[hidden]{display:none}.id-ok input{width:20px;height:20px;flex:none;margin-top:1px}.gp-item .gp-em{width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:30px;line-height:1}
 
@@ -465,6 +473,7 @@ html[data-theme="dark"] .pkg-card.selected,html[data-theme="blue"] .pkg-card.sel
 .tp-sw.l{background:linear-gradient(135deg,#fff 50%,#F4F7FB 50%)}.tp-sw.d{background:linear-gradient(135deg,#141A26 50%,#0B0F17 50%)}.tp-sw.b{background:linear-gradient(135deg,#2563EB 50%,#0A1E4A 50%)}
 
 #liveFeed .lf-main span.lf-who{font-size:.78rem;opacity:.85}
+#gameFeed .lf-main span.lf-who{font-size:.78rem;opacity:.85}
 
 /* Баннер розыгрыша */
 .giveaway{display:flex;align-items:center;gap:14px;margin:14px 0 6px;padding:14px 16px;border-radius:18px;text-decoration:none;color:var(--text,#0f172a);background:var(--surface,#fff);border:1px solid var(--border,rgba(15,23,42,.1));box-shadow:0 6px 20px rgba(15,23,42,.06)}
@@ -485,7 +494,7 @@ body .night-note:not(.on){display:none!important}
 .steps-bar .sb.on{border-color:var(--indigo,#5b63f0);color:var(--indigo,#5b63f0)}
 .steps-bar .sb.on b,.steps-bar .sb.done b{background:var(--indigo,#5b63f0);color:#fff}
 .steps-bar .sb.done{color:inherit}
-#page-topup[data-step="data"] #stepGame,#page-topup[data-step="data"] #stepPkg,#page-topup[data-step="data"] .game-about{display:none}
+#page-topup[data-step="data"] #stepGame,#page-topup[data-step="data"] #stepPkg,#page-topup[data-step="data"] .game-about,#page-topup[data-step="data"] #gameFeed,#page-topup[data-step="data"] #gameReviews{display:none}
 #stepData[hidden]{display:none!important}
 
 /* баланс в профиле */
@@ -532,10 +541,15 @@ body.v2 .nav-links .lang-toggle,body.v2 .nav-links .user-name,body.v2 .nav-links
 
 /* Живая лента: бегущая строка справа налево */
 #liveFeed .lf-marquee{overflow:hidden;margin:0 -16px;padding:4px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+#gameFeed .lf-marquee{overflow:hidden;margin:0 -16px;padding:4px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
 #liveFeed .lf-track{display:flex;width:max-content;animation:lfMove var(--lf-dur,40s) linear infinite}
+#gameFeed .lf-track{display:flex;width:max-content;animation:lfMove var(--lf-dur,40s) linear infinite}
 #liveFeed .lf-marquee:hover .lf-track,#liveFeed .lf-marquee:active .lf-track{animation-play-state:paused}
+#gameFeed .lf-marquee:hover .lf-track,#gameFeed .lf-marquee:active .lf-track{animation-play-state:paused}
 #liveFeed .lf-set{display:flex;gap:10px;padding-right:10px;flex:none}
+#gameFeed .lf-set{display:flex;gap:10px;padding-right:10px;flex:none}
 #liveFeed .lf-item{flex:none;width:280px}
+#gameFeed .lf-item{flex:none;width:280px}
 @keyframes lfMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){#liveFeed .lf-marquee{overflow-x:auto;-webkit-mask-image:none;mask-image:none}#liveFeed .lf-track{animation:none}}
 /* Подсказка гостю при покупке */
@@ -543,4 +557,19 @@ body.v2 .nav-links .lang-toggle,body.v2 .nav-links .user-name,body.v2 .nav-links
 .gg-back .auth-card .btn-full{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;text-decoration:none;text-align:center}
 .gg-skip{display:block;width:100%;margin-top:12px;background:none;border:0;color:var(--muted);font:inherit;font-weight:600;padding:10px;cursor:pointer;text-decoration:underline}
 #liveFeed .lf-item{width:320px}
+#gameFeed .lf-item{width:320px}
 #liveFeed .lf-main strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#gameFeed .lf-main strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Лента и отзывы внутри страницы игры */
+#gameFeed,#gameReviews{max-width:800px;margin:10px auto 8px;padding:0 5%}
+#gameFeed[hidden],#gameReviews[hidden]{display:none}
+#gameFeed h2,#gameReviews h2{font-size:1.35rem;margin:22px 0 12px}
+#gameFeed .lf-marquee{margin:0 -5%}
+#gameFeed .lf-row{display:flex;flex-direction:column;gap:10px}
+#gameFeed .lf-row .lf-item{width:auto}
+.gr-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.gr-head .lr-sum{margin:0;text-align:left}
+.gr-cta{margin-top:14px}.gr-cta .btn-primary{min-height:44px;padding:0 18px}.gr-hint{color:var(--muted);font-size:.9rem;margin:10px 0 0}
+#gameReviews .lr-grid{grid-template-columns:1fr}@media (min-width:640px){#gameReviews .lr-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:900px){#gameReviews{padding-bottom:90px}}

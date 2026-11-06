@@ -1,5 +1,5 @@
 // Заказы: приём с сайта, подтверждение оплаты админом, выдача через FazerCards, возврат.
-import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS } from './catalog.js';
+import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS, OFF_PKGS } from './catalog.js';
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { notify, notifyPhoto, defer } from './notify.js';
 import { sendOrderMail } from './mail.js';
@@ -114,6 +114,7 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
       if (bl) return { error: 'Заказ невозможен. Напишите в поддержку.', status: 403 };
     } catch (e) { /* без проверки не блокируем */ }
   }
+  if (!opts.promo && OFF_PKGS.includes(region + ':' + pkg)) return { error: 'Этот пакет временно недоступен. Выберите другой или попробуйте позже.' };
   const cat0 = (CATALOGS[region] || {})[pkg] || null;
   if (!opts.promo && (cat0 ? price < Math.floor(cat0.cost * USD_KGS * 0.9) : price < 20)) return { error: 'Некорректная сумма заказа' };
 

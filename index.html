@@ -1960,7 +1960,7 @@ const GS_TIERS = [[200,'gs-1'],[500,'gs-3'],[1500,'gs-pouch'],[3000,'gs-bag'],[5
 const FF_TIERS = [[200,'ff-gem1'],[450,'ff-gem3'],[800,'ff-tray'],[1500,'ff-case'],[3500,'ff-crate'],[1e9,'ff-crates']];
 const PUBG_TIERS = [[200,'uc-1'],[500,'uc-3'],[1000,'uc-stack'],[2500,'uc-crate'],[5000,'uc-crate-big'],[1e9,'uc-crates']];
 // картинки карточек: какие номиналы уже есть в /img/packs/<игра>/
-const GC_IMG = { psn: [5, 10, 25, 50, 75, 100], netflix: [15, 25, 30, 40, 50, 60, 75], gplay: [5, 10, 15, 20, 25, 50, 100], apple_us: [5, 10, 15, 20, 25, 50, 100], nintendo: [5, 10, 20, 35, 50], fortnite: [10, 25, 50, 100] };
+const GC_IMG = { psn: [5, 10, 25, 50, 75, 100], netflix: [15, 25, 30, 40, 50, 60, 75], gplay: [5, 10, 15, 20, 25, 50, 100], apple_us: [5, 10, 15, 20, 25, 50, 100], apple_tr: [150, 200, 300, 400, 600, 799, 1000], apple_ru: [500, 1000, 1500, 2000, 3000, 5000], nintendo: [5, 10, 20, 35, 50], fortnite: [10, 25, 50, 100] };
 function pkgImg(p) {
   let dir, f;
   if (currentGame === 'mlbb') {
@@ -2033,12 +2033,10 @@ function pkgImg(p) {
     return `<img class="pkg-img" src="/img/packs/whiteout/whiteout-${n}.webp?v=1" width="104" height="104" alt="${n} Frost Stars" loading="lazy" decoding="async">`;
   } else if (['steam','valorant','discord'].includes(currentGame)) {
     return `<img class="pkg-img" src="/img/packs/${currentGame}/${currentGame}.webp?v=1" width="104" height="104" alt="${esc(gamesData[currentGame].name)}" loading="lazy" decoding="async" style="border-radius:20px">`;
-  } else if (currentGame === 'apple_tr' || currentGame === 'apple_ru') {
-    return `<img class="pkg-img gc" src="/img/packs/${currentGame}/${currentGame}.webp?v=1" width="100" height="133" alt="${esc(gamesData[currentGame].name)}" loading="lazy" decoding="async">`;
   } else if (currentGame in GC_IMG) {
     const n = parseInt(p.key, 10), have = GC_IMG[currentGame];
     if (!have.includes(n)) return '';
-    return `<img class="pkg-img gc" src="/img/packs/${currentGame}/${currentGame}-${n}.webp?v=2" width="100" height="150" alt="${esc(gamesData[currentGame].name)} $${n}" loading="lazy" decoding="async">`;
+    return `<img class="pkg-img gc" src="/img/packs/${currentGame}/${currentGame}-${n}.webp?v=2" width="100" height="150" alt="${esc(p.name || gamesData[currentGame].name)}" loading="lazy" decoding="async">`;
   } else return '';
   return `<img class="pkg-img" src="/img/packs/${dir}/${f}.webp${dir === 'mlbb' || dir === 'freefire' || dir === 'roblox' || dir === 'genshin' ? '?v=2' : ''}" width="120" height="120" alt="" loading="lazy" decoding="async">`;
 }

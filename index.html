@@ -1322,7 +1322,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=93">
-<link rel="stylesheet" href="theme.css?v=46">
+<link rel="stylesheet" href="theme.css?v=47">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1683,7 +1683,7 @@
     <div id="receiptMsg" class="receipt-msg" role="alert" aria-live="polite"></div>
     <div class="alt-send" id="altSend">Не получается приложить чек? <button type="button" class="link-btn" id="sendWhatsAppBtn" onclick="sendOrderToWhatsApp()" disabled style="opacity:0.5">Отправить через WhatsApp</button></div>
     </div>
-    <div id="successBox" class="success-box"><div class="suc-icon">✅</div><h3>Заказ отправлен!</h3><p id="successMsg">Алмазы придут через 5–10 минут после получения чека</p><div id="successDelivery" class="suc-delivery" hidden></div><div id="successReview" class="rv-slot"></div><div class="suc-timer" id="successTimer" aria-live="off"></div><div class="suc-code" id="successCode"></div><div class="suc-status" id="successStatus" aria-live="polite"></div><a class="btn-wa" href="https://wa.me/996555920204" target="_blank">📲 Написать в WhatsApp</a><button class="btn-secondary" onclick="showPage('topup')" style="margin-top:10px">Новый заказ</button></div></div>
+    <div id="successBox" class="success-box"><div class="suc-icon">✅</div><h3>Заказ отправлен!</h3><p id="successMsg">Алмазы придут через 5–10 минут после получения чека</p><div id="successDelivery" class="suc-delivery" hidden></div><div id="successWait"></div><div id="successReview" class="rv-slot"></div><div class="suc-timer" id="successTimer" aria-live="off"></div><div class="suc-code" id="successCode"></div><div class="suc-status" id="successStatus" aria-live="polite"></div><a class="btn-wa" href="https://wa.me/996555920204" target="_blank">📲 Написать в WhatsApp</a><button class="btn-secondary" onclick="showPage('topup')" style="margin-top:10px">Новый заказ</button></div></div>
   </div>
   </div>
 </div>
@@ -2565,6 +2565,7 @@ function showSuccessInfo() {
       if (!r.ok) return;
       const d = await r.json();
       if (ss) ss.textContent = STATUS_TEXT[d.status] || '';
+      { const sw = document.getElementById('successWait'); if (sw) sw.innerHTML = waitCard(d); }
       if (d.delivery) renderDelivery(document.getElementById('successDelivery'), currentOrder.region, d.delivery);
       if (d.status === 'delivered' && !d.reviewed) showReviewOnce('successReview', code, currentOrder.secret);
       if (d.status === 'delivered') { if (window._countTimer) { clearInterval(window._countTimer); window._countTimer = null; } setTimerBox('✅ Доставлено', 'done'); stopStatusTimers(); }
@@ -2573,7 +2574,7 @@ function showSuccessInfo() {
   };
   tick();
   let n = 0;
-  window._statusTimer = setInterval(() => { if (++n > 180) { stopStatusTimers(); return; } tick(); }, 5000);
+  window._statusTimer = setInterval(() => { if (++n > 180 + 240) { stopStatusTimers(); return; } if (n > 180 && n % 12) return; tick(); }, 5000);
 }
 
 async function sendOrderWithReceipt() {
@@ -2652,6 +2653,28 @@ document.addEventListener('DOMContentLoaded', () => { try { if (!window.DK_API) 
   const test = /[?&]gopaytest=1/.test(location.search);   // владелец проверяет GoPay до публичного запуска
   fetch(API_BASE() + '/api/gopay/status').then(r => r.json()).then(j => { if (j && (j.enabled || (test && j.ready))) show('gopay'); else return fetch(API_BASE() + '/api/finik/status').then(r => r.json()).then(f => { if (f && f.enabled) show('finik'); else off(); }); }).catch(off); } catch (e) {} });
 
+
+
+// ---------- Долгий заказ: сообщение и запрос возврата (через 30 минут) ----------
+function waitCard(o, sec) {
+  if (!o || o.status !== 'processing' || !o.confirmed_at || Date.now() - o.confirmed_at < 1800000) return '';
+  const id = esc(o.id);
+  if (o.refund_req === 'balance' || o.refund_req === 'requisites') return `<div class="wait-card sent">✅ Запрос на возврат ${o.refund_req === 'balance' ? 'на баланс сайта' : 'на реквизиты оплаты'} отправлен. Мы проверяем заказ у исполнителя и ответим в ближайшее время. Если заказ успеет выполниться, возврат не потребуется.</div>`;
+  if (o.refund_req === 'declined') return `<div class="wait-card sent">Заказ уже выполнен у исполнителя, поэтому возврат невозможен. Он скоро появится в игре. Спасибо за понимание!</div>`;
+  return `<div class="wait-card"><b>⏳ Заказ долго обрабатывается</b><p>Заказ долго обрабатывается у исполнителя из-за многочисленных заказов. С высокой вероятностью заказ будет выполнен, но это может занять до нескольких часов. Если не хотите ждать, выберите способ возврата средств. Спасибо за понимание!</p><div class="wait-btns">${o.can_balance !== false ? `<button type="button" class="btn-primary" onclick="askRefund('${id}','balance',this)">💰 Вернуть на баланс сайта</button>` : ''}<button type="button" class="btn-secondary" onclick="askRefund('${id}','requisites',this)">🏦 Вернуть на реквизиты оплаты</button></div></div>`;
+}
+async function askRefund(id, choice, btn) {
+  const card = btn.closest('.wait-card'); let sec = ''; try { sec = localStorage.getItem('dk_sec_' + id) || ''; } catch (e) {}
+  const label = choice === 'balance' ? 'на баланс сайта' : 'на реквизиты оплаты';
+  if (!confirm('Вернуть деньги ' + label + '? Если заказ успеет выполниться, возврат будет невозможен.')) return;
+  card.querySelectorAll('button').forEach(b => b.disabled = true);
+  try {
+    const r = await fetch(API_BASE() + '/api/orders/' + encodeURIComponent(id) + '/refund-request', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ choice, s: sec }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { dkToast(d.error || 'Не удалось отправить запрос'); card.querySelectorAll('button').forEach(b => b.disabled = false); return; }
+    card.outerHTML = waitCard({ id, status: 'processing', confirmed_at: 1, refund_req: choice });
+  } catch (e) { dkToast('Нет связи с сервером'); card.querySelectorAll('button').forEach(b => b.disabled = false); }
+}
 
 // ---------- Чат по заказу, баннер, уведомления ----------
 var ocId = '', ocTimer = null, ocLast = 0, unreadSeen = -1, unreadTimer = null;
@@ -3186,6 +3209,7 @@ async function checkOrderStatus() {
     box.innerHTML = `<div class="hist-card"><div class="hist-top"><strong>${esc(o.pkg_label)}</strong><span class="hist-price">${esc(o.price_kgs)} Сом</span></div>
       <div class="hist-mid">${esc(STATUS_TEXT[o.status] || st[0])}</div>
       <div class="suc-delivery" id="statusDelivery" hidden></div>
+      ${waitCard(o, sec)}
       <div class="rv-slot" id="statusReview"></div>
       <div class="hist-bot"><span class="hist-st ${st[1]}">${esc(st[0])}</span><span>${esc(when)} · №${esc(o.id)}</span></div>${getCurrentUser() ? `<button type="button" class="oc-open" onclick="openOrderChat('${esc(o.id)}','${esc(o.pkg_label)}')">💬 Написать по заказу</button>` : ""}</div>`;
     if (o.delivery) renderDelivery(document.getElementById('statusDelivery'), o.region, o.delivery);
@@ -3218,6 +3242,7 @@ async function renderOrders() {
       const srv = o.server_id && o.server_id !== '-' ? ` (${esc(o.server_id)})` : '';
       return `<div class="hist-card"><div class="hist-top"><strong>${esc(o.pkg_label)}</strong><span class="hist-price">${esc(o.price_kgs)} Сом</span></div>
         ${o.player_id && o.player_id !== '-' ? `<div class="hist-mid">${(gamesData[o.region] || {}).kind === 'username' ? 'Telegram' : 'ID'}: ${esc(o.player_id)}${srv}</div>` : ''}
+        ${waitCard(o)}
         ${o.delivery && o.status === 'delivered' ? `<div class="suc-delivery" id="dl-${esc(o.id)}"></div>` : ''}
         ${o.pay_url ? `<div class="hist-pay"><a class="btn-primary" href="${esc(o.pay_url)}" rel="noopener">💳 Оплатить ${esc(o.price_kgs)} сом</a><span class="hist-pay-t">Осталось ~${mins} мин</span></div>` : ''}
         ${o.status === 'delivered' && !o.reviewed ? `<div class="rv-slot" id="rv-${esc(o.id)}"><button type="button" class="link-btn" onclick="reviewWidget(document.getElementById('rv-${esc(o.id)}'),'${esc(o.id)}','')">⭐ Оставить отзыв</button></div>` : ''}

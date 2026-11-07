@@ -32,6 +32,7 @@ function safeEq(a, b) {
 const publicView = o => ({
   id: o.id, status: o.status, pkg_label: o.pkg_label, price_kgs: o.price_kgs, region: o.region,
   created_at: o.created_at, finished_at: o.finished_at,
+  confirmed_at: o.confirmed_at || 0, refund_req: o.refund_req || '', can_balance: !!o.user_id,
 });
 
 // Прибыль в скобках: цена − себестоимость по каталогу (USD × курс). Нет себестоимости в каталоге — ничего не пишем.
@@ -440,4 +441,56 @@ export async function notifyWithoutReceipt(env, id) {
   const cat = (CATALOGS[o.region] || {})[o.pkg] || null;
   await notify(env, alertText(o, cat, !!(cat && cat.cost <= MAX_AUTO_COST_USD) && o.status === 'new', false), adminButtons(o));
   return { ok: true };
+}
+
+// ---------- запрос возврата, если заказ долго у исполнителя ----------
+// Клиент через 30 минут может запросить возврат на баланс сайта или на реквизиты оплаты. Деньги не двигаются сами:
+// владелец сначала отменяет заказ у поставщика, потом нажимает кнопку в Telegram. Если заказ выдался раньше, возврат отклоняется.
+export const REFUND_WAIT_MS = 30 * 60000;
+let refundCols = false;
+async function ensureRefundCols(env) {
+  if (refundCols) return;
+  for (const c of ['refund_req TEXT', 'refund_req_at INTEGER']) { try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN ' + c).run(); } catch (e) { /* уже есть */ } }
+  refundCols = true;
+}
+export async function requestRefund(env, id, secret, sub, choice) {
+  await ensureRefundCols(env);
+  if (!['balance', 'requisites'].includes(choice)) return { error: 'Выберите способ возврата' };
+  const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(clean(id, 20)).first();
+  if (!o) return { error: 'Заказ не найден', status: 404 };
+  if (!(safeEq(secret, o.secret) || (sub && o.user_id && String(o.user_id) === String(sub)))) return { error: 'Нет доступа к заказу. Откройте его в том браузере или аккаунте, где оформляли.', status: 403 };
+  if (o.status !== 'processing') return { error: o.status === 'delivered' ? 'Заказ уже выполнен' : 'Возврат сейчас недоступен', status: 409 };
+  if (!o.confirmed_at || Date.now() - o.confirmed_at < REFUND_WAIT_MS) return { error: 'Возврат станет доступен через 30 минут после оплаты', status: 409 };
+  if (o.method === 'promo' || o.method === 'Для себя') return { error: 'Для этого заказа возврат не нужен', status: 409 };
+  if (choice === 'balance' && !o.user_id) return { error: 'Для возврата на баланс войдите в аккаунт, с которого оформляли заказ, или выберите возврат на реквизиты', status: 409 };
+  if (o.refund_req === 'balance' || o.refund_req === 'requisites') return { ok: true, refund_req: o.refund_req };
+  const upd = await env.DB.prepare("UPDATE orders SET refund_req = ?, refund_req_at = ?, updated_at = ? WHERE id = ? AND status = 'processing'").bind(choice, Date.now(), Date.now(), o.id).run();
+  if (!upd.meta.changes) return { error: 'Возврат сейчас недоступен', status: 409 };
+  const way = choice === 'balance' ? '💰 на баланс сайта' : '🏦 на реквизиты, с которых оплачено (' + (o.method || '—') + ')';
+  const row = [{ text: choice === 'balance' ? '💰 Вернуть на баланс' : '🏦 Вернуть на реквизиты', callback_data: (choice === 'balance' ? 'rb:' : 'rq:') + o.id }, { text: '✅ Заказ выполнен, отказать', callback_data: 'rx:' + o.id }];
+  notify(env, `↩️ Запрос возврата по заказу ${o.id}\n${orderCard(o)}\nЖдёт у исполнителя: ${Math.round((Date.now() - o.confirmed_at) / 60000)} мин\nКлиент просит вернуть ${way}.\n\nСначала отмените заказ у поставщика, потом нажмите кнопку. Если заказ уже выдан, нажмите «отказать».`, { inline_keyboard: [row] });
+  return { ok: true, refund_req: choice };
+}
+// Решение владельца по запросу: rb — на баланс, rq — на реквизиты (дальше вручную), rx — отказ (заказ выполнен)
+export async function refundRequestAction(env, act, id) {
+  await ensureRefundCols(env);
+  const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(clean(id, 20)).first();
+  if (!o) return { error: 'Заказ не найден', status: 404 };
+  if (act === 'rx') {
+    await env.DB.prepare("UPDATE orders SET refund_req = 'declined', updated_at = ? WHERE id = ?").bind(Date.now(), o.id).run();
+    return { ok: true };
+  }
+  if (o.status === 'delivered') return { error: 'Заказ уже выполнен: возврат не делайте, нажмите «отказать»', status: 409 };
+  if (act === 'rb') {
+    const r = await refundToBalance(env, o.id);
+    if (r.error) return r;
+    await env.DB.prepare("UPDATE orders SET refund_req = '', updated_at = ? WHERE id = ?").bind(Date.now(), o.id).run();
+    return { ok: true };
+  }
+  if (act === 'rq') {
+    if (!['processing', 'manual'].includes(o.status)) return { error: 'Нельзя (статус: ' + o.status + ')', status: 409 };
+    await setStatus(env, o.id, { status: 'refund_due', fail_reason: ((o.fail_reason || '') + ' [возврат на реквизиты по запросу клиента]').trim().slice(0, 300), finished_at: Date.now() });
+    return { ok: true };
+  }
+  return { error: 'Неизвестное действие' };
 }

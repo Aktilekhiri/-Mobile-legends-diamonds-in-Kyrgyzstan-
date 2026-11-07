@@ -755,3 +755,10 @@ body.has-banner .page{margin-top:var(--bnH,0)}
 .has-new{position:relative}
 .has-new::after{content:"";position:absolute;top:4px;right:calc(50% - 20px);width:10px;height:10px;border-radius:50%;background:#ff4d4d;box-shadow:0 0 0 2px var(--bg)}
 .nav-bal.has-new::after{right:2px;top:-2px}
+
+/* --- Долгий заказ --- */
+.wait-card{margin:12px 0;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);text-align:left}
+.wait-card p{margin:6px 0 12px;font-size:.92rem;opacity:.85}
+.wait-card.sent{border-color:var(--accent);font-size:.92rem}
+.wait-btns{display:flex;flex-direction:column;gap:8px}
+.wait-btns .btn-primary,.wait-btns .btn-secondary{width:100%}

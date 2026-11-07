@@ -11,6 +11,7 @@ const fastReady = env => gopayPublic(env) || finikReady(env);
 import { publishOffer, rejectOffer, createOffer, addOfferPhoto, submitOffer, markup as sellMarkup, GAMES as SELL_GAMES } from './market.js';
 import { notify } from './notify.js';
 import { adminSend, getBanner, setBanner } from './msgs.js';
+import { refundRequestAction } from './orders.js';
 import { startTopup, startWalletOrder, linkTelegram, TOPUP_MIN, TOPUP_MAX } from './wallet.js';
 import { ownerForTg, balanceOf, history as walletHistory } from './ledger.js';
 import { aiChat, aiReady } from './aichat.js';
@@ -192,7 +193,8 @@ async function adminAction(env, cq, act, id, token) {
   const chat = cq.message && cq.message.chat.id, mid = cq.message && cq.message.message_id;
   const call = (m, body) => tgApi(env, m, body, 10000, token);
   let r;
-  if (act === 'ok') r = await confirmOrder(env, id);
+  if (act === 'rb' || act === 'rq' || act === 'rx') r = await refundRequestAction(env, act, id);
+  else if (act === 'ok') r = await confirmOrder(env, id);
   else if (act === 'mn') r = await markManualDone(env, id);
   else if (act === 'mp') r = await publishOffer(env, id);
   else if (act === 'mr') r = await rejectOffer(env, id);
@@ -200,7 +202,7 @@ async function adminAction(env, cq, act, id, token) {
   else r = await cancelOrder(env, id);
   if (r.error) { await call('answerCallbackQuery', { callback_query_id: cq.id, text: String(r.error).slice(0, 190), show_alert: true }); return; }
   await call('answerCallbackQuery', { callback_query_id: cq.id, text: 'Готово' });
-  const mark = act === 'ok' ? '\n\n✅ Отправлено на выдачу' : act === 'mn' ? '\n\n✅ Отмечено как выданное' : act === 'mp' ? '\n\n✅ Опубликовано' : act === 'mr' ? '\n\n❌ Отклонено' : act === 'dp' ? '\n\n✅ Оплата подтверждена, данные выданы покупателю' : act === 'dn' ? '\n\n❌ Сделка отменена' : act === 'dd' ? '\n\n💸 Выплата продавцу отмечена' : act === 'dr' ? '\n\n↩️ Возврат покупателю (объявление скрыто)' : '\n\n❌ Отказано';
+  const mark = act === 'rb' ? '\n\n✅ Возвращено на баланс клиента' : act === 'rq' ? '\n\n🏦 Верните деньги на реквизиты вручную, затем нажмите «Деньги возвращены» в админке' : act === 'rx' ? '\n\n❌ Возврат отклонён: заказ выполнен' : act === 'ok' ? '\n\n✅ Отправлено на выдачу' : act === 'mn' ? '\n\n✅ Отмечено как выданное' : act === 'mp' ? '\n\n✅ Опубликовано' : act === 'mr' ? '\n\n❌ Отклонено' : act === 'dp' ? '\n\n✅ Оплата подтверждена, данные выданы покупателю' : act === 'dn' ? '\n\n❌ Сделка отменена' : act === 'dd' ? '\n\n💸 Выплата продавцу отмечена' : act === 'dr' ? '\n\n↩️ Возврат покупателю (объявление скрыто)' : '\n\n❌ Отказано';
   if (!chat) return;
   const m = cq.message;
   if (m.caption !== undefined || m.photo) await call('editMessageCaption', { chat_id: chat, message_id: mid, caption: ((m.caption || '') + mark).slice(0, 1000), reply_markup: { inline_keyboard: [] } });
@@ -232,7 +234,7 @@ export async function handleOrdersBotUpdate(env, u) {
     if (u && u.message) { await ordersBotMessage(env, u.message); return; }
     const cq = u && u.callback_query; if (!cq) return;
     const token = env.TELEGRAM_BOT_TOKEN, adm = String(env.TELEGRAM_CHAT_ID || '');
-    const m = String(cq.data || '').match(/^(ok|mn|no|mp|mr|dp|dn|dd|dr):([A-Z0-9]{4,20})$/);
+    const m = String(cq.data || '').match(/^(ok|mn|no|mp|mr|dp|dn|dd|dr|rb|rq|rx):([A-Z0-9]{4,20})$/);
     if (!m || !adm || String(cq.from.id) !== adm) { await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id }, 10000, token); return; }
     await adminAction(env, cq, m[1], m[2], token);
   } catch (e) { console.log('orders bot error', String(e && e.stack || e).slice(0, 300)); }

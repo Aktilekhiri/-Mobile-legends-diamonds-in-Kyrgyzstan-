@@ -8,7 +8,7 @@ import { esc } from './tgapi.js';
 
 const SITE = 'https://diamond.kg/';
 const BOT = 'diamond_kg_bot';
-export const TOPUP_MIN = 50, TOPUP_MAX = 20000;
+export const TOPUP_MIN = 5, TOPUP_MAX = 20000;
 const rnd = (n, abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789') => { const b = new Uint8Array(n); crypto.getRandomValues(b); return [...b].map(x => abc[x % abc.length]).join(''); };
 
 // Данные для кабинета на сайте

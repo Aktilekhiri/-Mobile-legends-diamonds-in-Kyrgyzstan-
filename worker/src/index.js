@@ -24,7 +24,7 @@ import { redeemPromo } from './promo.js';
 import { aiChat, aiReady } from './aichat.js';
 import { SHOP } from './shop_data.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
-import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, refundToBalance, selfOrder, selfOrders, markManualDone, cancelOrder, blacklistOrder, pollProcessing, handleWebhook, listRecentDeliveries } from './orders.js';
+import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, refundToBalance, selfOrder, selfOrders, markManualDone, cancelOrder, blacklistOrder, pollProcessing, handleWebhook, listRecentDeliveries, requestRefund } from './orders.js';
 
 function cors(req) {
   const o = req.headers.get('Origin') || '';
@@ -253,6 +253,12 @@ export default {
         const len = Number(req.headers.get('Content-Length') || 0);
         if (len > 1600 * 1024) return err(req, 'Файл слишком большой (макс. 1,5 МБ)', 413);
         const r = await saveReceipt(env, mm[1], await req.arrayBuffer());
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+      }
+      mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/refund-request$/);
+      if (mm && m === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const r = await requestRefund(env, mm[1], String(b.s || ''), await userFromRequest(req, env), String(b.choice || ''));
         return r.error ? err(req, r.error, r.status || 400) : json(req, r);
       }
       mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/review$/);

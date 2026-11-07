@@ -731,7 +731,8 @@ html[data-theme="dark"] #dust i,html[data-theme="blue"] #dust i{opacity:.8}
 @media(min-width:1100px){.ac-wrap{max-width:900px}.ac-tiles{grid-template-columns:repeat(4,1fr)}.ac-btns{flex-direction:row}.ac-btn{flex:1}}
 
 /* --- Чат по заказу, баннер, тост --- */
-#siteBanner{display:flex;gap:10px;align-items:center;justify-content:center;padding:10px 14px;background:#FFC83D;color:#1b1500;font-weight:700;font-size:.92rem;text-align:center;position:relative;z-index:60}
+#siteBanner{display:flex;gap:10px;align-items:center;justify-content:center;padding:10px 14px;background:#FFC83D;color:#1b1500;font-weight:700;font-size:.92rem;text-align:center;position:fixed;left:0;right:0;top:68px;z-index:90}
+body.has-banner .page{margin-top:var(--bnH,0)}
 #siteBanner button{background:none;border:0;color:inherit;font-size:1rem;cursor:pointer;padding:4px 8px}
 #ocModal{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
 #ocModal[hidden],#dkToast[hidden]{display:none}

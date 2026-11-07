@@ -540,18 +540,16 @@ body.v2 .nav-links .lang-toggle,body.v2 .nav-links .user-name,body.v2 .nav-links
 .pkg-img.gc{width:auto;height:92px;max-width:100%;object-fit:contain;border-radius:8px;margin:0 auto;display:block}@media (min-width:600px){.pkg-img.gc{height:104px;width:auto}}
 
 /* Живая лента: бегущая строка справа налево */
-#liveFeed .lf-marquee{overflow:hidden;margin:0 -16px;padding:4px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
-#gameFeed .lf-marquee{overflow:hidden;margin:0 -16px;padding:4px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
-#liveFeed .lf-track{display:flex;width:max-content;animation:lfMove var(--lf-dur,40s) linear infinite}
-#gameFeed .lf-track{display:flex;width:max-content;animation:lfMove var(--lf-dur,40s) linear infinite}
-#liveFeed .lf-marquee:hover .lf-track,#liveFeed .lf-marquee:active .lf-track{animation-play-state:paused}
-#gameFeed .lf-marquee:hover .lf-track,#gameFeed .lf-marquee:active .lf-track{animation-play-state:paused}
+#liveFeed .lf-marquee{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;cursor:grab;margin:0 -16px;padding:4px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+#gameFeed .lf-marquee{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;cursor:grab;margin:0 -16px;padding:4px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+#liveFeed .lf-track{display:flex;width:max-content}#liveFeed .lf-marquee::-webkit-scrollbar{display:none}
+#gameFeed .lf-track{display:flex;width:max-content}#gameFeed .lf-marquee::-webkit-scrollbar{display:none}
 #liveFeed .lf-set{display:flex;gap:10px;padding-right:10px;flex:none}
 #gameFeed .lf-set{display:flex;gap:10px;padding-right:10px;flex:none}
 #liveFeed .lf-item{flex:none;width:280px}
 #gameFeed .lf-item{flex:none;width:280px}
 @keyframes lfMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@media (prefers-reduced-motion:reduce){#liveFeed .lf-marquee{overflow-x:auto;-webkit-mask-image:none;mask-image:none}#liveFeed .lf-track{animation:none}}
+@media (prefers-reduced-motion:reduce){#liveFeed .lf-marquee{-webkit-mask-image:none;mask-image:none}}
 /* Подсказка гостю при покупке */
 .gg-back{position:fixed;inset:0;z-index:1000;background:rgba(16,24,40,.55);align-items:center;justify-content:center;padding:16px}
 .gg-back .auth-card .btn-full{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;text-decoration:none;text-align:center}
@@ -762,3 +760,5 @@ body.has-banner .page{margin-top:var(--bnH,0)}
 .wait-card.sent{border-color:var(--accent);font-size:.92rem}
 .wait-btns{display:flex;flex-direction:column;gap:8px}
 .wait-btns .btn-primary,.wait-btns .btn-secondary{width:100%}
+
+#liveFeed .lf-marquee.drag,#gameFeed .lf-marquee.drag{cursor:grabbing;user-select:none}

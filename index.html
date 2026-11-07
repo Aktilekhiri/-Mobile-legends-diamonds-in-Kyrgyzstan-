@@ -1322,7 +1322,7 @@
   .social-links a:hover { color: var(--white); border-color: var(--glass-border-hover); transform: translateY(-2px); }
 </style>
 <link rel="stylesheet" href="accounts.css?v=93">
-<link rel="stylesheet" href="theme.css?v=47">
+<link rel="stylesheet" href="theme.css?v=48">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -3093,6 +3093,41 @@ function agoText(sec) {
   const h = Math.round(m / 60); if (h < 24) return h + ' ч назад';
   const d = Math.round(h / 24); return d === 1 ? 'вчера' : d + ' дн. назад';
 }
+/* Живая лента: автопрокрутка + можно листать пальцем/мышью, бесконечная петля */
+const lfMarquees = new Set();
+let lfRaf = 0, lfLast = 0;
+const lfReduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function lfInit(el) {
+  if (!el || el._lf) return; el._lf = { pos: el.scrollLeft, hold: 0 };
+  const st = el._lf; let down = false, sx = 0, sl = 0;
+  const hold = (ms) => { st.hold = performance.now() + ms; };
+  el.addEventListener('touchstart', () => hold(4000), { passive: true });
+  el.addEventListener('touchend', () => hold(2500), { passive: true });
+  el.addEventListener('wheel', () => hold(2500), { passive: true });
+  el.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; down = true; sx = e.clientX; sl = el.scrollLeft; el.classList.add('drag'); hold(4000); });
+  window.addEventListener('pointermove', e => { if (!down) return; el.scrollLeft = sl - (e.clientX - sx); hold(2500); });
+  window.addEventListener('pointerup', () => { if (down) { down = false; el.classList.remove('drag'); hold(2500); } });
+  el.addEventListener('scroll', () => {
+    const half = el.scrollWidth / 2; if (!half) return;
+    if (el.scrollLeft >= half) el.scrollLeft -= half; else if (el.scrollLeft <= 0) el.scrollLeft += half;
+  }, { passive: true });
+  const half = el.scrollWidth / 2; if (half) el.scrollLeft = 1;
+  lfMarquees.add(el);
+  if (!lfRaf && !lfReduce) lfRaf = requestAnimationFrame(lfTick);
+}
+function lfTick(t) {
+  const dt = Math.min(64, t - (lfLast || t)); lfLast = t;
+  lfMarquees.forEach(el => {
+    if (!el.isConnected) { lfMarquees.delete(el); return; }
+    if (!el.offsetParent || t < el._lf.hold) { el._lf.pos = el.scrollLeft; return; }
+    const half = el.scrollWidth / 2; if (!half) return;
+    let pos = Math.abs(el.scrollLeft - el._lf.pos) > 1.5 ? el.scrollLeft : el._lf.pos;
+    pos += dt * 0.04; if (pos >= half) pos -= half;
+    el._lf.pos = pos; el.scrollLeft = pos;
+  });
+  lfRaf = lfMarquees.size ? requestAnimationFrame(lfTick) : 0;
+}
+
 function lfCard(i) { return `<div class="lf-item"><img src="/img/games/${esc(i.game)}.webp" width="40" height="40" alt="" loading="lazy" decoding="async"><div class="lf-main"><strong>${esc(i.title)}</strong><span>${esc(i.pkg)}</span>${i.who ? `<span class="lf-who">Получатель: ID ${esc(i.who)}</span>` : ''}</div><div class="lf-meta"><span>${agoText(i.ago)}</span>${i.took ? `<em>за ${i.took} сек</em>` : ''}</div></div>`; }
 function gameKey() { return gamesData[currentGame] ? currentGame : 'mlbb'; }
 async function loadGameFeed() {
@@ -3111,6 +3146,7 @@ async function loadGameFeed() {
       box.innerHTML = title + `<div class="lf-marquee"><div class="lf-track" style="--lf-dur:${Math.max(24, items.length * reps * 5)}s"><div class="lf-set">${set}</div><div class="lf-set" aria-hidden="true">${set}</div></div></div>`;
     } else box.innerHTML = title + '<div class="lf-row">' + items.map(lfCard).join('') + '</div>';
     box.hidden = false;
+    lfInit(box.querySelector('.lf-marquee'));
   } catch (e) { /* без ленты блок скрыт */ }
 }
 // Заказ этого устройства/аккаунта по игре, который выдан и ещё без отзыва
@@ -3173,8 +3209,8 @@ async function loadRecentOrders() {
     const set = one.repeat(reps);
     const trk = document.getElementById('lfList');
     trk.innerHTML = `<div class="lf-set">${set}</div><div class="lf-set" aria-hidden="true">${set}</div>`;
-    trk.style.setProperty('--lf-dur', Math.max(24, d.items.length * reps * 5) + 's');
     box.hidden = false;
+    lfInit(document.getElementById('lfMarquee'));
   } catch (e) { /* без ленты блок просто скрыт */ }
 }
 async function loadLiveReviews() {

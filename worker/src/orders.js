@@ -3,7 +3,7 @@ import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS, OFF_PKGS } from './catalog
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { notify, notifyPhoto, defer } from './notify.js';
 import { sendOrderMail } from './mail.js';
-import { tgNotifyOrder } from './tgapi.js';
+import { tgNotifyOrder, send, esc } from './tgapi.js';
 import { refundOrderToWallet } from './ledger.js';
 import { SHOP } from './shop_data.js';
 
@@ -32,7 +32,7 @@ function safeEq(a, b) {
 const publicView = o => ({
   id: o.id, status: o.status, pkg_label: o.pkg_label, price_kgs: o.price_kgs, region: o.region,
   created_at: o.created_at, finished_at: o.finished_at,
-  confirmed_at: o.confirmed_at || 0, refund_req: o.refund_req || '', can_balance: !!o.user_id,
+  confirmed_at: o.confirmed_at || 0, refund_req: o.refund_req || '', can_balance: !!(o.user_id || o.tg_chat),
 });
 
 // Прибыль в скобках: цена − себестоимость по каталогу (USD × курс). Нет себестоимости в каталоге — ничего не пишем.
@@ -274,6 +274,15 @@ export async function pollProcessing(env) {
     await env.DB.prepare("UPDATE orders SET fail_reason = fail_reason || ' [stale]' WHERE id = ?").bind(s.id).run();
     await notify(env, `⏳ Заказ ${s.id} (${s.pkg_label}) обрабатывается дольше 10 минут. Проверьте в админке.`);
   }
+  // заказы из Telegram-бота: через 30 минут пишем клиенту с кнопками возврата (один раз)
+  try {
+    const slow = await env.DB.prepare("SELECT id, pkg_label, tg_chat, user_id FROM orders WHERE status='processing' AND tg_chat IS NOT NULL AND tg_chat != 0 AND confirmed_at < ? AND confirmed_at > ? AND fail_reason NOT LIKE '%[wait30]%' AND method NOT IN ('promo','Для себя')").bind(Date.now() - REFUND_WAIT_MS, Date.now() - 86400000).all();
+    for (const w of slow.results) {
+      await env.DB.prepare("UPDATE orders SET fail_reason = fail_reason || ' [wait30]' WHERE id = ?").bind(w.id).run();
+      await send(env, w.tg_chat, `⏳ <b>Заказ ${esc(w.id)} долго обрабатывается</b>\n${esc(w.pkg_label)}\n\nЗаказ долго обрабатывается у исполнителя из-за многочисленных заказов. С высокой вероятностью заказ будет выполнен, но это может занять до нескольких часов. Если не хотите ждать, выберите способ возврата средств. Спасибо за понимание!`,
+        { reply_markup: { inline_keyboard: [[{ text: '💰 Вернуть на баланс', callback_data: 'rfb:' + w.id }], [{ text: '🏦 Вернуть на реквизиты оплаты', callback_data: 'rfq:' + w.id }]] } });
+    }
+  } catch (e) { /* не критично */ }
   return n;
 }
 
@@ -453,16 +462,16 @@ async function ensureRefundCols(env) {
   for (const c of ['refund_req TEXT', 'refund_req_at INTEGER']) { try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN ' + c).run(); } catch (e) { /* уже есть */ } }
   refundCols = true;
 }
-export async function requestRefund(env, id, secret, sub, choice) {
+export async function requestRefund(env, id, secret, sub, choice, tgChat = 0) {
   await ensureRefundCols(env);
   if (!['balance', 'requisites'].includes(choice)) return { error: 'Выберите способ возврата' };
   const o = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(clean(id, 20)).first();
   if (!o) return { error: 'Заказ не найден', status: 404 };
-  if (!(safeEq(secret, o.secret) || (sub && o.user_id && String(o.user_id) === String(sub)))) return { error: 'Нет доступа к заказу. Откройте его в том браузере или аккаунте, где оформляли.', status: 403 };
+  if (!((secret && safeEq(secret, o.secret)) || (sub && o.user_id && String(o.user_id) === String(sub)) || (tgChat && o.tg_chat && String(o.tg_chat) === String(tgChat)))) return { error: 'Нет доступа к заказу. Откройте его в том браузере или аккаунте, где оформляли.', status: 403 };
   if (o.status !== 'processing') return { error: o.status === 'delivered' ? 'Заказ уже выполнен' : 'Возврат сейчас недоступен', status: 409 };
   if (!o.confirmed_at || Date.now() - o.confirmed_at < REFUND_WAIT_MS) return { error: 'Возврат станет доступен через 30 минут после оплаты', status: 409 };
   if (o.method === 'promo' || o.method === 'Для себя') return { error: 'Для этого заказа возврат не нужен', status: 409 };
-  if (choice === 'balance' && !o.user_id) return { error: 'Для возврата на баланс войдите в аккаунт, с которого оформляли заказ, или выберите возврат на реквизиты', status: 409 };
+  if (choice === 'balance' && !o.user_id && !o.tg_chat) return { error: 'Для возврата на баланс войдите в аккаунт, с которого оформляли заказ, или выберите возврат на реквизиты', status: 409 };
   if (o.refund_req === 'balance' || o.refund_req === 'requisites') return { ok: true, refund_req: o.refund_req };
   const upd = await env.DB.prepare("UPDATE orders SET refund_req = ?, refund_req_at = ?, updated_at = ? WHERE id = ? AND status = 'processing'").bind(choice, Date.now(), Date.now(), o.id).run();
   if (!upd.meta.changes) return { error: 'Возврат сейчас недоступен', status: 409 };
@@ -478,6 +487,7 @@ export async function refundRequestAction(env, act, id) {
   if (!o) return { error: 'Заказ не найден', status: 404 };
   if (act === 'rx') {
     await env.DB.prepare("UPDATE orders SET refund_req = 'declined', updated_at = ? WHERE id = ?").bind(Date.now(), o.id).run();
+    if (o.tg_chat) await send(env, o.tg_chat, `ℹ️ <b>Заказ ${esc(o.id)} уже выполнен у исполнителя</b>\nПоэтому возврат невозможен. Заказ скоро поступит в игру. Спасибо за понимание!`);
     return { ok: true };
   }
   if (o.status === 'delivered') return { error: 'Заказ уже выполнен: возврат не делайте, нажмите «отказать»', status: 409 };
@@ -490,6 +500,7 @@ export async function refundRequestAction(env, act, id) {
   if (act === 'rq') {
     if (!['processing', 'manual'].includes(o.status)) return { error: 'Нельзя (статус: ' + o.status + ')', status: 409 };
     await setStatus(env, o.id, { status: 'refund_due', fail_reason: ((o.fail_reason || '') + ' [возврат на реквизиты по запросу клиента]').trim().slice(0, 300), finished_at: Date.now() });
+    await tgNotifyOrder(env, o.id, 'refund');
     return { ok: true };
   }
   return { error: 'Неизвестное действие' };

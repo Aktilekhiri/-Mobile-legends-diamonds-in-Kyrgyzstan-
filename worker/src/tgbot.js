@@ -11,7 +11,7 @@ const fastReady = env => gopayPublic(env) || finikReady(env);
 import { publishOffer, rejectOffer, createOffer, addOfferPhoto, submitOffer, markup as sellMarkup, GAMES as SELL_GAMES } from './market.js';
 import { notify } from './notify.js';
 import { adminSend, getBanner, setBanner } from './msgs.js';
-import { refundRequestAction } from './orders.js';
+import { refundRequestAction, requestRefund } from './orders.js';
 import { startTopup, startWalletOrder, linkTelegram, TOPUP_MIN, TOPUP_MAX } from './wallet.js';
 import { ownerForTg, balanceOf, history as walletHistory } from './ledger.js';
 import { aiChat, aiReady } from './aichat.js';
@@ -369,6 +369,13 @@ async function onSellCallback(env, cq, d, st) {
 async function onCallback(env, cq) {
   const chat = cq.message && cq.message.chat.id, mid = cq.message && cq.message.message_id, d = String(cq.data || '');
   const adm = String(env.TELEGRAM_CHAT_ID || '');
+  { const rf = d.match(/^rf([bq]):([A-Z0-9]{4,20})$/);
+    if (rf && chat) {
+      const r = await requestRefund(env, rf[2], '', null, rf[1] === 'b' ? 'balance' : 'requisites', chat);
+      await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id, text: r.error ? String(r.error).slice(0, 190) : 'Запрос отправлен', show_alert: !!r.error });
+      if (!r.error) await tgApi(env, 'editMessageText', { chat_id: chat, message_id: mid, parse_mode: 'HTML', text: `✅ <b>Запрос на возврат ${rf[1] === 'b' ? 'на баланс' : 'на реквизиты оплаты'} по заказу ${esc(rf[2])} отправлен.</b>\nМы проверяем заказ у исполнителя и ответим здесь. Если заказ успеет выполниться, возврат не потребуется.`, reply_markup: { inline_keyboard: [] } });
+      return;
+    } }
   const m = d.match(/^(ok|mn|no|mp|mr):([A-Z0-9]{4,20})$/);
   if (m) { if (adm && String(cq.from.id) === adm) await adminAction(env, cq, m[1], m[2]); else await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id }); return; }
   await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id });

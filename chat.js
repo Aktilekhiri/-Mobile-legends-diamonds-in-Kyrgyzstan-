@@ -48,7 +48,7 @@
         compress(f).then(function (b) {
           return fetch(API + '/api/orders/' + a.id + '/receipt', { method: 'POST', headers: { 'Content-Type': b.type || 'image/jpeg' }, body: b });
         }).then(function (r) {
-          if (r.ok) { st.textContent = '✅ Чек получен. Проверяем оплату, обычно 5–10 минут.'; watch(a); return; }
+          if (r.ok) { st.textContent = '✅ Чек получен. Проверяем оплату, обычно 1–5 минут.'; watch(a); return; }
           return r.json().then(function (j) { st.textContent = '⚠️ ' + (j.error || 'Чек не принят'); });
         }).catch(function () { st.textContent = '⚠️ Чек не загрузился, попробуйте ещё раз.'; });
       };
@@ -204,7 +204,7 @@
     var g = findGame(text);
     if (g) return pickGame(g);
     if (/статус|заказ\s*dk|dk\d/i.test(text)) { var m = text.match(/dk[a-z0-9]{6,}/i); return m ? onStatus(m[0]) : askStatus(); }
-    if (/когда|срок|долго|сколько (ждать|времени)/i.test(text)) { say('Обычно 5–10 минут после проверки оплаты, максимум 3 дня. Как только заказ выполнится, я напишу здесь.'); return menu(); }
+    if (/когда|срок|долго|сколько (ждать|времени)/i.test(text)) { say('Обычно 1–5 минут после проверки оплаты, максимум 3 дня. Как только заказ выполнится, я напишу здесь.'); return menu(); }
     ask(text);
   }
 

@@ -185,7 +185,7 @@ async function finishReceipt(env, chat, from, msg, st) {
   if (env.TELEGRAM_CHAT_ID) await tgApi(env, 'sendPhoto', { chat_id: env.TELEGRAM_CHAT_ID, photo: fileId, caption, reply_markup: kb([buttons]) });
 
   await setSt(env, chat, {});
-  await send(env, chat, `✅ <b>Чек по заказу ${esc(r.id)} получен.</b>\nПроверяем оплату, обычно это 5–10 минут. Напишем сюда, как только заказ будет выдан.`, { reply_markup: kb([[btn('📋 Мои заказы', 'orders'), btn('🎮 Ещё заказ', 'games')]]) });
+  await send(env, chat, `✅ <b>Чек по заказу ${esc(r.id)} получен.</b>\nПроверяем оплату, обычно это 1–5 минут. Напишем сюда, как только заказ будет выдан.`, { reply_markup: kb([[btn('📋 Мои заказы', 'orders'), btn('🎮 Ещё заказ', 'games')]]) });
 }
 
 // ---------- кнопки админа под чеком ----------
@@ -436,7 +436,7 @@ async function onMessage(env, msg) {
       await setSt(env, chat, {}); return send(env, chat, '⚠️ ' + esc(r.error), { reply_markup: MENU });
     }
     await setSt(env, chat, {});
-    return send(env, chat, `🎁 <b>Промокод активирован!</b>\nЗаказ ${esc(r.id)}: Weekly Diamond Pass для ID <code>${pid}</code> (${zone}). Выдача занимает 5–10 минут, напишем сюда, как только он придёт.`, { reply_markup: kb([[btn('📋 Мои заказы', 'orders')], [btn('« Меню', 'menu')]]) });
+    return send(env, chat, `🎁 <b>Промокод активирован!</b>\nЗаказ ${esc(r.id)}: Weekly Diamond Pass для ID <code>${pid}</code> (${zone}). Выдача занимает 1–5 минут, напишем сюда, как только он придёт.`, { reply_markup: kb([[btn('📋 Мои заказы', 'orders')], [btn('« Меню', 'menu')]]) });
   }
   if (st.step === 'tu' && text) {
     const n = Math.floor(Number(text.replace(/[^\d]/g, '')));

@@ -71,6 +71,10 @@ export const GAMES = {
     '1166_diamonds': { offer: '1166_diamonds' },
     '2398_diamonds': { offer: '2398_diamonds' },
     '6160_diamonds': { offer: '6160_diamonds' },
+    'level_up_package_10': { offer: 'level_up_package_10' },
+    'level_up_package_15': { offer: 'level_up_package_15' },
+    'level_up_package_20': { offer: 'level_up_package_20' },
+    'level_up_package_25': { offer: 'level_up_package_25' },
     'level_up_package_30': { offer: 'level_up_package_30' },
     'evo_access_7d': { offer: 'evo_access_7d' },
     'evo_access_30d': { offer: 'evo_access_30d' },
@@ -338,4 +342,4 @@ export const FIN_START_MS = 1793815200000;
 export const FIN_WHERE = "created_at >= " + FIN_START_MS + " AND COALESCE(method,'') IN ('Finik','Баланс','promo')";
 
 // Временно отключённые пакеты (поставщик отвечает «unavailable»). Формат: 'регион/игра:ключ_пакета'. Убрать строку, чтобы вернуть пакет.
-export const OFF_PKGS = ['freefire:level_up_package_30'];
+export const OFF_PKGS = [];

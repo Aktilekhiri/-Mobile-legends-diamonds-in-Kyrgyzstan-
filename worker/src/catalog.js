@@ -338,4 +338,4 @@ export const FIN_START_MS = 1793815200000;
 export const FIN_WHERE = "created_at >= " + FIN_START_MS + " AND COALESCE(method,'') IN ('Finik','Баланс','promo')";
 
 // Временно отключённые пакеты (поставщик отвечает «unavailable»). Формат: 'регион/игра:ключ_пакета'. Убрать строку, чтобы вернуть пакет.
-export const OFF_PKGS = ['freefire:level_up_package_30'];
+export const OFF_PKGS = [];

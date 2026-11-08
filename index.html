@@ -1702,7 +1702,7 @@
 
 <!-- ORDER STATUS -->
 <!-- ORDERS HISTORY -->
-<div class="page" id="page-orders"><div class="page-header"><h1>📋 История заказов</h1></div><div style="max-width:800px; margin:32px auto; padding:0 5%"><div class="code-check"><label for="statusCode">🔎 Проверить заказ по коду</label><div class="cc-row"><input type="text" class="input-field" id="statusCode" placeholder="DK7K2M9QAB" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="14" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" onkeydown="if(event.key==='Enter')checkOrderStatus()"><button type="button" class="btn-primary" id="statusBtn" onclick="checkOrderStatus()">Проверить</button></div><div id="statusResult" aria-live="polite"></div></div><div id="ordersList"></div><p id="noOrdersMsg" style="text-align:center; color:var(--muted)">Нет заказов. Пополните алмазы!</p></div></div>
+<div class="page" id="page-orders"><div class="page-header"><h1>📋 История заказов</h1></div><div style="max-width:800px; margin:32px auto; padding:0 5%"><div class="code-check"><label for="statusCode">🔎 Проверить заказ по коду</label><div class="cc-row"><input type="text" class="input-field" id="statusCode" placeholder="DK-1042" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="14" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'')" onkeydown="if(event.key==='Enter')checkOrderStatus()"><button type="button" class="btn-primary" id="statusBtn" onclick="checkOrderStatus()">Проверить</button></div><div id="statusResult" aria-live="polite"></div></div><div id="ordersList"></div><p id="noOrdersMsg" style="text-align:center; color:var(--muted)">Нет заказов. Пополните алмазы!</p></div></div>
 
 
 
@@ -2852,7 +2852,7 @@ async function payWithWallet() {
 // Возврат со страницы оплаты Finik: показываем статус заказа и обновляем, пока он не выдан
 (function () {
   try {
-    const code = new URLSearchParams(location.search).get('paid'); if (!code || !/^DK[A-Z0-9]{8}$/.test(code)) return;
+    const code = new URLSearchParams(location.search).get('paid'); if (!code || !/^DK(?:-\d{3,7}|[A-Z0-9]{8})$/.test(code)) return;
     window.addEventListener('load', () => {
       showPage('orders');
       const inp = document.getElementById('statusCode'); if (!inp) return; inp.value = code;
@@ -3231,8 +3231,8 @@ async function loadLiveReviews() {
 // Проверка заказа по коду (без входа). Код активации виден только в этом браузере, где оформлен заказ (секрет в localStorage).
 async function checkOrderStatus() {
   const inp = document.getElementById('statusCode'), box = document.getElementById('statusResult'), btn = document.getElementById('statusBtn');
-  const code = (inp.value || '').trim().toUpperCase();
-  if (!/^DK[A-Z0-9]{8}$/.test(code)) { box.innerHTML = '<div class="orders-empty">Код выглядит так: DK и ещё 8 символов, например DK7K2M9QAB.</div>'; return; }
+  const code = (() => { let c = (inp.value || '').trim().toUpperCase().replace(/[\s№#]/g, ''); if (/^\d{3,7}$/.test(c)) c = 'DK-' + c; else if (/^DK\d{3,7}$/.test(c)) c = 'DK-' + c.slice(2); return c; })();
+  if (!/^DK(?:-\d{3,7}|[A-Z0-9]{8})$/.test(code)) { box.innerHTML = '<div class="orders-empty">Номер заказа выглядит так: DK-1042.</div>'; return; }
   btn.disabled = true; box.innerHTML = '<div class="orders-empty">Проверяем…</div>';
   let sec = ''; try { sec = localStorage.getItem('dk_sec_' + code) || ''; } catch (e) {}
   try {

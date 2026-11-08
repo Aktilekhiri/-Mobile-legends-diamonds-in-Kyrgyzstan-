@@ -34,7 +34,7 @@ button.pri{background:var(--gold);color:#0B1020}
   <div class="card"><h2>📢 Баннер на сайте (виден всем)</h2>
     <div class="row"><input id="bn" maxlength="200" placeholder="Например: Free Fire временно не работает, чиним"><button class="pri" id="bnSet">Показать</button><button id="bnOff">Убрать</button></div></div>
   <div class="card"><h2>Написать клиенту по заказу</h2>
-    <div class="row"><input id="nid" placeholder="Номер заказа, DK…" maxlength="10"><button id="nOpen">Открыть</button></div>
+    <div class="row"><input id="nid" placeholder="Номер заказа, DK-1042" maxlength="14"><button id="nOpen">Открыть</button></div>
     <p style="color:#AAB8D0;font-size:.85rem;margin:8px 0 0">Клиент увидит сообщение, если вошёл в свой аккаунт: придёт звук и уведомление.</p></div>
   <div id="threads"></div>
   <div id="thread" class="card hidden"><h2 id="tt"></h2><div id="tm"></div>
@@ -62,7 +62,7 @@ async function load(){try{var d=await call('GET','/api/admin/chats/'+cur);
 function open(id){cur=id;$('tt').textContent='Заказ '+id;$('threads').classList.add('hidden');$('thread').classList.remove('hidden');load();clearInterval(timer);timer=setInterval(load,8000)}
 $('back').onclick=function(){cur='';clearInterval(timer);$('thread').classList.add('hidden');$('threads').classList.remove('hidden');list()};
 $('send').onclick=async function(){var t=$('tx').value.trim();if(!t||!cur)return;$('send').disabled=true;try{await call('POST','/api/admin/chats/'+cur,{text:t});$('tx').value='';say('Отправлено');await load()}catch(e){say(e.message)}$('send').disabled=false};
-$('nOpen').onclick=function(){var id=$('nid').value.trim().toUpperCase();if(!/^DK[A-Z0-9]{8}$/.test(id)){say('Номер выглядит так: DK и 8 символов');return}say('');open(id)};
+$('nOpen').onclick=function(){var id=$('nid').value.trim().toUpperCase().replace(/[\s№#]/g,'');if(/^\d{3,7}$/.test(id))id='DK-'+id;else if(/^DK\d{3,7}$/.test(id))id='DK-'+id.slice(2);if(!/^DK(?:-\d{3,7}|[A-Z0-9]{8})$/.test(id)){say('Номер выглядит так: DK-1042');return}say('');open(id)};
 $('bnSet').onclick=async function(){try{await call('POST','/api/admin/banner',{text:$('bn').value});say($('bn').value.trim()?'Баннер показан на сайте':'Баннер убран')}catch(e){say(e.message)}};
 $('bnOff').onclick=async function(){try{await call('POST','/api/admin/banner',{text:''});$('bn').value='';say('Баннер убран')}catch(e){say(e.message)}};
 if(!sget(TK)){$('login').classList.remove('hidden')}else{$('main').classList.remove('hidden');call('GET','/api/admin/banner').then(function(d){$('bn').value=d.text||''}).catch(function(){});list();setInterval(function(){if(!cur&&!document.hidden)list()},15000)}

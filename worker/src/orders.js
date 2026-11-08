@@ -125,14 +125,25 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
     if (r && r.c >= 8) return { error: 'Слишком много заказов, попробуйте позже', status: 429 };
   }
   const cat = (CATALOGS[region] || {})[pkg] || null;
-  const id = newCode(), now = Date.now();
+  const now = Date.now();
+  let id = '';
   const secret = newSecret();
   const auto = !!(cat && (cat.cost <= MAX_AUTO_COST_USD || opts.forceAuto));
-  await env.DB.prepare(
-    `INSERT INTO orders (id,created_at,updated_at,player_id,server_id,region,pkg,pkg_label,price_kgs,method,phone,offer_id,cost_usd,status,ip)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-  ).bind(id, now, now, player, server, region, pkg, clean(b.pkgLabel || pkg, 100), price, clean(b.method, 30), clean(b.phone, 30),
-    auto ? cat.offer : '', auto ? cat.cost : 0, auto ? 'new' : 'manual', ip || '').run();
+  // номер заказа: DK-1001, DK-1002… (по порядку; старые заказы с длинными кодами DKXXXXXXXX остаются как есть)
+  for (let attempt = 0; attempt < 6; attempt++) {
+    if (attempt < 4) {
+      const r = await env.DB.prepare("SELECT MAX(CAST(SUBSTR(id, 4) AS INTEGER)) AS n FROM orders WHERE id LIKE 'DK-%'").first();
+      id = 'DK-' + (Math.max(1000, Number(r && r.n) || 0) + 1 + attempt);
+    } else id = newCode();
+    try {
+      await env.DB.prepare(
+        `INSERT INTO orders (id,created_at,updated_at,player_id,server_id,region,pkg,pkg_label,price_kgs,method,phone,offer_id,cost_usd,status,ip)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      ).bind(id, now, now, player, server, region, pkg, clean(b.pkgLabel || pkg, 100), price, clean(b.method, 30), clean(b.phone, 30),
+        auto ? cat.offer : '', auto ? cat.cost : 0, auto ? 'new' : 'manual', ip || '').run();
+      break;
+    } catch (e) { if (attempt === 5) throw e; }
+  }
   // привязка к аккаунту (если клиент вошёл через Google); сбой не должен ломать заказ
   if (userId) { try { await env.DB.prepare('UPDATE orders SET user_id = ? WHERE id = ?').bind(userId, id).run(); } catch (e) {} }
   // секрет заказа: по нему клиент без входа может увидеть выданный код (колонка secret; сбой не должен ломать заказ)

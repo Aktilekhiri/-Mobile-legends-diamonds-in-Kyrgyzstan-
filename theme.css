@@ -762,3 +762,5 @@ body.has-banner .page{margin-top:var(--bnH,0)}
 .wait-btns .btn-primary,.wait-btns .btn-secondary{width:100%}
 
 #liveFeed .lf-marquee.drag,#gameFeed .lf-marquee.drag{cursor:grabbing;user-select:none}
+
+.game-promo{margin:0 0 14px;padding:11px 14px;border-radius:14px;background:rgba(255,184,0,.12);border:1px solid rgba(255,184,0,.45);color:var(--text,#fff);font-size:.9rem;line-height:1.4}.game-promo b{color:var(--gold,#ffb800)}

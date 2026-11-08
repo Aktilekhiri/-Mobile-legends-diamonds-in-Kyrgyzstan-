@@ -1792,7 +1792,7 @@ Object.keys(gamesData).forEach(k => { regionLabels[k] = gamesData[k].icon + ' ' 
 function unitOf(regionKey) { return gamesData[regionKey] ? gamesData[regionKey].unit : 'алмазов'; }
 
 // Временно отключённые пакеты (поставщик недоступен). Убрать строку, чтобы вернуть.
-const OFF_PKGS = [];
+const OFF_PKGS = ['freefire:level_up_package_30'];
 function buildPackages(regionKey) {
   const gd = gamesData[regionKey];
   if (gd) {

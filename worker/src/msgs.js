@@ -11,7 +11,7 @@ async function ensure(env) {
   ready = true;
 }
 const clean = (v, n) => String(v == null ? '' : v).replace(/\s+\n/g, '\n').trim().slice(0, n);
-const ID_RE = /^DK[A-Z0-9]{8}$/;
+const ID_RE = /^DK(?:-\d{3,7}|[A-Z0-9]{8})$/;
 
 async function ownOrder(env, sub, id) {
   if (!ID_RE.test(String(id))) return null;

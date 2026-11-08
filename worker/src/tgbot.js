@@ -222,7 +222,7 @@ async function ordersBotMessage(env, m) {
     await say(/^(off|выкл|убрать)$/i.test(t) ? 'Баннер убран' : 'Баннер на сайте: ' + t);
     return;
   }
-  const src = m.reply_to_message && m.reply_to_message.text; const id = src && (src.match(/DK[A-Z0-9]{8}/) || [])[0];
+  const src = m.reply_to_message && m.reply_to_message.text; const id = src && (src.match(/DK(?:-\d{3,7}|[A-Z0-9]{8})/) || [])[0];
   if (!id) return;
   const r = await adminSend(env, id, m.text);
   await say(r.error ? 'Не отправлено: ' + r.error : '✅ Отправлено клиенту по заказу ' + id);
@@ -234,7 +234,7 @@ export async function handleOrdersBotUpdate(env, u) {
     if (u && u.message) { await ordersBotMessage(env, u.message); return; }
     const cq = u && u.callback_query; if (!cq) return;
     const token = env.TELEGRAM_BOT_TOKEN, adm = String(env.TELEGRAM_CHAT_ID || '');
-    const m = String(cq.data || '').match(/^(ok|mn|no|mp|mr|dp|dn|dd|dr|rb|rq|rx):([A-Z0-9]{4,20})$/);
+    const m = String(cq.data || '').match(/^(ok|mn|no|mp|mr|dp|dn|dd|dr|rb|rq|rx):([A-Z0-9-]{4,20})$/);
     if (!m || !adm || String(cq.from.id) !== adm) { await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id }, 10000, token); return; }
     await adminAction(env, cq, m[1], m[2], token);
   } catch (e) { console.log('orders bot error', String(e && e.stack || e).slice(0, 300)); }
@@ -369,14 +369,14 @@ async function onSellCallback(env, cq, d, st) {
 async function onCallback(env, cq) {
   const chat = cq.message && cq.message.chat.id, mid = cq.message && cq.message.message_id, d = String(cq.data || '');
   const adm = String(env.TELEGRAM_CHAT_ID || '');
-  { const rf = d.match(/^rf([bq]):([A-Z0-9]{4,20})$/);
+  { const rf = d.match(/^rf([bq]):([A-Z0-9-]{4,20})$/);
     if (rf && chat) {
       const r = await requestRefund(env, rf[2], '', null, rf[1] === 'b' ? 'balance' : 'requisites', chat);
       await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id, text: r.error ? String(r.error).slice(0, 190) : 'Запрос отправлен', show_alert: !!r.error });
       if (!r.error) await tgApi(env, 'editMessageText', { chat_id: chat, message_id: mid, parse_mode: 'HTML', text: `✅ <b>Запрос на возврат ${rf[1] === 'b' ? 'на баланс' : 'на реквизиты оплаты'} по заказу ${esc(rf[2])} отправлен.</b>\nМы проверяем заказ у исполнителя и ответим здесь. Если заказ успеет выполниться, возврат не потребуется.`, reply_markup: { inline_keyboard: [] } });
       return;
     } }
-  const m = d.match(/^(ok|mn|no|mp|mr):([A-Z0-9]{4,20})$/);
+  const m = d.match(/^(ok|mn|no|mp|mr):([A-Z0-9-]{4,20})$/);
   if (m) { if (adm && String(cq.from.id) === adm) await adminAction(env, cq, m[1], m[2]); else await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id }); return; }
   await tgApi(env, 'answerCallbackQuery', { callback_query_id: cq.id });
   if (!chat) return;

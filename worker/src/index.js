@@ -162,7 +162,7 @@ export default {
         if (!sub) return err(req, 'Нужен вход', 401);
         return json(req, await clientUnread(env, sub));
       }
-      let mq = path.match(/^\/api\/orders\/(DK[A-Z0-9]{8})\/msgs$/);
+      let mq = path.match(/^\/api\/orders\/(DK(?:-\d{3,7}|[A-Z0-9]{8}))\/msgs$/);
       if (mq) {
         const sub = await userFromRequest(req, env);
         if (!sub) return err(req, 'Нужен вход', 401);
@@ -366,7 +366,7 @@ export default {
         if (path === '/api/admin/chats' && m === 'GET') return json(req, await adminThreads(env));
         if (path === '/api/admin/banner' && m === 'GET') return json(req, await getBanner(env));
         if (path === '/api/admin/banner' && m === 'POST') { const b = await req.json().catch(() => ({})); return json(req, await setBanner(env, b.text)); }
-        { const ma = path.match(/^\/api\/admin\/chats\/(DK[A-Z0-9]{8})$/);
+        { const ma = path.match(/^\/api\/admin\/chats\/(DK(?:-\d{3,7}|[A-Z0-9]{8}))$/);
           if (ma && m === 'GET') { const r = await adminThread(env, ma[1]); return r.error ? err(req, r.error, 400) : json(req, r); }
           if (ma && m === 'POST') { const b = await req.json().catch(() => ({})); const r = await adminSend(env, ma[1], b.text); return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201); } }
         if (path === '/api/admin/finance' && m === 'GET') return json(req, await financeSummary(env));

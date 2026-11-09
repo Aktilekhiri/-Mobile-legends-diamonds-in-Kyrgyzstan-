@@ -465,7 +465,7 @@ async function onMessage(env, msg) {
     st.srv = z; return showSummary(env, chat, 0, st);
   }
   // свободный текст: ИИ-помощник (история диалога хранится в состоянии сессии)
-  if (text && aiReady(env) && !st.step) {
+  if (text && aiReady(env) && String(env.AI_TG || '') === '1' && !st.step) {
     const hist = Array.isArray(st.ai) ? st.ai : [];
     hist.push({ role: 'user', content: text });
     const from = msg.from || {};

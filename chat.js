@@ -84,7 +84,7 @@
   // ===== сценарий заказа (без ИИ: быстро и предсказуемо) =====
   var SHOP = [], PAY = '', AI = false, S = { step: 'menu' };
   var QUICK = ['mlbb', 'tgstars', 'roblox', 'pubg', 'freefire', 'tgpremium'];
-  var ALIAS = { global: 'млбб mlbb mobile legends мобайл легенд алмазы', russia: 'россия russia мл ру', pubg: 'пубг пабг pubg uc', freefire: 'фри фаер фф free fire', hok: 'хок honor of kings', genshin: 'геншин genshin', wuwa: 'wuthering waves вува', hsr: 'honkai star rail хср', zzz: 'zenless зенлесс', tgstars: 'звезды звёзды stars телеграм старс', tgpremium: 'премиум premium', roblox: 'роблокс roblox робукс robux', mchess: 'magic chess мэджик', deltaforce: 'delta force', marvel: 'marvel rivals', whiteout: 'whiteout survival вайтаут', lords: 'lords mobile лордс', identityv: 'identity v', fortnite: 'fortnite фортнайт', arena: 'arena breakout', bloodstrike: 'blood strike' };
+  var ALIAS = { global: 'млбб mlbb mobile legends мобайл легенд алмазы', russia: 'россия russia мл ру', indonesia: 'индонезия indonesia индо', pubg: 'пубг пабг pubg uc', freefire: 'фри фаер фф free fire', hok: 'хок honor of kings', genshin: 'геншин genshin', wuwa: 'wuthering waves вува', hsr: 'honkai star rail хср', zzz: 'zenless зенлесс', tgstars: 'звезды звёзды stars телеграм старс', tgpremium: 'премиум premium', roblox: 'роблокс roblox робукс robux', mchess: 'magic chess мэджик', deltaforce: 'delta force', marvel: 'marvel rivals', whiteout: 'whiteout survival вайтаут', lords: 'lords mobile лордс', identityv: 'identity v', fortnite: 'fortnite фортнайт', arena: 'arena breakout', bloodstrike: 'blood strike' };
   function gameById(id) { return SHOP.filter(function (g) { return g.id === id; })[0]; }
   function findGame(t) {
     t = t.toLowerCase().replace(/ё/g, 'е');
@@ -144,16 +144,16 @@
     if (g.zone) { var z2 = parts[1] || ''; if (z2.length < 3 || z2.length > 8) { S.step = 'zone'; return say('Теперь напишите Server ID (3–5 цифр).'); } S.srv = z2; return askPhone(); }
     S.srv = ''; askPhone();
   }
-  function askPhone() { S.step = 'phone'; say('Напишите ваш номер телефона (например 700 123 456), по нему мы свяжемся при вопросах по заказу.'); }
+  function askPhone() { S.step = 'phone'; say('Напишите номер телефона (например 700 123 456), чтобы мы могли связаться, если заказ придётся вернуть. Можно пропустить.'); chips([{ t: 'Пропустить', f: function () { S.phone = ''; summary(); } }]); }
   function summary() {
     var g = gameById(S.g), p = g.packs[S.pi]; S.step = 'confirm';
     var srv = S.srv && g.servers ? ((g.servers.filter(function (x) { return x.v === S.srv; })[0] || {}).l || S.srv) : S.srv;
-    say('Проверьте заказ:\nИгра: ' + g.name + '\nПакет: ' + p.l + '\n' + (g.none ? '' : (g.user ? 'Username: ' : 'ID: ') + S.pid + '\n') + (srv ? 'Сервер/Zone: ' + srv + '\n' : '') + 'Телефон: ' + S.phone + '\nСумма: ' + money(p.p) + ' сом' + (p.first ? '\n⚠️ Пакет только для первого пополнения аккаунта.' : '') + '\nПосле зачисления на указанный ID возврат невозможен, проверьте данные.');
+    say('Проверьте заказ:\nИгра: ' + g.name + '\nПакет: ' + p.l + '\n' + (g.none ? '' : (g.user ? 'Username: ' : 'ID: ') + S.pid + '\n') + (srv ? 'Сервер/Zone: ' + srv + '\n' : '') + (S.phone ? 'Телефон: ' + S.phone + '\n' : '') + 'Сумма: ' + money(p.p) + ' сом' + (p.first ? '\n⚠️ Пакет только для первого пополнения аккаунта.' : '') + '\nПосле зачисления на указанный ID возврат невозможен, проверьте данные.');
     chips([{ t: '✅ Всё верно', f: function () { choosePay(); } }, { t: '✏️ Изменить ID', f: function () { askId(); } }, { t: 'Отмена', f: function () { say('Отменено. Что нужно пополнить?'); menu(); } }]);
   }
   function choosePay() {
-    if (PAY) { say('Как оплатить?'); chips([{ t: '⚡ По QR (быстро, без чека)', f: function () { place('qr'); } }, { t: 'Переводом Mbank / O!Банк', f: function () { place('manual'); } }]); }
-    else place('manual');
+    if (PAY) return place('qr');
+    say('Оплата сейчас недоступна. Оформите заказ на сайте или напишите в WhatsApp +996 555 920 204.'); menu();
   }
   function place(how) {
     var g = gameById(S.g), p = g.packs[S.pi]; S.step = 'placing';
@@ -171,10 +171,10 @@
         S = { step: 'menu' }; chips([{ t: 'Новый заказ', f: function () { say('Что нужно пополнить?'); menu(); } }]);
       }).catch(function () { say('Нет связи с сервером. Попробуйте ещё раз.'); S.step = 'confirm'; chips([{ t: 'Повторить', f: function () { place(how); } }]); });
   }
-  function askStatus() { S = { step: 'status' }; say('Напишите код заказа (например DK12345678):'); }
+  function askStatus() { S = { step: 'status' }; say('Напишите код заказа (например DK-1042):'); }
   function onStatus(t) {
-    var id = t.toUpperCase().replace(/[^A-Z0-9]/g, '');
-    if (id.length < 6) return say('Не похоже на код заказа. Он начинается с DK. Напишите ещё раз.');
+    var id = t.toUpperCase().replace(/[^A-Z0-9]/g, ''), nm = id.match(/^(?:DK)?(\d{3,7})$/); if (nm) id = 'DK-' + nm[1];
+    if (id.length < 5) return say('Не похоже на код заказа. Он начинается с DK. Напишите ещё раз.');
     var L = { new: 'ожидает оплаты', manual: 'ожидает проверки оплаты', processing: 'выполняется', delivered: 'выполнен ✅', cancelled: 'отменён', refunded: 'деньги возвращены', refund_due: 'готовится возврат' };
     fetch(API + '/api/orders/' + id).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
       say(d ? 'Заказ ' + id + ': ' + (L[d.status] || d.status) + '.' : 'Заказ не найден. Проверьте код.'); S = { step: 'menu' }; menu();
@@ -197,13 +197,13 @@
     var old = box.querySelectorAll('.dkc-chips'); for (var i = 0; i < old.length; i++) old[i].remove();
     if (S.step === 'id') return onId(text);
     if (S.step === 'zone') { var z = digits(text); if (z.length < 3 || z.length > 8) return say('Server ID: 3–5 цифр. Напишите ещё раз.'); S.srv = z; return askPhone(); }
-    if (S.step === 'phone') { var d = digits(text); if (d.length < 9 || d.length > 13) return say('Проверьте номер: 9 цифр, например 700 123 456.'); S.phone = d.slice(-9); return summary(); }
+    if (S.step === 'phone') { if (/^(пропустить|нет|не надо|skip)/i.test(text)) { S.phone = ''; return summary(); } var d = digits(text); if (d.length < 9 || d.length > 13) return say('Проверьте номер: 9 цифр, например 700 123 456.'); S.phone = d.slice(-9); return summary(); }
     if (S.step === 'status') return onStatus(text);
     if (S.step === 'confirm') { if (/^(да|верно|все верно|всё верно|ок|ok|yes)/i.test(text)) return choosePay(); say('Нажмите «✅ Всё верно» или «Отмена».'); return summary(); }
     if (S.step === 'pack') { say('Выберите пакет кнопкой ниже.'); return showPacks(); }
     var g = findGame(text);
     if (g) return pickGame(g);
-    if (/статус|заказ\s*dk|dk\d/i.test(text)) { var m = text.match(/dk[a-z0-9]{6,}/i); return m ? onStatus(m[0]) : askStatus(); }
+    if (/статус|заказ\s*dk|dk\d/i.test(text)) { var m = text.match(/dk-?\d{3,7}|dk[a-z0-9]{8}/i) || text.match(/(?:^|\s)(\d{4,7})(?:\s|$)/); return m ? onStatus(m[0]) : askStatus(); }
     if (/когда|срок|долго|сколько (ждать|времени)/i.test(text)) { say('Обычно 1–5 минут после проверки оплаты, максимум 3 дня. Как только заказ выполнится, я напишу здесь.'); return menu(); }
     ask(text);
   }

@@ -43,6 +43,32 @@ export const RU_CATALOG = {
   '6000+0': { offer: '6000_diamonds', cost: 96.2163 },
   'Diamond Pass (weekly)': { offer: 'weekly_pass', cost: 1.9344 },
 };
+// Регион Индонезия (категория mobile_legends_indonesia): только для аккаунтов с индонезийским регионом
+export const ID_CATALOG = {
+  '5+0': { offer: '5_diamonds', cost: 0.0907 },
+  '11+1': { offer: '11_1_diamonds', cost: 0.2015 },
+  '17+2': { offer: '17_2_diamonds', cost: 0.3224 },
+  '25+3': { offer: '25_3_diamonds', cost: 0.4735 },
+  '40+4': { offer: '40_4_diamonds', cost: 0.7053 },
+  '53+6': { offer: '53_6_diamonds', cost: 0.937 },
+  '77+8': { offer: '77_8_diamonds', cost: 1.3501 },
+  '154+16': { offer: '154_16_diamonds', cost: 2.7102 },
+  '217+23': { offer: '217_23_diamonds', cost: 3.8386 },
+  '256+40': { offer: '256_40_diamonds', cost: 4.705 },
+  '367+41': { offer: '367_41_diamonds', cost: 6.4682 },
+  '503+65': { offer: '503_65_diamonds', cost: 8.8257 },
+  '774+101': { offer: '774_101_diamonds', cost: 13.5207 },
+  '1708+302': { offer: '1708_302_diamonds', cost: 29.3989 },
+  '4003+827': { offer: '4003_827_diamonds', cost: 70.5653 },
+  '50+50': { offer: '50_50_diamonds_first_top_up_bonus', cost: 0.9269 },
+  '150+150': { offer: '150_150_diamonds_first_top_up_bonus', cost: 2.7606 },
+  '250+250': { offer: '250_250_diamonds_first_top_up_bonus', cost: 4.6043 },
+  '500+500': { offer: '500_500_diamonds_first_top_up_bonus', cost: 9.2589 },
+  'Weekly Diamond Pass': { offer: 'weekly_pass', cost: 1.7027 },
+  'Weekly Elite Pack': { offer: 'weekly_elite_pack', cost: 0.9168 },
+  'Monthly Elite Pack': { offer: 'monthly_elite_pack', cost: 4.5035 },
+  'Twilight Pass': { offer: 'twilight_pass', cost: 8.8056 },
+};
 // Игры (не MLBB): категория FazerCards, поле сервера, каталог офферов (ключ = offer_id).
 export const GAMES = {
   pubg: { category: 'pubg_mobile_auto', serverField: null, servers: null, catalog: {
@@ -332,7 +358,7 @@ export const GAMES = {
 };
 
 // Все каталоги по ключу региона/игры, которые шлёт сайт
-export const CATALOGS = { global: GLOBAL_CATALOG, russia: RU_CATALOG, ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.catalog])) };
+export const CATALOGS = { global: GLOBAL_CATALOG, russia: RU_CATALOG, indonesia: ID_CATALOG, ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.catalog])) };
 export const USD_KGS = 90; // курс для расчёта прибыли в уведомлениях (обновляйте вручную)
 export const MAX_AUTO_COST_USD = 116; // дороже — только вручную (самый дорогой пакет ≈ $115.82)
 

@@ -181,6 +181,7 @@
     }).catch(function () { say('Нет связи. Попробуйте позже.'); });
   }
   function ask(text) {   // свободный вопрос: быстрый ИИ без права оформлять заказ
+    var prev = S;
     if (!AI) { say('Выберите вариант из кнопок или напишите в WhatsApp +996 555 920 204.'); return menu(); }
     busy = true; sendBtn.disabled = true;
     var typing = bubble('assistant', '…'); typing.classList.add('typing');
@@ -189,12 +190,24 @@
       .then(function (r) { return r.json(); })
       .then(function (j) { typing.remove(); say(j.reply || j.error || 'Не получилось ответить.'); })
       .catch(function () { typing.remove(); say('Не получилось ответить. Напишите в WhatsApp +996 555 920 204.'); })
-      .then(function () { clearTimeout(tm); busy = false; sendBtn.disabled = false; menu(); });
+      .then(function () {
+        clearTimeout(tm); busy = false; sendBtn.disabled = false;
+        S = prev;
+        if (prev.step === 'id') return askId();
+        if (prev.step === 'zone') return say('Теперь напишите Server ID (3–5 цифр).');
+        if (prev.step === 'phone') return askPhone();
+        if (prev.step === 'confirm') return summary();
+        menu();
+      });
   }
+  function isQuestion(t) { return /\?|^\s*(как|что|почему|когда|сколько|где|можно|зачем|какой|какая|какие|куда|есть ли|нет ли|подскажите|помогите|а если)(\s|$)|не (пришёл|пришел|пришло|дошёл|дошел|работает|зачисл)|возврат|вернуть|верните|баланс|скидк|гаранти|безопасно|мошенн/i.test(t); }
   function send(text) {
     text = String(text || '').trim(); if (!text || busy) return;
     input.value = ''; say(text, true);
     var old = box.querySelectorAll('.dkc-chips'); for (var i = 0; i < old.length; i++) old[i].remove();
+    var q = isQuestion(text) && !/^[\d\s+-]+$/.test(text);
+    if (q && ['menu', 'pack', 'id', 'zone', 'phone', 'confirm'].indexOf(S.step) >= 0) return ask(text);
+    if (S.step === 'status' && !/\d{3,}/.test(text)) return ask(text);
     if (S.step === 'id') return onId(text);
     if (S.step === 'zone') { var z = digits(text); if (z.length < 3 || z.length > 8) return say('Server ID: 3–5 цифр. Напишите ещё раз.'); S.srv = z; return askPhone(); }
     if (S.step === 'phone') { if (/^(пропустить|нет|не надо|skip)/i.test(text)) { S.phone = ''; return summary(); } var d = digits(text); if (d.length < 9 || d.length > 13) return say('Проверьте номер: 9 цифр, например 700 123 456.'); S.phone = d.slice(-9); return summary(); }

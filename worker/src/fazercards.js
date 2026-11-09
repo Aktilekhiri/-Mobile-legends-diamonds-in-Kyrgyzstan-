@@ -6,7 +6,7 @@ export const FZ_READY = true;
 const BASE = 'https://api.fzr.cards';
 
 import { GAMES } from './catalog.js';
-const CATEGORY = { global: 'mobile_legends_global', russia: 'mobile_legends_ru', ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.category])) };
+const CATEGORY = { global: 'mobile_legends_global', russia: 'mobile_legends_ru', indonesia: 'mobile_legends_indonesia', ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.category])) };
 
 async function call(env, method, path, body, extraHeaders) {
   if (!env.FAZERCARDS_API_KEY) throw new Error('FAZERCARDS_API_KEY не задан в Cloudflare');

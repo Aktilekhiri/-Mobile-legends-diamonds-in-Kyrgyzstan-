@@ -43,6 +43,32 @@ export const RU_CATALOG = {
   '6000+0': { offer: '6000_diamonds' },
   'Diamond Pass (weekly)': { offer: 'weekly_pass' },
 };
+// Регион Индонезия (категория mobile_legends_indonesia): только для аккаунтов с индонезийским регионом
+export const ID_CATALOG = {
+  '5+0': { offer: '5_diamonds' },
+  '11+1': { offer: '11_1_diamonds' },
+  '17+2': { offer: '17_2_diamonds' },
+  '25+3': { offer: '25_3_diamonds' },
+  '40+4': { offer: '40_4_diamonds' },
+  '53+6': { offer: '53_6_diamonds' },
+  '77+8': { offer: '77_8_diamonds' },
+  '154+16': { offer: '154_16_diamonds' },
+  '217+23': { offer: '217_23_diamonds' },
+  '256+40': { offer: '256_40_diamonds' },
+  '367+41': { offer: '367_41_diamonds' },
+  '503+65': { offer: '503_65_diamonds' },
+  '774+101': { offer: '774_101_diamonds' },
+  '1708+302': { offer: '1708_302_diamonds' },
+  '4003+827': { offer: '4003_827_diamonds' },
+  '50+50': { offer: '50_50_diamonds_first_top_up_bonus' },
+  '150+150': { offer: '150_150_diamonds_first_top_up_bonus' },
+  '250+250': { offer: '250_250_diamonds_first_top_up_bonus' },
+  '500+500': { offer: '500_500_diamonds_first_top_up_bonus' },
+  'Weekly Diamond Pass': { offer: 'weekly_pass' },
+  'Weekly Elite Pack': { offer: 'weekly_elite_pack' },
+  'Monthly Elite Pack': { offer: 'monthly_elite_pack' },
+  'Twilight Pass': { offer: 'twilight_pass' },
+};
 // Игры (не MLBB): категория FazerCards, поле сервера, каталог офферов (ключ = offer_id).
 export const GAMES = {
   pubg: { category: 'pubg_mobile_auto', serverField: null, servers: null, catalog: {
@@ -332,7 +358,7 @@ export const GAMES = {
 };
 
 // Все каталоги по ключу региона/игры, которые шлёт сайт
-export const CATALOGS = { global: GLOBAL_CATALOG, russia: RU_CATALOG, ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.catalog])) };
+export const CATALOGS = { global: GLOBAL_CATALOG, russia: RU_CATALOG, indonesia: ID_CATALOG, ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.catalog])) };
 export const USD_KGS = 90; // курс для расчёта прибыли в уведомлениях (обновляйте вручную)
 export const MAX_AUTO_COST_USD = 116; // дороже — только вручную (самый дорогой пакет ≈ $115.82)
 

@@ -57,6 +57,18 @@ button:disabled{opacity:.5;cursor:default}
   <div id="listBox" class="hidden">
     <div class="chips" id="chips"></div>
     <div id="list"></div>
+    <details class="card" id="blBox" style="margin-top:14px">
+      <summary style="cursor:pointer;font-weight:700">🚫 Чёрный список телефонов <span id="blCount" style="font-weight:400;opacity:.7"></span></summary>
+      <div style="margin-top:10px">
+        <label for="blPhone" style="display:block;font-size:13px;opacity:.8;margin-bottom:4px">Номер телефона (проверить или добавить)</label>
+        <input id="blPhone" type="tel" inputmode="tel" placeholder="777 090 210" style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:inherit;margin-bottom:8px">
+        <label for="blReason" style="display:block;font-size:13px;opacity:.8;margin-bottom:4px">Причина</label>
+        <input id="blReason" type="text" maxlength="200" placeholder="Например: требовал возврат после выдачи" style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:inherit;margin-bottom:8px">
+        <div class="top"><button id="blCheck">Проверить номер</button><button id="blAdd">Добавить в список</button></div>
+        <div id="blRes" style="margin:8px 0;font-size:14px"></div>
+        <div id="blList"></div>
+      </div>
+    </details>
     <div class="top" style="margin-top:14px"><button id="reload">Обновить</button><button id="logoutBtn">Выйти</button></div>
   </div>
 </div>
@@ -154,7 +166,7 @@ button:disabled{opacity:.5;cursor:default}
     catch(e){msg(e.message,'err');b.disabled=false}
   }
   async function load(){
-    try{var d=await call('GET','/api/admin/orders');orders=d.orders||[];msg('');show('listBox');drawChips();draw()}
+    try{var d=await call('GET','/api/admin/orders');orders=d.orders||[];msg('');show('listBox');drawChips();draw();if(!bl.length)blLoad()}
     catch(e){msg(e.message,'err');if(token){show('listBox');drawChips();if(!orders.length)$('list').innerHTML=''}}
   }
   function start(){
@@ -166,7 +178,22 @@ button:disabled{opacity:.5;cursor:default}
   $('loginBtn').onclick=async function(){var b=this;b.disabled=true;try{var d=await call('POST','/api/login',{password:$('pw').value});token=d.token;sset(TK,token);$('pw').value='';start()}catch(e){msg(e.message,'err')}b.disabled=false};
   $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')$('loginBtn').click()});
   $('logoutBtn').onclick=function(){token='';sset(TK,'');show('loginBox')};
-  $('reload').onclick=load;
+  var bl=[];
+  function blN(v){return String(v||'').replace(/\D/g,'').slice(-9)}
+  function blFmt(v){return v.replace(/(\d{3})(\d{3})(\d{3})/,'+996 $1 $2 $3')}
+  function blDraw(){
+    $('blCount').textContent='('+bl.length+')';
+    $('blList').innerHTML=bl.length?bl.map(function(x){return '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)"><div><b>'+esc(blFmt(x.value))+'</b><div style="font-size:12px;opacity:.7">'+esc(x.reason||'')+' · '+new Date(x.created_at).toLocaleDateString('ru-RU')+'</div></div><button data-v="'+esc(x.value)+'" class="blDel">Убрать</button></div>'}).join(''):'<div style="opacity:.7">Список пуст</div>';
+    [].forEach.call(document.querySelectorAll('.blDel'),function(b){b.onclick=async function(){
+      var v=b.getAttribute('data-v');if(!confirm('Убрать '+blFmt(v)+' из чёрного списка? С этого номера снова можно будет делать заказы.'))return;
+      b.disabled=true;try{await call('POST','/api/admin/blacklist/remove',{value:v});msg('Номер убран из списка');blLoad()}catch(e){msg(e.message,'err');b.disabled=false}}});
+  }
+  async function blLoad(){try{var d=await call('GET','/api/admin/blacklist');bl=d.items||[];blDraw()}catch(e){$('blList').innerHTML='<div style="opacity:.7">'+esc(e.message)+'</div>'}}
+  $('blCheck').onclick=function(){var v=blN($('blPhone').value);if(v.length<9){$('blRes').textContent='Введите номер полностью (9 цифр)';return}
+    var f=bl.filter(function(x){return x.value===v})[0];$('blRes').textContent=f?'🚫 '+blFmt(v)+' В ЧЁРНОМ СПИСКЕ: '+(f.reason||''):'✅ '+blFmt(v)+' нет в чёрном списке'};
+  $('blAdd').onclick=async function(){var b=this,v=blN($('blPhone').value);if(v.length<9){$('blRes').textContent='Введите номер полностью (9 цифр)';return}
+    b.disabled=true;try{await call('POST','/api/admin/blacklist',{phone:v,reason:$('blReason').value});$('blReason').value='';$('blRes').textContent='🚫 '+blFmt(v)+' добавлен';await blLoad()}catch(e){msg(e.message,'err')}b.disabled=false};
+  $('reload').onclick=function(){load();blLoad()};
   start();
 })();
 </script>

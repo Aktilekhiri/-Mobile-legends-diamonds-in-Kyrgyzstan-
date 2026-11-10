@@ -29,6 +29,12 @@ def mlbb(region, title):
 mlbb('global', 'Mobile Legends (Глобальный)')
 mlbb('russia', 'Mobile Legends (Россия)')
 mlbb('indonesia', 'Mobile Legends (Индонезия)')
+mlbb('turkey', 'Mobile Legends (Турция)')
+mlbb('malaysia', 'Mobile Legends (Малайзия)')
+mlbb('philippines', 'Mobile Legends (Филиппины)')
+mlbb('singapore', 'Mobile Legends (Сингапур)')
+mlbb('brazil', 'Mobile Legends (Бразилия)')
+mlbb('usa', 'Mobile Legends (США)')
 for k, g in gd.items():
     if k in SKIP: continue
     packs = []

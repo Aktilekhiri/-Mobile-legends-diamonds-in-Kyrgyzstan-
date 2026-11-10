@@ -1,5 +1,5 @@
 // Заказы: приём с сайта, подтверждение оплаты админом, выдача через FazerCards, возврат.
-import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS, OFF_PKGS } from './catalog.js';
+import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS, OFF_PKGS, MLBB_REGIONS } from './catalog.js';
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { notify, notifyPhoto, defer } from './notify.js';
 import { sendOrderMail } from './mail.js';
@@ -42,7 +42,7 @@ function profitText(price, cat) {
   return ` (${p >= 0 ? '+' : '−'}${Math.abs(p)} сом прибыль)`;
 }
 
-const GAME_TITLE = {  whiteout: 'Whiteout Survival', lords: 'Lords Mobile', identityv: 'Identity V', fortnite: 'Fortnite Gift Card (ЕС)',mchess: 'Magic Chess Go Go', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', bloodstrike: 'Blood Strike', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox Gift Card', steam: 'Steam Gift Card (СНГ)', discord: 'Discord Nitro', netflix: 'Netflix Gift Card (США)', psn: 'PlayStation Gift Card (США)', gplay: 'Google Play Gift Card (США)', apple_us: 'App Store & iTunes (США)', apple_tr: 'App Store & iTunes (Турция)', apple_ru: 'App Store & iTunes (Россия)', nintendo: 'Nintendo eShop Card (США)', valorant: 'Valorant VP (регион RU)', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', indonesia: 'Mobile Legends (Индонезия)', global: 'Mobile Legends' };
+const GAME_TITLE = {  whiteout: 'Whiteout Survival', lords: 'Lords Mobile', identityv: 'Identity V', fortnite: 'Fortnite Gift Card (ЕС)',mchess: 'Magic Chess Go Go', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', bloodstrike: 'Blood Strike', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox Gift Card', steam: 'Steam Gift Card (СНГ)', discord: 'Discord Nitro', netflix: 'Netflix Gift Card (США)', psn: 'PlayStation Gift Card (США)', gplay: 'Google Play Gift Card (США)', apple_us: 'App Store & iTunes (США)', apple_tr: 'App Store & iTunes (Турция)', apple_ru: 'App Store & iTunes (Россия)', nintendo: 'Nintendo eShop Card (США)', valorant: 'Valorant VP (регион RU)', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', indonesia: 'Mobile Legends (Индонезия)', turkey: 'Mobile Legends (Турция)', malaysia: 'Mobile Legends (Малайзия)', philippines: 'Mobile Legends (Филиппины)', singapore: 'Mobile Legends (Сингапур)', brazil: 'Mobile Legends (Бразилия)', usa: 'Mobile Legends (США)', global: 'Mobile Legends' };
 const gameTitle = region => GAME_TITLE[region] || 'Mobile Legends';
 
 // Карточка заказа для уведомлений владельцу: игра, пакет, ID, сумма и прибыль (с учётом комиссии оплаты, если она известна)
@@ -66,7 +66,7 @@ export function alertText(o, cat, auto, withReceipt) {
 // GET /api/recent — публично: последние выданные заказы без персональных данных (игра, пакет, время) + счётчики
 export async function listRecentDeliveries(env, game = '') {
   game = String(game || '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20);
-  const cond = !game ? '' : game === 'mlbb' ? " AND region IN ('global','russia','indonesia')" : ' AND region = ?';
+  const cond = !game ? '' : game === 'mlbb' ? " AND region IN ('global','russia','indonesia','turkey','malaysia','philippines','singapore','brazil','usa')" : ' AND region = ?';
   const bind = game && game !== 'mlbb' ? [game] : [];
   const rows = (await env.DB.prepare("SELECT region, pkg_label, player_id, confirmed_at, finished_at FROM orders WHERE status = 'delivered' AND finished_at > 0" + cond + " ORDER BY finished_at DESC LIMIT 30").bind(...bind).all()).results || [];
   const total = (await env.DB.prepare("SELECT COUNT(*) AS n FROM orders WHERE status = 'delivered' AND finished_at > 0" + cond).bind(...bind).first()) || { n: 0 };
@@ -77,7 +77,7 @@ export async function listRecentDeliveries(env, game = '') {
     const t = took(r);
     const pid = String(r.player_id || '').replace(/\D/g, ''); // получатель: только 2 первые и 2 последние цифры
     const who = pid.length >= 6 ? pid.slice(0, 2) + '•••' + pid.slice(-2) : '';
-    return { who, game: (r.region === 'global' || r.region === 'russia' || r.region === 'indonesia') ? 'mlbb' : r.region, title: gameTitle(r.region), pkg: String(r.pkg_label || '').replace(/\s*\(.*\)\s*$/, ''), ago: Math.max(0, Math.round((now - r.finished_at) / 1000)), took: t >= 1 && t <= 600 ? t : 0 };
+    return { who, game: MLBB_REGIONS.includes(r.region) ? 'mlbb' : r.region, title: gameTitle(r.region), pkg: String(r.pkg_label || '').replace(/\s*\(.*\)\s*$/, ''), ago: Math.max(0, Math.round((now - r.finished_at) / 1000)), took: t >= 1 && t <= 600 ? t : 0 };
   });
   return { items, total: total.n, median_sec: secs.length ? secs[Math.floor(secs.length / 2)] : 0 };
 }

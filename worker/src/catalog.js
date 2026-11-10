@@ -69,6 +69,122 @@ export const ID_CATALOG = {
   'Monthly Elite Pack': { offer: 'monthly_elite_pack', cost: 4.5035 },
   'Twilight Pass': { offer: 'twilight_pass', cost: 8.8056 },
 };
+// Регион Турция (категория mobile_legends_turkey): только для аккаунтов этого региона
+export const TURKEY_CATALOG = {
+  '16+0': { offer: '16_diamonds', cost: 0.2257 },
+  '24+0': { offer: '24_diamonds', cost: 0.3426 },
+  '44+0': { offer: '44_diamonds', cost: 0.6247 },
+  'Weekly Elite Pack': { offer: 'weekly_elite_pack', cost: 0.812 },
+  '88+0': { offer: '88_diamonds', cost: 1.2433 },
+  'Weekly Diamond Pass': { offer: 'weekly_pass', cost: 1.874 },
+  '133+0': { offer: '133_diamonds', cost: 1.881 },
+  '221+0': { offer: '221_diamonds', cost: 3.1233 },
+  'Monthly Elite Pack': { offer: 'monthly_elite_pack', cost: 4.0179 },
+  '494+0': { offer: '494_diamonds', cost: 6.9417 },
+  'Twilight Pass': { offer: 'twilight_pass', cost: 7.7275 },
+  '1041+0': { offer: '1041_diamonds', cost: 13.8934 },
+  '2645+0': { offer: '2645_diamonds', cost: 34.6983 },
+  '6146+0': { offer: '6146_diamonds', cost: 79.1996 },
+};
+// Регион Малайзия (категория mobile_legends_malaysia): только для аккаунтов этого региона
+export const MALAYSIA_CATALOG = {
+  '13+1': { offer: '13_1_diamonds', cost: 0.2317 },
+  '38+4': { offer: '38_4_diamonds', cost: 0.7053 },
+  '50+5': { offer: '50_5_diamonds_first_top_up_bonus', cost: 0.9168 },
+  'Weekly Elite Pack': { offer: 'weekly_elite_pack', cost: 0.9168 },
+  '64+6': { offer: '64_6_diamonds', cost: 1.1687 },
+  'Weekly Diamond Pass': { offer: 'weekly_pass', cost: 1.9042 },
+  '127+13': { offer: '127_13_diamonds', cost: 2.3374 },
+  '150+15': { offer: '150_15_diamonds_first_top_up_bonus', cost: 2.7303 },
+  '250+25': { offer: '250_25_diamonds_first_top_up_bonus', cost: 4.5338 },
+  'Monthly Elite Pack': { offer: 'monthly_elite_pack', cost: 4.5338 },
+  '254+30': { offer: '254_30_diamonds', cost: 4.6748 },
+  '317+38': { offer: '317_38_diamonds', cost: 5.8435 },
+  '383+46': { offer: '383_46_diamonds', cost: 7.0122 },
+  'Twilight Pass': { offer: 'twilight_pass', cost: 8.5638 },
+  '500+65': { offer: '500_65_diamonds_first_top_up_bonus', cost: 9.2287 },
+  '633+83': { offer: '633_83_diamonds', cost: 11.687 },
+  '940+144': { offer: '940_144_diamonds', cost: 17.4902 },
+  '1252+194': { offer: '1252_194_diamonds', cost: 22.1449 },
+  '2501+475': { offer: '2501_475_diamonds', cost: 45.5491 },
+  '6252+1250': { offer: '6252_1250_diamonds', cost: 112.6284 },
+};
+// Регион Филиппины (категория mobile_legends_philippines): только для аккаунтов этого региона
+export const PHILIPPINES_CATALOG = {
+  '10+1': { offer: '10_1_diamonds', cost: 0.1713 },
+  '20+2': { offer: '20_2_diamonds', cost: 0.3325 },
+  '51+5': { offer: '51_5_diamonds', cost: 0.806 },
+  '50+5': { offer: '50_5_diamonds_first_top_up_bonus', cost: 0.8362 },
+  'Weekly Diamond Pass': { offer: 'weekly_diamond_pass', cost: 1.6926 },
+  '102+10': { offer: '102_10_diamonds', cost: 1.6221 },
+  '153+15': { offer: '153_15_diamonds', cost: 2.5792 },
+  '203+20': { offer: '203_20_diamonds', cost: 3.2442 },
+  '150+15': { offer: '150_15_diamonds_first_top_up_bonus', cost: 2.4583 },
+  '303+33': { offer: '303_33_diamonds', cost: 4.8562 },
+  '250+25': { offer: '250_25_diamonds_first_top_up_bonus', cost: 4.0703 },
+  'Twilight Pass': { offer: 'twilight_pass', cost: 8.4832 },
+  '504+66': { offer: '504_66_diamonds', cost: 8.0902 },
+  '500+65': { offer: '500_65_diamonds_first_top_up_bonus', cost: 8.2414 },
+  '1007+156': { offer: '1007_156_diamonds', cost: 16.1805 },
+  '2015+383': { offer: '2015_383_diamonds', cost: 32.3508 },
+  '5035+1007': { offer: '5035_1007_diamonds', cost: 80.862 },
+};
+// Регион Сингапур (категория mobile_legends_singapore): только для аккаунтов этого региона
+export const SINGAPORE_CATALOG = {
+  '5+0': { offer: '5_diamonds', cost: 0.0907 },
+  '13+1': { offer: '13_1_diamonds', cost: 0.2317 },
+  '38+4': { offer: '38_4_diamonds', cost: 0.7053 },
+  'Weekly Elite Pack': { offer: 'weekly_elite_pack', cost: 0.9168 },
+  '50+5': { offer: '50_5_diamonds_first_top_up_bonus', cost: 0.9168 },
+  '64+6': { offer: '64_6_diamonds', cost: 1.1687 },
+  'Weekly Diamond Pass': { offer: 'weekly_pass', cost: 1.9042 },
+  '127+13': { offer: '127_13_diamonds', cost: 2.3374 },
+  '150+15': { offer: '150_15_diamonds_first_top_up_bonus', cost: 2.7303 },
+  'Monthly Elite Pack': { offer: 'monthly_elite_pack', cost: 4.5338 },
+  '254+30': { offer: '254_30_diamonds', cost: 4.6748 },
+  '250+25': { offer: '250_25_diamonds_first_top_up_bonus', cost: 4.5338 },
+  '317+38': { offer: '317_38_diamonds', cost: 5.8435 },
+  '383+46': { offer: '383_46_diamonds', cost: 7.0122 },
+  '500+65': { offer: '500_65_diamonds_first_top_up_bonus', cost: 9.2287 },
+  '633+83': { offer: '633_83_diamonds', cost: 11.687 },
+  '940+144': { offer: '940_144_diamonds', cost: 17.46 },
+  '1252+194': { offer: '1252_194_diamonds', cost: 23.2934 },
+  '2501+475': { offer: '2501_475_diamonds', cost: 45.5491 },
+  '6252+1250': { offer: '6252_1250_diamonds', cost: 112.6284 },
+};
+// Регион Бразилия (категория mobile_legends_brazil): только для аккаунтов этого региона
+export const BRAZIL_CATALOG = {
+  '50+5': { offer: '50_5_diamonds_first_top_up_bonus', cost: 0.665 },
+  '78+8': { offer: '78_8_diamonds', cost: 1.0075 },
+  'Weekly Diamond Pass': { offer: 'weekly_pass', cost: 1.2493 },
+  '156+16': { offer: '156_16_diamonds', cost: 2.0049 },
+  '150+15': { offer: '150_15_diamonds_first_top_up_bonus', cost: 1.9546 },
+  '234+23': { offer: '234_23_diamonds', cost: 2.9923 },
+  '310+34': { offer: '310_34_diamonds', cost: 3.2683 },
+  '250+25': { offer: '250_25_diamonds_first_top_up_bonus', cost: 3.224 },
+  '482+0': { offer: '482_diamonds', cost: 4.563 },
+  '465+51': { offer: '465_51_diamonds', cost: 4.8914 },
+  '500+65': { offer: '500_65_diamonds_first_top_up_bonus', cost: 6.5991 },
+  'Twilight Pass': { offer: 'twilight_pass', cost: 7.5663 },
+  '625+81': { offer: '625_81_diamonds', cost: 8.0096 },
+  '1860+335': { offer: '1860_335_diamonds', cost: 24.0389 },
+  '3099+589': { offer: '3099_589_diamonds', cost: 40.0582 },
+  '4649+883': { offer: '4649_883_diamonds', cost: 60.0873 },
+  '7740+1548': { offer: '7740_1548_diamonds', cost: 100.1354 },
+};
+// Регион США (категория mobile_legends_united_states): только для аккаунтов этого региона
+export const USA_CATALOG = {
+  '51+5': { offer: '51_5_diamonds', cost: 0.8665 },
+  'Weekly Diamond Pass': { offer: 'weekly_diamond_pass', cost: 1.743 },
+  '253+25': { offer: '253_25_diamonds', cost: 4.3423 },
+  '505+66': { offer: '505_66_diamonds', cost: 8.7048 },
+  '1010+182': { offer: '1010_182_diamonds', cost: 17.3391 },
+  '1515+273': { offer: '1515_273_diamonds', cost: 25.9935 },
+  '2525+480': { offer: '2525_480_diamonds', cost: 43.3225 },
+  '3030+576': { offer: '3030_576_diamonds', cost: 51.987 },
+  '4008+802': { offer: '4008_802_diamonds', cost: 69.316 },
+  '5010+1002': { offer: '5010_1002_diamonds', cost: 86.645 },
+};
 // Игры (не MLBB): категория FazerCards, поле сервера, каталог офферов (ключ = offer_id).
 export const GAMES = {
   pubg: { category: 'pubg_mobile_auto', serverField: null, servers: null, catalog: {
@@ -358,7 +474,7 @@ export const GAMES = {
 };
 
 // Все каталоги по ключу региона/игры, которые шлёт сайт
-export const CATALOGS = { global: GLOBAL_CATALOG, russia: RU_CATALOG, indonesia: ID_CATALOG, ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.catalog])) };
+export const CATALOGS = { global: GLOBAL_CATALOG, russia: RU_CATALOG, indonesia: ID_CATALOG, turkey: TURKEY_CATALOG, malaysia: MALAYSIA_CATALOG, philippines: PHILIPPINES_CATALOG, singapore: SINGAPORE_CATALOG, brazil: BRAZIL_CATALOG, usa: USA_CATALOG, ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.catalog])) };
 export const USD_KGS = 90; // курс для расчёта прибыли в уведомлениях (обновляйте вручную)
 export const MAX_AUTO_COST_USD = 116; // дороже — только вручную (самый дорогой пакет ≈ $115.82)
 
@@ -369,3 +485,6 @@ export const FIN_WHERE = "created_at >= " + FIN_START_MS + " AND COALESCE(method
 
 // Временно отключённые пакеты (поставщик отвечает «unavailable»). Формат: 'регион/игра:ключ_пакета'. Убрать строку, чтобы вернуть пакет.
 export const OFF_PKGS = [];
+
+// Все регионы Mobile Legends (ключ региона = ключ каталога); категории FazerCards — в fazercards.js
+export const MLBB_REGIONS = ['global', 'russia', 'indonesia', 'turkey', 'malaysia', 'philippines', 'singapore', 'brazil', 'usa'];

@@ -1,11 +1,12 @@
 // Отзывы клиентов: оставить можно только к выданному заказу (по секрету заказа или из аккаунта), один отзыв на заказ.
 // Публикуются после одобрения в админке (status: pending -> approved | hidden).
 import { notify } from './notify.js';
+import { MLBB_REGIONS } from './catalog.js';
 
 const clean = (v, n) => String(v == null ? '' : v).replace(/<[^>]*>/g, '').replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
 const GAME_TITLE = { mlbb: 'Mobile Legends', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves',
   mchess: 'Magic Chess Go Go', whiteout: 'Whiteout Survival', lords: 'Lords Mobile', identityv: 'Identity V', fortnite: 'Fortnite Gift Card (ЕС)', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', bloodstrike: 'Blood Strike', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox Gift Card', steam: 'Steam Gift Card (СНГ)', discord: 'Discord Nitro', netflix: 'Netflix Gift Card (США)', psn: 'PlayStation Gift Card (США)', gplay: 'Google Play Gift Card (США)', apple_us: 'App Store & iTunes (США)', apple_tr: 'App Store & iTunes (Турция)', apple_ru: 'App Store & iTunes (Россия)', nintendo: 'Nintendo eShop Card (США)', valorant: 'Valorant VP (регион RU)' };
-const gameOf = region => (region === 'global' || region === 'russia' || region === 'indonesia' || !region) ? 'mlbb' : region;
+const gameOf = region => (!region || MLBB_REGIONS.includes(region)) ? 'mlbb' : region;
 
 function safeEq(a, b) {
   a = String(a || ''); b = String(b || '');

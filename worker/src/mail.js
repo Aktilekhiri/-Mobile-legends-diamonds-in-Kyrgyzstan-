@@ -39,7 +39,7 @@ async function sendOrderMailNow(env, orderId, kind, titleOf) {
     const game = titleOf ? titleOf(o.region) : o.region;
     const what = `<b>${esc(game)}</b>: ${esc(o.pkg_label)} · ${esc(o.price_kgs)} сом`;
     if (kind === 'created') {
-      await sendMail(env, o.email, `Заказ ${o.id} принят — diamond.kg`, layout('Заказ принят', [what, 'Проверяем оплату. Обычно это занимает несколько минут, мы напишем, когда всё будет выдано.'], o.id));
+      await sendMail(env, o.email, `Оплата получена, заказ ${o.id} выдаётся — diamond.kg`, layout('Оплата получена ✅', [what, 'Оплата получена, выдаём заказ. Обычно это занимает 1–5 минут, мы напишем, когда всё будет выдано.'], o.id));
     } else if (kind === 'delivered') {
       await sendMail(env, o.email, `Заказ ${o.id} выдан — diamond.kg`, layout('Заказ выдан ✅', o.delivery ? [what, 'Ваш код (активируйте его в игре или на сайте игры):', '<b style="font-family:monospace;font-size:18px;word-break:break-all">' + esc(o.delivery).replace(/\n/g, '<br>') + '</b>', 'Код также сохранён в заказе на сайте. Никому его не показывайте.'] : [what, 'Пополнение выполнено. Если это код или ключ, он показан в заказе на сайте.', 'Если что-то не пришло, напишите нам в WhatsApp (контакт ниже).'], o.id));
     }

@@ -150,7 +150,7 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
   try { await env.DB.prepare('UPDATE orders SET secret = ? WHERE id = ?').bind(secret, id).run(); } catch (e) {}
   // Заказ «с чеком на сайте» (deferNotify): уведомляем позже, когда придёт чек, одним сообщением с фото.
   if (!b.deferNotify) await notify(env, alertText({ id, region, pkg, pkg_label: clean(b.pkgLabel || pkg, 100), price_kgs: price, method: clean(b.method, 30), player_id: player, server_id: server }, cat, auto));
-  if (userId) await sendOrderMail(env, id, 'created', gameTitle);
+  // письмо «заказ принят» отправляем только после подтверждения оплаты (confirmOrder), не при создании
   return { id, status: auto ? 'new' : 'manual', secret };
 }
 
@@ -193,6 +193,7 @@ export async function confirmOrder(env, id) {
       region: o.region, offerId: o.offer_id, playerId: o.player_id, serverId: o.server_id, idempotencyKey: o.id,
     });
     await setStatus(env, id, { fz_order_id: fz.id || '', fz_status: fz.status || '' });
+    await sendOrderMail(env, id, 'created', gameTitle);
     await syncFromFz(env, { ...o, fz_order_id: fz.id }, fz);
     return { ok: true, fz_status: fz.status };
   } catch (e) {

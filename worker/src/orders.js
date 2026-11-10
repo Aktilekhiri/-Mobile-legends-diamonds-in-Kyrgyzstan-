@@ -321,6 +321,30 @@ export async function blacklistOrder(env, id) {
   return { ok: true };
 }
 
+// ---------- чёрный список телефонов (админка: смотреть, проверять, добавлять, убирать) ----------
+const BL_DDL = 'CREATE TABLE IF NOT EXISTS blacklist (kind TEXT NOT NULL, value TEXT NOT NULL, reason TEXT NOT NULL DEFAULT \'\', created_at INTEGER NOT NULL, PRIMARY KEY (kind, value))';
+const blPhone = v => String(v || '').replace(/\D/g, '').slice(-9);
+export async function listBlacklist(env) {
+  await env.DB.prepare(BL_DDL).run();
+  const { results } = await env.DB.prepare("SELECT value, reason, created_at FROM blacklist WHERE kind = 'phone' ORDER BY created_at DESC LIMIT 500").all();
+  return { items: results || [] };
+}
+export async function addBlacklist(env, b) {
+  const v = blPhone(b && b.phone);
+  if (v.length < 9) return { error: 'Введите номер полностью (9 цифр, например 777 090 210)', status: 400 };
+  await env.DB.prepare(BL_DDL).run();
+  const reason = String((b && b.reason) || '').replace(/[<>]/g, ' ').trim().slice(0, 200) || 'добавлен вручную';
+  await env.DB.prepare("INSERT OR REPLACE INTO blacklist (kind, value, reason, created_at) VALUES ('phone', ?, ?, ?)").bind(v, reason, Date.now()).run();
+  return { ok: true, value: v };
+}
+export async function removeBlacklist(env, b) {
+  const v = blPhone(b && b.value);
+  if (v.length < 9) return { error: 'Неверный номер', status: 400 };
+  await env.DB.prepare(BL_DDL).run();
+  const r = await env.DB.prepare("DELETE FROM blacklist WHERE kind = 'phone' AND value = ?").bind(v).run();
+  return r.meta && r.meta.changes ? { ok: true } : { error: 'Номера нет в списке', status: 404 };
+}
+
 export async function markRefunded(env, id) {
   const o = await env.DB.prepare('SELECT status FROM orders WHERE id = ?').bind(id).first();
   if (!o) return { error: 'Заказ не найден', status: 404 };

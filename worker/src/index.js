@@ -24,7 +24,7 @@ import { redeemPromo } from './promo.js';
 import { aiChat, aiReady } from './aichat.js';
 import { SHOP } from './shop_data.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
-import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, refundToBalance, selfOrder, selfOrders, markManualDone, cancelOrder, blacklistOrder, pollProcessing, handleWebhook, listRecentDeliveries, requestRefund } from './orders.js';
+import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, refundToBalance, selfOrder, selfOrders, markManualDone, cancelOrder, blacklistOrder, listBlacklist, addBlacklist, removeBlacklist, pollProcessing, handleWebhook, listRecentDeliveries, requestRefund } from './orders.js';
 
 function cors(req) {
   const o = req.headers.get('Origin') || '';
@@ -358,6 +358,17 @@ export default {
       // ----- админ -----
       if (path.startsWith('/api/admin')) {
         if (!(await isAdmin(req, env))) return err(req, 'Нужен вход', 401);
+
+        // чёрный список телефонов
+        if (path === '/api/admin/blacklist' && m === 'GET') return json(req, await listBlacklist(env));
+        if (path === '/api/admin/blacklist' && m === 'POST') {
+          const r = await addBlacklist(env, await req.json().catch(() => ({})));
+          return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+        }
+        if (path === '/api/admin/blacklist/remove' && m === 'POST') {
+          const r = await removeBlacklist(env, await req.json().catch(() => ({})));
+          return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+        }
 
         // заказы
         if (path === '/api/admin/orders' && m === 'GET') {

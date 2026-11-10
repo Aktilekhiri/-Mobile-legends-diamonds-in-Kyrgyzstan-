@@ -248,20 +248,20 @@ export default {
         const r = await redeemPromo(env, req.headers.get('CF-Connecting-IP') || 'anon', b, await userFromRequest(req, env));
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
       }
-      mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/receipt$/);
+      mm = path.match(/^\/api\/orders\/([A-Z0-9-]{4,20})\/receipt$/);
       if (mm && m === 'POST') {
         const len = Number(req.headers.get('Content-Length') || 0);
         if (len > 1600 * 1024) return err(req, 'Файл слишком большой (макс. 1,5 МБ)', 413);
         const r = await saveReceipt(env, mm[1], await req.arrayBuffer());
         return r.error ? err(req, r.error, r.status || 400) : json(req, r);
       }
-      mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/refund-request$/);
+      mm = path.match(/^\/api\/orders\/([A-Z0-9-]{4,20})\/refund-request$/);
       if (mm && m === 'POST') {
         const b = await req.json().catch(() => ({}));
         const r = await requestRefund(env, mm[1], String(b.s || ''), await userFromRequest(req, env), String(b.choice || ''));
         return r.error ? err(req, r.error, r.status || 400) : json(req, r);
       }
-      mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/review$/);
+      mm = path.match(/^\/api\/orders\/([A-Z0-9-]{4,20})\/review$/);
       if (mm && m === 'POST') {
         const b = await req.json().catch(() => ({}));
         const r = await submitReview(env, mm[1], b, await userFromRequest(req, env));
@@ -273,12 +273,12 @@ export default {
       if (path === '/api/reviews' && m === 'GET') {
         return json(req, await listPublicReviews(env, url.searchParams.get('game') || '', url.searchParams.get('limit')), 200, { 'Cache-Control': 'public, max-age=60' });
       }
-      mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})\/notify$/);
+      mm = path.match(/^\/api\/orders\/([A-Z0-9-]{4,20})\/notify$/);
       if (mm && m === 'POST') {
         const r = await notifyWithoutReceipt(env, mm[1]);
         return r.error ? err(req, r.error, r.status || 400) : json(req, r);
       }
-      mm = path.match(/^\/api\/orders\/([A-Z0-9]{4,20})$/);
+      mm = path.match(/^\/api\/orders\/([A-Z0-9-]{4,20})$/);
       if (mm && m === 'GET') {
         const o = await getOrderPublic(env, mm[1], url.searchParams.get('s'));
         if (o) o.reviewed = await hasReview(env, mm[1]);
@@ -435,13 +435,13 @@ export default {
           const r = await adminSetReview(env, mm[1], mm[2]);
           return r.error ? err(req, r.error, r.status || 400) : json(req, r);
         }
-        mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9]{4,20})\/receipt$/);
+        mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9-]{4,20})\/receipt$/);
         if (mm && m === 'GET') {
           const rc = await getReceipt(env, mm[1]);
           if (!rc) return err(req, 'Чека нет', 404);
           return new Response(rc.bytes, { headers: { 'Content-Type': rc.mime, 'Cache-Control': 'private, max-age=3600', ...cors(req) } });
         }
-        mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9]{4,20})\/(confirm|refresh|refunded|to-balance|manual-done|cancel|blacklist)$/);
+        mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9-]{4,20})\/(confirm|refresh|refunded|to-balance|manual-done|cancel|blacklist)$/);
         if (mm && m === 'POST') {
           const fn = { confirm: confirmOrder, refresh: refreshOrder, refunded: markRefunded, 'to-balance': refundToBalance, 'manual-done': markManualDone, cancel: cancelOrder, blacklist: blacklistOrder }[mm[2]];
           const r = await fn(env, mm[1]);

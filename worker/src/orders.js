@@ -99,7 +99,6 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
     else if (game.serverText) server = digits(b.serverId, 8);
     else if (game.servers) server = game.servers.includes(String(b.serverId)) ? String(b.serverId) : '';
     else server = '-';
-    if (!game && region === 'global' && /^6\d{3}$/.test(server)) return { error: 'Сервер 6xxx — российский. Выберите регион «Россия»' };
     if (!game && (player.length < 6 || player.length > 10 || server.length < 3 || server.length > 5)) return { error: 'Проверьте ID (6–10 цифр) и Zone ID (4–5 цифр) — вводите их в отдельные поля' };
     if (player.length < 5 || !server || (game && game.serverText && server.length < 3)) return { error: game ? 'Проверьте ID и сервер' : 'Проверьте ID и Zone ID' };
   }

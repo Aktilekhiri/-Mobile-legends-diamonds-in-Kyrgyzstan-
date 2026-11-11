@@ -27,6 +27,8 @@ export const GLOBAL_CATALOG = {
   '2500+475': { offer: '2976_diamonds', cost: 46.4155 },
   '3099+589': { offer: '3099_589_diamonds', cost: 43.929 },
   '4649+883': { offer: '4649_883_diamonds', cost: 66.3288 },
+  // служебный пакет для автоповтора Россия 6000 → Global: два заказа ПО ОЧЕРЕДИ (5532 + 706 = 6238); на сайте не продаётся
+  '5532+706': { offer: '4649_883_diamonds|625_81_diamonds', cost: 75.0286 },
   '7502+0': { offer: '7502_diamonds', cost: 115.8222 },
   '7740+1548': { offer: '7740_1548_diamonds', cost: 110.1671 },
   'Weekly Diamond Pass': { offer: 'weekly_pass', cost: 1.3773 },

@@ -1643,7 +1643,7 @@
       <select class="input-field" id="serverSelect" style="display:none" onchange="updateBuyBtn()"></select>
       <div class="field-hint" id="serverHint">Цифры в скобках рядом с ID</div>
       <div class="zone-warn" id="idWarn" role="alert" hidden></div>
-      <div class="zone-warn" id="zoneWarn" role="alert" hidden>⚠️ Server ID на 6 (6xxx) часто бывает у аккаунтов региона «Россия». Вы уверены, что у вас регион «Глобальный»? Если заказ не пройдёт, деньги вернутся на баланс сайта, и тогда выберите регион «Россия». <label class="first-ok" style="display:block;margin-top:8px"><input type="checkbox" id="zoneOk" onchange="updateBuyBtn()"> Да, мой аккаунт Глобальный</label></div>
+      <div class="zone-warn" id="zoneWarn" role="alert" hidden>🚫 Сервер 6xxx — российский. Выберите регион «Россия».</div>
       </div>
       <div class="id-guide" id="idGuide" style="background:rgba(255,186,8,.06); padding:13px; border-radius:12px;"><strong>📖 Как найти ID?</strong><br>Профиль → ваш ID (123456789) и сервер в скобках (1234)</div>
       <div class="first-warn" id="firstWarn" hidden><strong>⚠️ Только для первого пополнения</strong><p>Бонус даётся один раз на аккаунт. Если уже пополняли, выберите другой пакет.</p><label class="first-ok"><input type="checkbox" id="firstOk" onchange="updateBuyBtn()"> Я ещё ни разу не пополнял этот аккаунт</label></div>
@@ -2431,9 +2431,7 @@ function selectPackage(id) {
 
 // Раньше блокировали Zone ID 6xxx в Global; 6xxx не обязательно российский сервер, ограничение снято.
 function isRuZoneOnGlobal(sid) {
-  // не блокируем, а просим подтвердить, что аккаунт Глобальный (6xxx бывает у российских аккаунтов)
-  const zo = document.getElementById('zoneOk');
-  return currentGame === 'mlbb' && currentRegion === 'global' && /^6\d{3}$/.test(String(sid || '').trim()) && !(zo && zo.checked);
+  return false; // ограничение снято по решению владельца: Zone ID 6xxx разрешён и в Global
 }
 // MLBB: ID 6–10 цифр, Zone ID 4–5 цифр. Клиенты часто пишут ID и зону слитно или в одно поле.
 function mlbbIdProblem(pid, sid) {
@@ -2478,9 +2476,7 @@ function updateBuyBtn() {
       if (fix) { const b = document.createElement('button'); b.type = 'button'; b.className = 'link-btn'; b.textContent = ' Исправить'; b.onclick = fixMergedId; iw.appendChild(b); }
     }
   }
-  const is6 = currentGame === 'mlbb' && currentRegion === 'global' && /^6\d{3}$/.test(String(sid || '').trim());
-  const zw = document.getElementById('zoneWarn'); if (zw) zw.hidden = !is6;
-  if (!is6) { const zk = document.getElementById('zoneOk'); if (zk) zk.checked = false; }
+  const zw = document.getElementById('zoneWarn'); if (zw) zw.hidden = !zoneBad;
   const firstOk = !(selectedPkg && selectedPkg.firstOnly) || !!(document.getElementById('firstOk') && document.getElementById('firstOk').checked);
   const gdk = gamesData[currentGame], needIdOk = !(gdk && gdk.kind === 'none');
   const ready = !!(pid && sid && selectedPkg && !zoneBad && !prob && firstOk);
@@ -3841,6 +3837,6 @@ g.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.ta
 function updNightNote() { try { const on = bishkekHour() < 8; document.querySelectorAll('.night-note').forEach(e => e.classList.toggle('on', on)); } catch (e) {} }
 updNightNote(); setInterval(updNightNote, 60000);
 </script>
-<script src="/chat.js?v=6" defer></script>
+<script src="/chat.js?v=5" defer></script>
 </body>
 </html>

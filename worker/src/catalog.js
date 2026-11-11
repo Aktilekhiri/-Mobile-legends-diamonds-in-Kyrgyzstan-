@@ -218,8 +218,6 @@ export const GAMES = {
     'level_up_package_20': { offer: 'level_up_package_20' },
     'level_up_package_25': { offer: 'level_up_package_25' },
     'level_up_package_30': { offer: 'level_up_package_30' },
-    'evo_access_7d': { offer: 'evo_access_7d' },
-    'evo_access_30d': { offer: 'evo_access_30d' },
     'weekly_lite': { offer: 'weekly_lite' },
     'weekly_membership': { offer: 'weekly_membership' },
     'monthly_membership': { offer: 'monthly_membership' },

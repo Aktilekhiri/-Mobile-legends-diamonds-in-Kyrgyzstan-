@@ -211,7 +211,7 @@ export async function confirmOrder(env, id) {
 }
 
 // ---------- Россия → Global: если аккаунт оказался Global, повторяем заказ там с равным пакетом, разницу возвращаем на баланс ----------
-const ALT_SLACK_KGS = 10; // сколько сом нам не жалко «доплатить» из своей наценки, если пакет Global чуть дороже
+const ALT_SLACK_KGS = 0; // Global-аналог дороже пакета России — не заказываем, возврат как обычно
 function globalEquivalent(o) {
   const ru = (SHOP.find(x => x.id === 'russia') || { packs: [] }).packs.find(p => p.k === o.pkg);
   const gl = (SHOP.find(x => x.id === 'global') || { packs: [] }).packs.filter(p => !p.first && (CATALOGS.global || {})[p.k]);

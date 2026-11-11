@@ -2431,7 +2431,7 @@ function selectPackage(id) {
 
 // Zone ID 6xxx — российские серверы MLBB: в «Глобальном» регионе их принимать нельзя (заказ всё равно отменяется).
 function isRuZoneOnGlobal(sid) {
-  return false; // ограничение снято по решению владельца: Zone ID 6xxx разрешён и в Global
+  return currentGame === 'mlbb' && currentRegion === 'global' && /^6\d{3}$/.test(String(sid || '').trim());
 }
 // MLBB: ID 6–10 цифр, Zone ID 4–5 цифр. Клиенты часто пишут ID и зону слитно или в одно поле.
 function mlbbIdProblem(pid, sid) {

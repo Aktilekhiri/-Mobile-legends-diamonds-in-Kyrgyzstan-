@@ -211,19 +211,19 @@ export async function confirmOrder(env, id) {
 }
 
 // ---------- Россия → Global: если аккаунт оказался Global, повторяем заказ там с равным пакетом, разницу возвращаем на баланс ----------
-const ALT_SLACK_KGS = 0; // Global-аналог дороже пакета России — не заказываем, возврат как обычно
+const ALT_MIN_PROFIT_KGS = 10; // повтор в Global только если после комиссии 2% остаётся хотя бы столько прибыли (цена для клиента не растёт)
 function globalEquivalent(o) {
   const ru = (SHOP.find(x => x.id === 'russia') || { packs: [] }).packs.find(p => p.k === o.pkg);
   const gl = (SHOP.find(x => x.id === 'global') || { packs: [] }).packs.filter(p => !p.first && (CATALOGS.global || {})[p.k]);
   let alt = null;
   if (/pass/i.test(o.pkg)) alt = gl.find(p => p.k === 'Weekly Diamond Pass');
-  else if (ru) alt = gl.filter(p => p.t >= ru.t).sort((a, b) => a.p - b.p || a.t - b.t)[0];
+  else if (ru) alt = gl.filter(p => p.t >= ru.t && p.t <= ru.t * 1.5).sort((a, b) => a.p - b.p || a.t - b.t)[0];
   if (!alt) return null;
   const price = Number(o.price_kgs);
-  if (alt.p > price + ALT_SLACK_KGS) return null;
   const cat = CATALOGS.global[alt.k];
-  if (cat.cost * USD_KGS > price * 0.97) return null; // не уходим в убыток
-  return { key: alt.k, label: alt.l, price: Math.min(alt.p, price), offer: cat.offer, cost: cat.cost };
+  const keep = Math.min(alt.p, price); // клиент платит не больше, чем заплатил в России
+  if (keep - cat.cost * USD_KGS - keep * 0.02 < ALT_MIN_PROFIT_KGS) return null; // не уходим в убыток
+  return { key: alt.k, label: alt.l, price: keep, offer: cat.offer, cost: cat.cost };
 }
 async function retryInGlobal(env, o) {
   const alt = globalEquivalent(o);

@@ -4,7 +4,7 @@ import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { notify, notifyPhoto, defer } from './notify.js';
 import { sendOrderMail } from './mail.js';
 import { tgNotifyOrder, send, esc } from './tgapi.js';
-import { refundOrderToWallet } from './ledger.js';
+import { refundOrderToWallet, credit, ownerForOrder, tellOwner, ownerLabel } from './ledger.js';
 import { SHOP } from './shop_data.js';
 
 const clean = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
@@ -210,6 +210,53 @@ export async function confirmOrder(env, id) {
   }
 }
 
+// ---------- Россия → Global: если аккаунт оказался Global, повторяем заказ там с равным пакетом, разницу возвращаем на баланс ----------
+const ALT_SLACK_KGS = 10; // сколько сом нам не жалко «доплатить» из своей наценки, если пакет Global чуть дороже
+function globalEquivalent(o) {
+  const ru = (SHOP.find(x => x.id === 'russia') || { packs: [] }).packs.find(p => p.k === o.pkg);
+  const gl = (SHOP.find(x => x.id === 'global') || { packs: [] }).packs.filter(p => !p.first && (CATALOGS.global || {})[p.k]);
+  let alt = null;
+  if (/pass/i.test(o.pkg)) alt = gl.find(p => p.k === 'Weekly Diamond Pass');
+  else if (ru) alt = gl.filter(p => p.t >= ru.t).sort((a, b) => a.p - b.p || a.t - b.t)[0];
+  if (!alt) return null;
+  const price = Number(o.price_kgs);
+  if (alt.p > price + ALT_SLACK_KGS) return null;
+  const cat = CATALOGS.global[alt.k];
+  if (cat.cost * USD_KGS > price * 0.97) return null; // не уходим в убыток
+  return { key: alt.k, label: alt.l, price: Math.min(alt.p, price), offer: cat.offer, cost: cat.cost };
+}
+async function retryInGlobal(env, o) {
+  const alt = globalEquivalent(o);
+  if (!alt) return false;
+  const diff = Math.round(Number(o.price_kgs) - alt.price);
+  const lock = await env.DB.prepare("UPDATE orders SET region='global', pkg=?, pkg_label=?, offer_id=?, cost_usd=?, price_kgs=?, fz_order_id='', fz_status='', fail_reason=?, updated_at=? WHERE id=? AND region='russia' AND status='processing'")
+    .bind(alt.key, alt.label, alt.offer, alt.cost, alt.price, '[alt] Россия → Global (аккаунт не России)', Date.now(), o.id).run();
+  if (!lock.meta.changes) return true; // уже перенёс другой обработчик
+  const o2 = { ...o, region: 'global', pkg: alt.key, pkg_label: alt.label, offer_id: alt.offer, cost_usd: alt.cost, price_kgs: alt.price };
+  let note = `🔁 Заказ ${o.id}: не подошёл регион «Россия», заказываем в Global: ${alt.label}.`;
+  try {
+    const f2 = await fzCreateOrder(env, { region: 'global', offerId: alt.offer, playerId: o.player_id, serverId: o.server_id, idempotencyKey: o.id + '-g' });
+    await setStatus(env, o.id, { fz_order_id: f2.id || '', fz_status: f2.status || '' });
+    await syncFromFz(env, { ...o2, fz_order_id: f2.id }, f2);
+  } catch (e) { note += ' (ответ FazerCards пока не получен, повторим автоматически)'; }
+  // разница между ценой России и Global: на баланс клиента, гостю — вручную
+  if (diff >= 5) {
+    const owner = await ownerForOrder(env, o);
+    let done = false;
+    if (owner) {
+      const r = await credit(env, owner, diff, 'refund', o.id + '-diff', `Разница Россия→Global · заказ ${o.id}`);
+      if (r.ok) {
+        done = true;
+        note += ` Разница ${diff} сом зачислена на баланс клиента (${await ownerLabel(env, owner)}).`;
+        await tellOwner(env, owner, `🔁 <b>Заказ ${esc(o.id)}</b>: ваш аккаунт оказался Global, пополнили ${esc(alt.label)}. Разница ${diff} сом зачислена на ваш баланс.`);
+      }
+    }
+    if (!done) note += ` ⚠️ Клиенту нужно вернуть разницу ${diff} сом (${o.method}, тел. ${o.phone || '—'}): аккаунта для баланса нет.`;
+  }
+  await notify(env, note);
+  return true;
+}
+
 // Приводим наш статус к статусу FazerCards
 export async function syncFromFz(env, o, fz) {
   const st = fz.status;
@@ -235,6 +282,7 @@ export async function syncFromFz(env, o, fz) {
     await setStatus(env, o.id, { status: 'manual', fz_status: st, fz_order_id: fz.id || o.fz_order_id, fail_reason: 'Частично выдан: ' + String(fz.fail_reason || '').slice(0, 200), finished_at: Date.now() });
     await notify(env, `⚠️ Заказ ${o.id}: составной пакет выдан частично (FazerCards ${fz.id}). Проверьте вручную, что получил клиент.`);
   } else if (st === 'refund' || st === 'failed') {
+    if (st === 'refund' && o.region === 'russia' && o.method !== 'Для себя' && o.method !== 'promo' && /region/i.test(String(fz.fail_reason || '')) && !/\[alt\]/.test(o.fail_reason || '') && await retryInGlobal(env, o)) return;
     // failed: деньги гарантированно вернутся только при refund, поэтому клиенту возвращаем деньги только после refund
     if (st === 'refund' && o.method === 'Для себя') {
       await setStatus(env, o.id, { status: 'cancelled', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
@@ -271,7 +319,7 @@ export async function pollProcessing(env) {
       if (o.fz_order_id) fz = await fzGetOrder(env, o.fz_order_id);
       else {
         // запрос на создание мог оборваться: повтор с тем же ключом безопасен (вернёт тот же заказ, без второго списания)
-        fz = await fzCreateOrder(env, { region: o.region, offerId: o.offer_id, playerId: o.player_id, serverId: o.server_id, idempotencyKey: o.id });
+        fz = await fzCreateOrder(env, { region: o.region, offerId: o.offer_id, playerId: o.player_id, serverId: o.server_id, idempotencyKey: o.id + (/\[alt\]/.test(o.fail_reason || '') ? '-g' : '') });
         await setStatus(env, o.id, { fz_order_id: fz.id });
         o.fz_order_id = fz.id;
       }

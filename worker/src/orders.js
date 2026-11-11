@@ -233,7 +233,8 @@ async function retryInGlobal(env, o) {
     .bind(alt.key, alt.label, alt.offer, alt.cost, alt.price, '[alt] Россия → Global (аккаунт не России)', Date.now(), o.id).run();
   if (!lock.meta.changes) return true; // уже перенёс другой обработчик
   const o2 = { ...o, region: 'global', pkg: alt.key, pkg_label: alt.label, offer_id: alt.offer, cost_usd: alt.cost, price_kgs: alt.price };
-  let note = `🔁 Заказ ${o.id}: не подошёл регион «Россия», заказываем в Global: ${alt.label}.`;
+  const profit = Math.round(alt.price - alt.cost * USD_KGS - alt.price * 0.02);
+  let note = `🔁 Заказ ${o.id}: не подошёл регион «Россия», заказываем в Global: ${alt.label}. Клиент платит ${alt.price} сом, прибыль +${profit} сом.`;
   try {
     const f2 = await fzCreateOrder(env, { region: 'global', offerId: alt.offer, playerId: o.player_id, serverId: o.server_id, idempotencyKey: o.id + '-g' });
     await setStatus(env, o.id, { fz_order_id: f2.id || '', fz_status: f2.status || '' });

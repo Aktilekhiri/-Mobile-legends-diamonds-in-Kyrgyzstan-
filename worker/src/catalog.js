@@ -27,6 +27,8 @@ export const GLOBAL_CATALOG = {
   '2500+475': { offer: '2976_diamonds' },
   '3099+589': { offer: '3099_589_diamonds' },
   '4649+883': { offer: '4649_883_diamonds' },
+  // служебный пакет для автоповтора Россия 6000 → Global: два заказа ПО ОЧЕРЕДИ (5532 + 706 = 6238); на сайте не продаётся
+  '5532+706': { offer: '4649_883_diamonds|625_81_diamonds' },
   '7502+0': { offer: '7502_diamonds' },
   '7740+1548': { offer: '7740_1548_diamonds' },
   'Weekly Diamond Pass': { offer: 'weekly_pass' },

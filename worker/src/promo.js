@@ -46,7 +46,6 @@ export async function redeemPromo(env, who, b, userId = null, extra = {}) {
   const g = await gate(env, who, b.code);
   if (g.error) return g;
   const { code, row } = g, now = Date.now();
-  if (/^6\d{3}$/.test(String(b.serverId || '').replace(/\D/g, ''))) return { error: 'Промокод работает только для Global-аккаунтов. Российские серверы (начинаются на 6) не подходят.', status: 400 };
 
   // один человек — один промокод: тот же ID игрока, тот же вход на сайте или тот же Telegram-аккаунт уже получал промо-заказ
   const pid = String(b.playerId == null ? '' : b.playerId).replace(/\D+/g, '').slice(0, 25);

@@ -211,7 +211,7 @@ export async function confirmOrder(env, id) {
 }
 
 // ---------- Россия → Global: если аккаунт оказался Global, повторяем заказ там с равным пакетом, разницу возвращаем на баланс ----------
-const ALT_KEEP_MIN = { 'Diamond Pass (weekly)': 215 }; // недельный пропуск: Global стоит 180, оставляем 215 (прибыль ~87)
+const ALT_KEEP_MIN = { 'Diamond Pass (weekly)': 215, '165+0': 276 }; // недельный пропуск: Global стоит 180, оставляем 215 (прибыль ~87)
 const ALT_MIN_PROFIT_KGS = 10; // повтор в Global только если после комиссии 2% остаётся хотя бы столько прибыли (цена для клиента не растёт)
 function globalEquivalent(o) {
   const ru = (SHOP.find(x => x.id === 'russia') || { packs: [] }).packs.find(p => p.k === o.pkg);

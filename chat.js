@@ -147,6 +147,10 @@
   function askPhone() { S.step = 'phone'; say('Напишите номер телефона (например 700 123 456), чтобы мы могли связаться, если заказ придётся вернуть. Можно пропустить.'); chips([{ t: 'Пропустить', f: function () { S.phone = ''; summary(); } }]); }
   function summary() {
     var g = gameById(S.g), p = g.packs[S.pi]; S.step = 'confirm';
+    if (g.region === 'global' && S.g === 'global' && /^6\d{3}$/.test(String(S.srv || '')) && S.zoneOk !== S.pid + S.srv) {
+      say('Server ID ' + S.srv + ' на 6 часто бывает у аккаунтов региона «Россия». Вы уверены, что у вас регион «Глобальный»? Если заказ не пройдёт, деньги вернутся на баланс сайта, и тогда выберите регион «Россия».');
+      return chips([{ t: '✅ Да, Глобальный', f: function () { S.zoneOk = S.pid + S.srv; summary(); } }, { t: '🇷🇺 Выбрать «Россия»', f: function () { say('Выберите игру и регион «Россия».'); menu(); } }, { t: 'Отмена', f: function () { say('Отменено. Что нужно пополнить?'); menu(); } }]);
+    }
     var srv = S.srv && g.servers ? ((g.servers.filter(function (x) { return x.v === S.srv; })[0] || {}).l || S.srv) : S.srv;
     say('Проверьте заказ:\nИгра: ' + g.name + '\nПакет: ' + p.l + '\n' + (g.none ? '' : (g.user ? 'Username: ' : 'ID: ') + S.pid + '\n') + (srv ? 'Сервер/Zone: ' + srv + '\n' : '') + (S.phone ? 'Телефон: ' + S.phone + '\n' : '') + 'Сумма: ' + money(p.p) + ' сом' + (p.first ? '\n⚠️ Пакет только для первого пополнения аккаунта.' : '') + '\nПосле зачисления на указанный ID возврат невозможен, проверьте данные.');
     chips([{ t: '✅ Всё верно', f: function () { choosePay(); } }, { t: '✏️ Изменить ID', f: function () { askId(); } }, { t: 'Отмена', f: function () { say('Отменено. Что нужно пополнить?'); menu(); } }]);

@@ -2429,7 +2429,7 @@ function selectPackage(id) {
   updateBuyBtn();
 }
 
-// Zone ID 6xxx — российские серверы MLBB: в «Глобальном» регионе их принимать нельзя (заказ всё равно отменяется).
+// Раньше блокировали Zone ID 6xxx в Global; 6xxx не обязательно российский сервер, ограничение снято.
 function isRuZoneOnGlobal(sid) {
   return false; // ограничение снято по решению владельца: Zone ID 6xxx разрешён и в Global
 }

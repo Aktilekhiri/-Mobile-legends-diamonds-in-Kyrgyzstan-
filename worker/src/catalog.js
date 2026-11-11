@@ -218,8 +218,6 @@ export const GAMES = {
     'level_up_package_20': { offer: 'level_up_package_20', cost: 0.5169 },
     'level_up_package_25': { offer: 'level_up_package_25', cost: 0.5169 },
     'level_up_package_30': { offer: 'level_up_package_30', cost: 0.7444 },
-    'evo_access_7d': { offer: 'evo_access_7d', cost: 0.7031 },
-    'evo_access_30d': { offer: 'evo_access_30d', cost: 2.0679 },
     'weekly_lite': { offer: 'weekly_lite', cost: 0.3723 },
     'weekly_membership': { offer: 'weekly_membership', cost: 1.5509 },
     'monthly_membership': { offer: 'monthly_membership', cost: 5.5834 },

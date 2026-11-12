@@ -21,7 +21,7 @@ async function getMeta(env, k) {
 async function setMeta(env, k, v) {
   await env.DB.prepare('INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v').bind(k, String(v)).run();
 }
-async function getJson(env, k) { try { return JSON.parse((await getMeta(env, k)) || '{}') || {}; } catch (e) { return {}; } }
+async function getJson(env, k) { try { const v = JSON.parse((await getMeta(env, k)) || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch (e) { return {}; } }
 
 export async function getOffMap(env) { try { return await getJson(env, 'avail_off'); } catch (e) { return {}; } }
 export async function offKeys(env) { return [...OFF_PKGS, ...Object.keys(await getOffMap(env))]; }
@@ -67,7 +67,7 @@ export async function syncAvailability(env, { force = false, now = Date.now() } 
     await setMeta(env, 'avail_cur', rest.length ? (cur + PER_RUN) % rest.length : 0);
     pick = [...pri, ...take];
   }
-  const tpls = await getJson(env, 'avail_tpl'); // рабочий путь отдельно для topups и giftcards
+  const tpls = await getJson(env, 'avail_tpl2'); // рабочий путь отдельно для topups и giftcards
   const dead = new Set(); // тип, для которого поиск пути в этом запуске уже не удался: не повторяем (лимит запросов Workers)
   const off = await getJson(env, 'avail_off'), miss = await getJson(env, 'avail_miss'), forced = await getJson(env, 'avail_forced');
   const msgs = [];
@@ -76,7 +76,7 @@ export async function syncAvailability(env, { force = false, now = Date.now() } 
     const known = Number.isInteger(tpls[c.type]) ? tpls[c.type] : -1;
     if (known < 0 && dead.has(c.type)) { report.failed.push(c.category + ': путь к списку офферов не найден'); continue; }
     try { res = await fzListOffers(env, c.type, c.category, known); } catch (e) { if (known < 0) dead.add(c.type); report.failed.push(String(e.message || e).slice(0, 700)); continue; }
-    if (res.tplIdx !== known) { tpls[c.type] = res.tplIdx; await setMeta(env, 'avail_tpl', JSON.stringify(tpls)); }
+    if (res.tplIdx !== known) { tpls[c.type] = res.tplIdx; await setMeta(env, 'avail_tpl2', JSON.stringify(tpls)); }
     report.checked++;
     const absent = c.packs.filter(p => !p.offers.every(o => res.ids.has(o)));
     if (c.packs.length >= 5 && absent.length / c.packs.length > GLITCH_SHARE) { report.glitch.push(c.category + ' (' + absent.length + '/' + c.packs.length + ')'); continue; }

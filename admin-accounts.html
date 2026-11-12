@@ -76,6 +76,11 @@ button:disabled{opacity:.5;cursor:default}
       <button class="sm" id="logoutBtn">Выйти</button>
     </div>
     <div class="card" id="list"></div>
+    <div class="card" id="cmBox">
+      <div class="top"><h2 id="cmTitle">Комментарии покупателей</h2>
+        <select id="cmFilter" style="width:auto;min-height:38px;padding:6px 10px"><option value="pending">Ждут проверки</option><option value="approved">Опубликованные</option><option value="hidden">Скрытые</option><option value="all">Все</option></select></div>
+      <div id="cmList"></div>
+    </div>
   </div>
 
   <!-- форма -->
@@ -169,6 +174,7 @@ button:disabled{opacity:.5;cursor:default}
   var LBL={available:'В наличии',sold:'Продан',hidden:'Скрыт'};
   async function loadList(){
     show('listBox');$('list').innerHTML='<div class="hint">Загрузка…</div>';
+    loadCm();
     try{accounts=(await call('GET','/api/admin/accounts')).accounts}catch(e){msg(e.message,'err');return}
     if(!accounts.length){$('list').innerHTML='<div class="hint">Аккаунтов пока нет. Нажмите «Добавить аккаунт».</div>';return}
     $('list').innerHTML=accounts.map(function(a){
@@ -178,6 +184,28 @@ button:disabled{opacity:.5;cursor:default}
         '<div class="acts"><button class="sm" data-act="edit">Изменить</button><button class="sm dng" data-act="del">Удалить</button></div></div>';
     }).join('');
   }
+  var CM_ST={pending:'ждёт',approved:'опубликован',hidden:'скрыт'};
+  async function loadCm(){
+    var box=$('cmList');box.innerHTML='<div class="hint">Загрузка…</div>';
+    var d;try{d=await call('GET','/api/admin/account-comments?status='+$('cmFilter').value)}catch(e){box.innerHTML='<div class="hint">'+esc(e.message)+'</div>';return}
+    var n=d.comments.filter(function(c){return c.status==='pending'}).length;
+    $('cmTitle').textContent='Комментарии покупателей'+(n&&$('cmFilter').value==='all'?' ('+n+' ждут)':'');
+    if(!d.comments.length){box.innerHTML='<div class="hint">Здесь пока пусто.</div>';return}
+    box.innerHTML=d.comments.map(function(c){
+      return '<div class="item" data-cid="'+esc(c.id)+'" style="align-items:flex-start"><div class="meta" style="white-space:normal"><b style="white-space:normal">'+esc(c.name)+' → №'+c.account_id+' '+esc(c.account_title||'(удалён)')+'</b>'+
+        '<span>'+new Date(c.created_at).toLocaleString('ru-RU')+'<span class="st '+(c.status==='approved'?'available':c.status==='hidden'?'hidden':'')+'">'+CM_ST[c.status]+'</span></span>'+
+        '<div style="margin-top:4px;overflow-wrap:anywhere">'+esc(c.text)+'</div></div>'+
+        '<div class="acts" style="flex-direction:column">'+(c.status!=='approved'?'<button class="sm pri" data-cact="approve">Опубликовать</button>':'')+(c.status!=='hidden'?'<button class="sm" data-cact="hide">Скрыть</button>':'')+'<button class="sm dng" data-cact="delete">Удалить</button></div></div>';
+    }).join('');
+  }
+  $('cmFilter').onchange=loadCm;
+  $('cmList').onclick=async function(e){
+    var b=e.target.closest('button[data-cact]');if(!b)return;
+    var id=b.closest('.item').getAttribute('data-cid'),act=b.dataset.cact;
+    if(act==='delete'&&!confirm('Удалить комментарий навсегда?'))return;
+    b.disabled=true;
+    try{await call('POST','/api/admin/account-comments/'+id+'/'+act);loadCm()}catch(er){msg(er.message,'err');b.disabled=false}
+  };
   $('list').onclick=async function(e){
     var b=e.target.closest('button');if(!b)return;
     var id=Number(b.closest('.item').getAttribute('data-id')),a=accounts.filter(function(x){return x.id===id})[0];

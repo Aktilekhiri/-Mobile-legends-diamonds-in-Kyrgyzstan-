@@ -17,6 +17,7 @@
       price: 'Сом', buy: 'Купить в WhatsApp', tg: 'Написать в Telegram', close: 'Закрыть',
       note: 'Пишите — отвечаем быстро. Оплата Mbank или O!Банк. Укажите номер аккаунта №',
       soldline: 'Этот аккаунт уже продан. Напишите нам — подберём похожий.',
+      cmH: 'Вопросы и комментарии', cmEmpty: 'Пока нет комментариев. Задайте вопрос по аккаунту.', cmName: 'Ваше имя', cmText: 'Ваш вопрос или комментарий', cmSend: 'Отправить', cmOk: 'Спасибо! Комментарий появится после проверки.', cmNote: 'Без ссылок и телефонов. Комментарии проверяются перед публикацией.', cmErr: 'Не удалось отправить. Попробуйте ещё раз.', cmWait: 'Отправляем…',
       msg: function (a) { return 'Здравствуйте! Хочу купить аккаунт MLBB №' + a.id + ': ' + a.title + ' — ' + a.price + ' Сом. (diamond.kg)'; },
       seoH: 'Купить аккаунт Mobile Legends в Кыргызстане',
       seo: ['Продажа аккаунтов MLBB (Mobile Legends: Bang Bang) в Бишкеке и по всему Кыргызстану. Реальные скриншоты, честное описание: ранг, уровень, количество героев и скинов.',
@@ -35,6 +36,7 @@
       price: 'сом', buy: 'WhatsApp аркылуу сатып алуу', tg: 'Telegram аркылуу жазуу', close: 'Жабуу',
       note: 'Жазыңыз — тез жооп беребиз. Mbank же O!Деңги аркылуу төлөйсүз. Аккаунттун номерин жазыңыз №',
       soldline: 'Бул аккаунт сатылып кеткен. Бизге жазыңыз — окшошун тандап беребиз.',
+      cmH: 'Суроолор жана комментарийлер', cmEmpty: 'Азырынча комментарий жок. Аккаунт боюнча суроо бериңиз.', cmName: 'Атыңыз', cmText: 'Суроо же комментарий', cmSend: 'Жөнөтүү', cmOk: 'Рахмат! Комментарий текшерилгенден кийин чыгат.', cmNote: 'Шилтемесиз жана телефонсуз. Комментарийлер жарыялоодон мурун текшерилет.', cmErr: 'Жөнөтүлгөн жок. Дагы аракет кылыңыз.', cmWait: 'Жөнөтүлүүдө…',
       msg: function (a) { return 'Саламатсызбы! MLBB аккаунтун сатып алгым келет №' + a.id + ': ' + (a.title_ky || a.title) + ' — ' + a.price + ' сом. (diamond.kg)'; },
       seoH: 'Кыргызстанда Mobile Legends аккаунтун сатып алуу',
       seo: ['Бишкекте жана бүт Кыргызстанда MLBB (Mobile Legends: Bang Bang) аккаунттарын сатуу. Чыныгы скриншоттор, так сүрөттөмө: даража, деңгээл, баатырлар жана скиндер саны.',
@@ -159,9 +161,42 @@
       (sold ? '' : '<a class="btn-wa" href="' + wa + '" target="_blank" rel="noopener">📲 ' + esc(s.buy) + '</a>') +
       '<a class="btn-tg" href="' + tg + '" target="_blank" rel="noopener">✈️ ' + esc(s.tg) + '</a></div>' +
       '<p class="acc-note">' + esc(s.note) + a.id + '</p>';
+    h += '<div class="acc-cm" id="accCm"><h4>' + esc(s.cmH) + '</h4><div id="cmList" class="cm-list"></div>' +
+      '<div class="cm-form"><input type="text" id="cmName" class="sf-i" maxlength="30" autocomplete="nickname" placeholder="' + esc(s.cmName) + '" aria-label="' + esc(s.cmName) + '">' +
+      '<input type="text" id="cmWeb" class="cm-hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+      '<textarea id="cmText" class="sf-i" maxlength="500" rows="3" placeholder="' + esc(s.cmText) + '" aria-label="' + esc(s.cmText) + '"></textarea>' +
+      '<div class="sf-err" id="cmMsg" role="status" hidden></div>' +
+      '<button type="button" class="sf-go" data-cmsend>' + esc(s.cmSend) + '</button><p class="acc-note">' + esc(s.cmNote) + '</p></div></div>';
     if (seo(a)) h += '<p class="acc-seo-t">' + esc(seo(a)) + '</p>';
     h += '</div></div>';
     m.innerHTML = h;
+    loadComments(a.id);
+  }
+
+  /* ---- комментарии ---- */
+  function loadComments(id) {
+    fetch(api() + '/api/accounts/' + id + '/comments').then(function (x) { if (!x.ok) throw 0; return x.json(); }).then(function (d) {
+      if (!cur || cur.id !== id) return;
+      var el = document.getElementById('cmList'); if (!el) return;
+      var list = d.comments || [];
+      el.innerHTML = list.length ? list.map(function (c) {
+        return '<div class="cm-i"><b>' + esc(c.name) + '</b><span>' + esc(new Date(c.created_at).toLocaleDateString('ru-RU')) + '</span><p>' + esc(c.text) + '</p></div>';
+      }).join('') : '<div class="cm-empty">' + esc(t().cmEmpty) + '</div>';
+    }).catch(function () { });
+  }
+  function sendComment(m) {
+    if (!cur) return;
+    var s = t(), id = cur.id, msg = m.querySelector('#cmMsg'), btn = m.querySelector('[data-cmsend]');
+    var show = function (txt, ok) { msg.hidden = false; msg.textContent = txt; msg.className = 'sf-err' + (ok ? ' ok' : ''); };
+    var text = m.querySelector('#cmText').value.trim();
+    if (text.length < 5) { show(lang() === 'ky' ? 'Жок дегенде бир нече сөз жазыңыз' : 'Напишите хотя бы пару слов', false); return; }
+    btn.disabled = true; show(s.cmWait, true);
+    fetch(api() + '/api/accounts/' + id + '/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: m.querySelector('#cmName').value, text: text, website: m.querySelector('#cmWeb').value }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || s.cmErr); return j; }); })
+      .then(function () { m.querySelector('#cmText').value = ''; show(s.cmOk, true); })
+      .catch(function (e) { show(e.message || s.cmErr, false); })
+      .then(function () { btn.disabled = false; });
   }
   function go(d) {
     if (!cur) return; var n = cur.photos.length; if (n < 2) return;
@@ -291,6 +326,7 @@
       if (e.target === m || e.target.closest('[data-close]')) { close(); return; }
       if (e.target.closest('[data-gbuy]')) { var gf = m.querySelector('#gForm'); if (gf) { gf.hidden = !gf.hidden; if (!gf.hidden) m.querySelector('#gCnt').focus(); } return; }
       if (e.target.closest('[data-ggo]')) { gBuy(m); return; }
+      if (e.target.closest('[data-cmsend]')) { sendComment(m); return; }
       var n = e.target.closest('[data-nav]'); if (n) { go(Number(n.getAttribute('data-nav'))); return; }
       var th = e.target.closest('[data-th]'); if (th) { idx = Number(th.getAttribute('data-th')); go(0); drawModal(); }
     });

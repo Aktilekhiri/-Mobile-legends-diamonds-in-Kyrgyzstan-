@@ -78,3 +78,15 @@
 .sell-in h3{padding-right:52px}
 .gform[hidden],.sf-err[hidden]{display:none}
 .gform{margin:10px 0 4px}
+
+.acc-cm{margin:22px 0 6px;padding-top:16px;border-top:1px solid var(--border)}
+.acc-cm h4{margin:0 0 10px;font-size:1.05rem}
+.cm-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.cm-i{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+.cm-i b{font-size:.92rem}.cm-i span{color:var(--muted);font-size:.78rem;margin-left:8px}
+.cm-i p{margin:4px 0 0;font-size:.92rem;overflow-wrap:anywhere;white-space:pre-wrap}
+.cm-empty{color:var(--muted);font-size:.9rem}
+.cm-form{display:flex;flex-direction:column;gap:8px}
+.cm-form textarea{resize:vertical;min-height:84px}
+.cm-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.cm-form .sf-err.ok{background:rgba(37,211,102,.14);border-color:rgba(37,211,102,.5);color:var(--text)}

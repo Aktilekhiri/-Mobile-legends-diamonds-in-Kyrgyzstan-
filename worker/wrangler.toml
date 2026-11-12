@@ -39,7 +39,7 @@ enabled = true
 
 # Модуль «Финансы и учёт ИП» (чеки и документы). Необязательно: без этой привязки модуль работает, только без вложений.
 # 1) Cloudflare -> R2 -> Create bucket (имя, например, ip-accounting-files)
-# 2) раскомментируйте блок ниже и задеплойте воркер заново:
-# [[r2_buckets]]
-# binding = "IPACC_FILES"
-# bucket_name = "ip-accounting-files"
+# 2) блок ниже включён (бакет создан), деплойте воркер:
+[[r2_buckets]]
+binding = "IPACC_FILES"
+bucket_name = "ip-accounting-files"

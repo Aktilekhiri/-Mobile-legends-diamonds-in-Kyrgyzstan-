@@ -75,7 +75,7 @@ export async function syncAvailability(env, { force = false, now = Date.now() } 
     let res;
     const known = Number.isInteger(tpls[c.type]) ? tpls[c.type] : -1;
     if (known < 0 && dead.has(c.type)) { report.failed.push(c.category + ': путь к списку офферов не найден'); continue; }
-    try { res = await fzListOffers(env, c.type, c.category, known); } catch (e) { if (known < 0) dead.add(c.type); report.failed.push(String(e.message || e).slice(0, 700)); continue; }
+    try { res = await fzListOffers(env, c.type, c.category, known); } catch (e) { if (known < 0) dead.add(c.type); report.failed.push(String(e.message || e).slice(0, 1000)); continue; }
     if (res.tplIdx !== known) { tpls[c.type] = res.tplIdx; await setMeta(env, 'avail_tpl2', JSON.stringify(tpls)); }
     report.checked++;
     const absent = c.packs.filter(p => !p.offers.every(o => res.ids.has(o)));

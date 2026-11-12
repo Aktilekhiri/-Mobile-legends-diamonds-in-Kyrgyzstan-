@@ -83,8 +83,26 @@ export async function userFromRequest(req, env) {
   return safeEqual(sig, await hmac(env.ADMIN_PASSWORD, 'user:' + sub + ':' + exp)) ? sub : null;
 }
 
+let waCol = false;
 export async function ensureUsersTable(env) {
   await env.DB.prepare('CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, email TEXT NOT NULL DEFAULT \'\', name TEXT NOT NULL DEFAULT \'\', picture TEXT NOT NULL DEFAULT \'\', created_at INTEGER NOT NULL, last_login INTEGER NOT NULL)').run();
+  if (!waCol) { try { await env.DB.prepare('ALTER TABLE users ADD COLUMN wa_phone TEXT NOT NULL DEFAULT \'\'').run(); } catch (e) { /* уже есть */ } waCol = true; }
+}
+
+// Номер WhatsApp: 9 цифр местного номера (700123456) → 996700123456; иначе международный, 10–15 цифр.
+export function normWa(v) {
+  let d = String(v || '').replace(/\D/g, '');
+  if (d.length === 10 && d[0] === '0') d = d.slice(1);
+  if (d.length === 9) d = '996' + d;
+  return /^\d{10,15}$/.test(d) ? d : null;
+}
+export async function saveContact(env, sub, phone) {
+  await ensureUsersTable(env);
+  const raw = String(phone || '').trim();
+  const wa = raw ? normWa(raw) : '';
+  if (raw && !wa) return { error: 'Проверьте номер WhatsApp, например 700 123 456 или +996 700 123 456', status: 400 };
+  await env.DB.prepare('UPDATE users SET wa_phone = ? WHERE id = ?').bind(wa, sub).run();
+  return { ok: true, wa_phone: wa };
 }
 
 export async function loginWithGoogle(env, credential) {
@@ -101,8 +119,11 @@ export async function loginWithGoogle(env, credential) {
 
 export async function getMe(env, sub) {
   await ensureUsersTable(env);
-  const u = await env.DB.prepare('SELECT name, email, picture FROM users WHERE id = ?').bind(sub).first();
-  return u ? { user: u } : { error: 'Пользователь не найден', status: 401 };
+  const u = await env.DB.prepare('SELECT name, email, picture, wa_phone FROM users WHERE id = ?').bind(sub).first();
+  if (!u) return { error: 'Пользователь не найден', status: 401 };
+  let tg = false;
+  try { tg = !!(await env.DB.prepare('SELECT 1 AS x FROM tg_links WHERE user_id = ? LIMIT 1').bind(sub).first()); } catch (e) { /* таблицы привязки ещё нет */ }
+  return { user: u, tg_linked: tg };
 }
 
 // История заказов пользователя: только безопасные поля (без телефона, IP, чека и себестоимости).
@@ -122,10 +143,11 @@ export async function listMyOrders(env, sub) {
 export async function adminListUsers(env) {
   await ensureUsersTable(env);
   const { results } = await env.DB.prepare(
-    `SELECT u.id, u.email, u.name, u.created_at, u.last_login,
+    `SELECT u.id, u.email, u.name, u.wa_phone, u.created_at, u.last_login,
+            (SELECT 1 FROM tg_links t WHERE t.user_id = u.id LIMIT 1) AS tg_linked,
             (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id) AS orders,
             (SELECT COALESCE(SUM(price_kgs),0) FROM orders o WHERE o.user_id = u.id AND o.status = 'delivered') AS spent
      FROM users u ORDER BY u.created_at DESC LIMIT 1000`
-  ).all();
+  ).all().catch(async () => { await ensureUsersTable(env); try { await env.DB.prepare('CREATE TABLE IF NOT EXISTS tg_links (tg_chat INTEGER PRIMARY KEY, user_id TEXT NOT NULL, created_at INTEGER NOT NULL)').run(); } catch (e) {} return env.DB.prepare('SELECT u.id, u.email, u.name, u.wa_phone, u.created_at, u.last_login, (SELECT 1 FROM tg_links t WHERE t.user_id = u.id LIMIT 1) AS tg_linked, (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id) AS orders, (SELECT COALESCE(SUM(price_kgs),0) FROM orders o WHERE o.user_id = u.id AND o.status = \'delivered\') AS spent FROM users u ORDER BY u.created_at DESC LIMIT 1000').all(); });
   return { users: results };
 }

@@ -91,7 +91,7 @@ button:disabled{opacity:.5;cursor:default}
     $('q').oninput=function(){q=this.value;if(mode==='wallets'){clearTimeout(qt);qt=setTimeout(loadWallets,300)}else draw()};
     if(mode!=='users')return;
     $('csv').onclick=function(){
-      var rows=[['email','name','registered','last_login','orders','spent_kgs']].concat(items.map(function(u){return [u.email,u.name,fmt(u.created_at),fmt(u.last_login),u.orders,u.spent]}));
+      var rows=[['email','name','whatsapp','telegram','registered','last_login','orders','spent_kgs']].concat(items.map(function(u){return [u.email,u.name,u.wa_phone||'',u.tg_linked?'yes':'',fmt(u.created_at),fmt(u.last_login),u.orders,u.spent]}));
       var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'}).join(',')}).join('\n');
       var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));a.download='clients.csv';a.click();
     };
@@ -136,7 +136,7 @@ button:disabled{opacity:.5;cursor:default}
     if(!rows.length){$('list').innerHTML=head+'<div class="card hint">Никого нет</div>';return}
     $('list').innerHTML=head+rows.map(function(u){
       return '<div class="card"><div class="o-head"><b>'+esc(u.name||'Без имени')+'</b><span class="o-sum">'+(u.spent?u.spent+' сом':'')+'</span></div>'
-        +'<div class="o-meta"><a href="mailto:'+esc(u.email)+'">'+esc(u.email||'нет почты')+'</a><br>Регистрация: '+fmt(u.created_at)+' · вход: '+fmt(u.last_login)+' · заказов: '+u.orders+'</div></div>';
+        +'<div class="o-meta"><a href="mailto:'+esc(u.email)+'">'+esc(u.email||'нет почты')+'</a><br>'+(u.wa_phone?'<a href="https://wa.me/'+esc(u.wa_phone)+'" target="_blank" rel="noopener">WhatsApp +'+esc(u.wa_phone)+'</a>':'WhatsApp: нет')+' · Telegram: '+(u.tg_linked?'привязан ✅':'нет')+'<br>Регистрация: '+fmt(u.created_at)+' · вход: '+fmt(u.last_login)+' · заказов: '+u.orders+'</div></div>';
     }).join('');
   }
   async function load(){

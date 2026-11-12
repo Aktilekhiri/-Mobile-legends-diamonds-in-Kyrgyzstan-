@@ -764,3 +764,6 @@ body.has-banner .page{margin-top:var(--bnH,0)}
 #liveFeed .lf-marquee.drag,#gameFeed .lf-marquee.drag{cursor:grabbing;user-select:none}
 
 .game-promo{margin:0 0 14px;padding:11px 14px;border-radius:14px;background:rgba(255,184,0,.12);border:1px solid rgba(255,184,0,.45);color:var(--text,#fff);font-size:.9rem;line-height:1.4}.game-promo b{color:var(--gold,#ffb800)}
+
+.auth-contact{margin:0 0 14px;padding:14px 0 4px;border-top:1px solid var(--border,rgba(128,128,128,.25))}
+.ac-row{display:flex;gap:8px}.ac-row .input-field{flex:1;min-width:0}

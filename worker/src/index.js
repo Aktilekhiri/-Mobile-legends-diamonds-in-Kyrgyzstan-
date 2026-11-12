@@ -8,7 +8,7 @@ const MAX_PHOTO_BYTES = 450 * 1024;
 const TOKEN_DAYS = 30;
 const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
-import { loginWithGoogle, getMe, listMyOrders, userFromRequest, adminListUsers } from './auth.js';
+import { loginWithGoogle, getMe, saveContact, listMyOrders, userFromRequest, adminListUsers } from './auth.js';
 import { maybeSendReport } from './report.js';
 import { ipaccHandle, ipaccRemind } from './ipacc.js';
 import { financeSummary, maybeSendWeekly, maybeRemindTaxes } from './finance.js';
@@ -150,6 +150,13 @@ export default {
         const sub = await userFromRequest(req, env);
         if (!sub) return err(req, 'Нужен вход', 401);
         const r = await getMe(env, sub);
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+      }
+      if (path === '/api/me/contact' && m === 'POST') {
+        const sub = await userFromRequest(req, env);
+        if (!sub) return err(req, 'Нужен вход', 401);
+        const b = await req.json().catch(() => ({}));
+        const r = await saveContact(env, sub, b.wa_phone);
         return r.error ? err(req, r.error, r.status || 400) : json(req, r);
       }
       if (path === '/api/my/orders' && m === 'GET') {

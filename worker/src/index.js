@@ -23,6 +23,7 @@ import { startGopayOrder, gopayWebhook, cleanupGopay, gopayReady, gopayPublic } 
 import { redeemPromo } from './promo.js';
 import { aiChat, aiReady } from './aichat.js';
 import { SHOP } from './shop_data.js';
+import { syncAvailability, offKeys, adminAvailability, adminForceOn } from './avail.js';
 import { postComment, listComments, adminListComments, adminSetComment, deleteAccountComments } from './acomments.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, refundToBalance, selfOrder, selfOrders, markManualDone, cancelOrder, blacklistOrder, listBlacklist, addBlacklist, removeBlacklist, pollProcessing, handleWebhook, listRecentDeliveries, requestRefund } from './orders.js';
@@ -226,7 +227,8 @@ export default {
       }
       // ИИ-чат: приём заказа в диалоге (история приходит с клиента, цены и оплата считаются на сервере)
       if (path === '/api/chat/status' && m === 'GET') return json(req, { enabled: aiReady(env), ai: aiReady(env), pay: gopayPublic(env) ? 'gopay' : (finikReady(env) ? 'finik' : '') }, 200, { 'Cache-Control': 'public, max-age=60' });
-      if (path === '/api/chat/catalog' && m === 'GET') return json(req, { shop: SHOP }, 200, { 'Cache-Control': 'public, max-age=300' });
+      if (path === '/api/availability' && m === 'GET') return json(req, { off: await offKeys(env) }, 200, { 'Cache-Control': 'public, max-age=60' });
+      if (path === '/api/chat/catalog' && m === 'GET') { const off = new Set(await offKeys(env)); return json(req, { shop: SHOP.map(g => ({ ...g, packs: g.packs.filter(p => !off.has(g.id + ':' + p.k)) })) }, 200, { 'Cache-Control': 'public, max-age=60' }); }
       if (path === '/api/chat' && m === 'POST') {
         const b = await req.json().catch(() => ({}));
         const ip = req.headers.get('CF-Connecting-IP') || '';
@@ -444,6 +446,14 @@ export default {
           const r = await adminSetReview(env, mm[1], mm[2]);
           return r.error ? err(req, r.error, r.status || 400) : json(req, r);
         }
+        if (path === '/api/admin/availability' && m === 'GET') return json(req, await adminAvailability(env));
+        if (path === '/api/admin/availability/check' && m === 'POST') {
+          try { return json(req, { ok: true, report: await syncAvailability(env, { force: true }) }); } catch (e) { return err(req, 'Проверка не удалась: ' + String(e && e.message || e).slice(0, 200), 502); }
+        }
+        if (path === '/api/admin/availability/on' && m === 'POST') {
+          const r = await adminForceOn(env, (await req.json().catch(() => ({}))).key);
+          return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+        }
         if (path === '/api/admin/account-comments' && m === 'GET') return json(req, await adminListComments(env, url.searchParams.get('status') || 'all'));
         mm = path.match(/^\/api\/admin\/account-comments\/([A-Za-z0-9]{4,40})\/(approve|hide|pending|delete)$/);
         if (mm && m === 'POST') {
@@ -540,6 +550,7 @@ export default {
   // раз в минуту опрашиваем FazerCards по заказам, которые ещё в обработке
   async scheduled(event, env, ctx) {
     ctx.waitUntil(pollProcessing(env).catch(() => {}));
+    ctx.waitUntil(syncAvailability(env).catch(() => {}));
     ctx.waitUntil(checkBalance(env).catch(() => {}));
     ctx.waitUntil(maybeSendReport(env).catch(() => {}));
     ctx.waitUntil(maybeSendWeekly(env).catch(() => {}));

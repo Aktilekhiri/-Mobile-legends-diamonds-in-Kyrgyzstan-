@@ -220,6 +220,8 @@ export const GAMES = {
     'level_up_package_20': { offer: 'level_up_package_20', cost: 0.5131 },
     'level_up_package_25': { offer: 'level_up_package_25', cost: 0.5131 },
     'level_up_package_30': { offer: 'level_up_package_30', cost: 0.7389 },
+    'evo_access_7d': { offer: 'evo_access_7d', cost: 0.6979 },
+    'evo_access_30d': { offer: 'evo_access_30d', cost: 2.0525 },
     'weekly_lite': { offer: 'weekly_lite', cost: 0.3695 },
     'weekly_membership': { offer: 'weekly_membership', cost: 1.5394 },
     'monthly_membership': { offer: 'monthly_membership', cost: 5.5418 },
@@ -341,6 +343,7 @@ export const GAMES = {
     '12m': { offer: '12m', cost: 29.435 },
   } },
   roblox: { category: 'roblox_global', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+    '50_robux': { offer: '50_robux', cost: 0.9221 },
     '100_robux': { offer: '100_robux', cost: 3.03 }, // 50 Robux убран: у FazerCards больше нет такого номинала (404 No matching offer)
     '800_robux': { offer: '800_robux', cost: 8.961 },
     '1000_robux': { offer: '1000_robux', cost: 9.7 },

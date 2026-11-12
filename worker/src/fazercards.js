@@ -131,3 +131,33 @@ export async function fzGetBalance(env) {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
+
+// ---------- каталог предложений (для автопроверки наличия паков) ----------
+// Точный путь списка офферов в документации не зафиксирован, поэтому пробуем несколько вариантов и запоминаем рабочий (tpl).
+// Офферы ищем рекурсивно по полям offer_id / card_id.
+export function fzCategoryOf(key) { return CATEGORY[key] || ''; }
+export function fzTypeOf(key) { const g = GAMES[key]; return g && g.type === 'gift_cards' ? 'giftcards' : 'topups'; }
+const LIST_PATHS = [c => '/api/v2/TYPE/' + c, c => '/api/v2/TYPE/' + c + '/offers', c => '/api/v2/TYPE?category_id=' + c, c => '/api/v2/TYPE/offers?category_id=' + c];
+function collectOfferIds(node, out, depth) {
+  if (!node || depth > 6) return out;
+  if (Array.isArray(node)) { for (const x of node) collectOfferIds(x, out, depth + 1); return out; }
+  if (typeof node === 'object') {
+    for (const k of ['offer_id', 'card_id']) if (typeof node[k] === 'string' || typeof node[k] === 'number') out.add(String(node[k]));
+    for (const v of Object.values(node)) if (v && typeof v === 'object') collectOfferIds(v, out, depth + 1);
+  }
+  return out;
+}
+// tplIdx — индекс уже найденного рабочего варианта пути (или -1). Возвращает { ids:Set, tplIdx }.
+export async function fzListOffers(env, type, category, tplIdx) {
+  const order = tplIdx >= 0 ? [tplIdx] : LIST_PATHS.map((_, i) => i);
+  let lastErr = null;
+  for (const i of order) {
+    try {
+      const d = await call(env, 'GET', LIST_PATHS[i](category).replace('TYPE', type));
+      const ids = collectOfferIds(d, new Set(), 0);
+      if (ids.size) return { ids, tplIdx: i };
+      lastErr = new Error('в ответе нет офферов (поля: ' + Object.keys(d || {}).slice(0, 8).join(',') + ')');
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('каталог не прочитан');
+}

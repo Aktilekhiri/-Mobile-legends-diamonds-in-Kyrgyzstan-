@@ -1,6 +1,7 @@
 // Заказы: приём с сайта, подтверждение оплаты админом, выдача через FazerCards, возврат.
 import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS, OFF_PKGS, MLBB_REGIONS } from './catalog.js';
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
+import { isPkgOff, markPkgOff } from './avail.js';
 import { notify, notifyPhoto, defer } from './notify.js';
 import { sendOrderMail } from './mail.js';
 import { tgNotifyOrder, send, esc } from './tgapi.js';
@@ -115,7 +116,7 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
       if (bl) return { error: 'Заказ невозможен. Напишите в поддержку.', status: 403 };
     } catch (e) { /* без проверки не блокируем */ }
   }
-  if (!opts.promo && OFF_PKGS.includes(region + ':' + pkg)) return { error: 'Этот пакет временно недоступен. Выберите другой или попробуйте позже.' };
+  if (!opts.promo && (OFF_PKGS.includes(region + ':' + pkg) || await isPkgOff(env, region + ':' + pkg))) return { error: 'Этот пакет временно недоступен. Выберите другой или попробуйте позже.' };
   const cat0 = (CATALOGS[region] || {})[pkg] || null;
   if (!opts.promo && (cat0 ? price < Math.floor(cat0.cost * USD_KGS * 0.9) : price < 20)) return { error: 'Некорректная сумма заказа' };
 
@@ -200,6 +201,7 @@ export async function confirmOrder(env, id) {
     // чёткий отказ FazerCards (4xx: нет денег на балансе, подписка, неверный пакет): заказ не создан, можно повторить
     if (e && e.status >= 400 && e.status < 500) {
       await setStatus(env, id, { status: 'new', fail_reason: String(e.message || e).slice(0, 250) });
+      if (/No matching offer/i.test(String(e.message || ''))) await markPkgOff(env, o.region + ':' + o.pkg, 'ошибка заказа');
       await notify(env, `⚠️ Заказ ${id}: FazerCards отказал (${String(e.message || e).slice(0, 150)}). Заказ остался в «Ждёт оплаты».`);
       return { error: 'FazerCards отказал: ' + (e.message || e), status: 502 };
     }

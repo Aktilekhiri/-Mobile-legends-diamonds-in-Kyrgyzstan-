@@ -10,7 +10,8 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 nav.bn{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(16,24,43,.97);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom));backdrop-filter:blur(8px)}
-.bar{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.bar{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:2px}
+@media(max-width:480px){.tab{font-size:.6rem;padding:6px 0;letter-spacing:-.01em}}
 .tab{position:relative;font:inherit;font-weight:700;font-size:.72rem;min-height:56px;padding:6px 4px;border:0;border-radius:14px;background:transparent;color:var(--mu);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
 .tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tab[aria-selected="true"]{background:rgba(50,217,245,.14);color:var(--cy)}
@@ -32,6 +33,7 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
   <iframe id="f-accounts" class="hidden" src="admin-accounts.html" title="Аккаунты"></iframe>
   <iframe id="f-chat" class="hidden" src="admin-chat.html" title="Чат"></iframe>
   <iframe id="f-finance" class="hidden" src="admin-finance.html" title="Финансы"></iframe>
+  <iframe id="f-ipacc" class="hidden" data-src="admin-ipacc.html" title="Учёт ИП"></iframe>
 </div>
 <nav class="bn" aria-label="Разделы админки"><div class="bar" role="tablist">
   <button class="tab" role="tab" id="t-orders" aria-selected="true" data-t="orders"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span>Заказы</span> <span class="badge" id="badge" title="Требуют действия"></span></button>
@@ -41,6 +43,7 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
   <button class="tab" role="tab" id="t-bot" aria-selected="false" data-t="bot"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 16.5h6"/></svg><span>Бот</span></button>
   <button class="tab" role="tab" id="t-chat" aria-selected="false" data-t="chat"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><span>Чат</span><span class="badge" id="chBadge"></span></button>
   <button class="tab" role="tab" id="t-finance" aria-selected="false" data-t="finance"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M21 19H3"/></svg><span>Финансы</span></button>
+  <button class="tab" role="tab" id="t-ipacc" aria-selected="false" data-t="ipacc"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span>Учёт</span></button>
 </div></nav>
 <script src="api-config.js"></script>
 <script>
@@ -49,7 +52,8 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
   function sget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
   function show(t){
     cur=t;
-    ['orders','reviews','clients','bot','accounts','chat','finance'].forEach(function(x){
+    var lz=document.getElementById('f-'+t);if(lz&&lz.dataset.src&&!lz.getAttribute('src'))lz.setAttribute('src',lz.dataset.src);
+    ['orders','reviews','clients','bot','accounts','chat','finance','ipacc'].forEach(function(x){
       document.getElementById('f-'+x).classList.toggle('hidden',x!==t);
       document.getElementById('t-'+x).setAttribute('aria-selected',x===t?'true':'false');
     });
@@ -86,7 +90,7 @@ iframe{display:block;width:100%;border:0;background:var(--bg);min-height:60vh}
   chBadge();setInterval(chBadge,20000);
   badge();setInterval(badge,20000);
   window.addEventListener('storage',badge);
-  show(location.hash==='#chat'?'chat':location.hash==='#finance'?'finance':location.hash==='#accounts'?'accounts':(location.hash==='#reviews'?'reviews':(location.hash==='#clients'?'clients':(location.hash==='#bot'?'bot':'orders'))));
+  show(location.hash==='#ipacc'?'ipacc':location.hash==='#chat'?'chat':location.hash==='#finance'?'finance':location.hash==='#accounts'?'accounts':(location.hash==='#reviews'?'reviews':(location.hash==='#clients'?'clients':(location.hash==='#bot'?'bot':'orders'))));
 })();
 </script>
 </body>

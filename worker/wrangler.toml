@@ -36,3 +36,10 @@ enabled = true
 # Включение: секрет ANTHROPIC_API_KEY (Claude Haiku) + переменная AI_ENABLED=1. Модель: AI_MODEL (по умолчанию claude-haiku-5-5).
 # Лимиты: AI_PER_HOUR (сообщений с одного IP в час, 40), AI_PER_DAY (всего в сутки, 800). Бесплатный Workers AI: AI_PROVIDER=workers.
 # В Telegram-боте ИИ включается отдельно переменной AI_TG=1 (по умолчанию выключен).
+
+# Модуль «Финансы и учёт ИП» (чеки и документы). Необязательно: без этой привязки модуль работает, только без вложений.
+# 1) Cloudflare -> R2 -> Create bucket (имя, например, ip-accounting-files)
+# 2) раскомментируйте блок ниже и задеплойте воркер заново:
+# [[r2_buckets]]
+# binding = "IPACC_FILES"
+# bucket_name = "ip-accounting-files"

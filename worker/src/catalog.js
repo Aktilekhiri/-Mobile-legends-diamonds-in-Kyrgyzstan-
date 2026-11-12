@@ -341,7 +341,7 @@ export const GAMES = {
     '12m': { offer: '12m' },
   } },
   roblox: { category: 'roblox_global', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
-    '50_robux': { offer: '50_robux' },
+    '100_robux': { offer: '100_robux' }, // 50 Robux убран: у FazerCards больше нет такого номинала (404 No matching offer)
     '800_robux': { offer: '800_robux' },
     '1000_robux': { offer: '1000_robux' },
     '2000_robux': { offer: '2000_robux' },

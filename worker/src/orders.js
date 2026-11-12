@@ -195,6 +195,7 @@ export async function confirmOrder(env, id) {
     });
     await setStatus(env, id, { fz_order_id: fz.id || '', fz_status: fz.status || '' });
     await sendOrderMail(env, id, 'created', gameTitle);
+    if (o.method !== 'promo' && o.method !== 'Для себя') await tgNotifyOrder(env, id, 'paid', gameTitle); // «Оплата получена» клиенту в Telegram (если он в боте или привязал Telegram)
     await syncFromFz(env, { ...o, fz_order_id: fz.id }, fz);
     return { ok: true, fz_status: fz.status };
   } catch (e) {

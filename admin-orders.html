@@ -69,6 +69,15 @@ button:disabled{opacity:.5;cursor:default}
         <div id="blList"></div>
       </div>
     </details>
+    <details class="card" id="avBox" style="margin-top:14px">
+      <summary style="cursor:pointer;font-weight:700">📦 Наличие паков <span id="avCount" style="font-weight:400;opacity:.7"></span></summary>
+      <div style="margin-top:10px">
+        <div style="font-size:13px;opacity:.8;margin-bottom:8px">Раз в 15 минут сверяем каталог FazerCards. Пак, пропавший у них два раза подряд, скрывается на сайте и не принимается в заказ. Вернулся — включается сам.</div>
+        <div class="top"><button id="avCheck">Проверить каталог сейчас</button></div>
+        <div id="avRes" style="margin:8px 0;font-size:14px"></div>
+        <div id="avList"></div>
+      </div>
+    </details>
     <div class="top" style="margin-top:14px"><button id="reload">Обновить</button><button id="logoutBtn">Выйти</button></div>
   </div>
 </div>
@@ -166,7 +175,7 @@ button:disabled{opacity:.5;cursor:default}
     catch(e){msg(e.message,'err');b.disabled=false}
   }
   async function load(){
-    try{var d=await call('GET','/api/admin/orders');orders=d.orders||[];msg('');show('listBox');drawChips();draw();if(!bl.length)blLoad()}
+    try{var d=await call('GET','/api/admin/orders');orders=d.orders||[];msg('');show('listBox');drawChips();draw();if(!bl.length){blLoad();avLoad()}}
     catch(e){msg(e.message,'err');if(token){show('listBox');drawChips();if(!orders.length)$('list').innerHTML=''}}
   }
   function start(){
@@ -193,7 +202,19 @@ button:disabled{opacity:.5;cursor:default}
     var f=bl.filter(function(x){return x.value===v})[0];$('blRes').textContent=f?'🚫 '+blFmt(v)+' В ЧЁРНОМ СПИСКЕ: '+(f.reason||''):'✅ '+blFmt(v)+' нет в чёрном списке'};
   $('blAdd').onclick=async function(){var b=this,v=blN($('blPhone').value);if(v.length<9){$('blRes').textContent='Введите номер полностью (9 цифр)';return}
     b.disabled=true;try{await call('POST','/api/admin/blacklist',{phone:v,reason:$('blReason').value});$('blReason').value='';$('blRes').textContent='🚫 '+blFmt(v)+' добавлен';await blLoad()}catch(e){msg(e.message,'err')}b.disabled=false};
-  $('reload').onclick=function(){load();blLoad()};
+  async function avLoad(){
+    try{var d=await call('GET','/api/admin/availability');var l=d.off||[];$('avCount').textContent=l.length?'(отключено: '+l.length+')':'(всё в наличии)';
+      $('avList').innerHTML=l.length?l.map(function(x){return '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)"><div><b>'+esc(x.key)+'</b><div style="font-size:12px;opacity:.7">'+esc(x.reason||'')+' · с '+new Date(x.since).toLocaleString('ru-RU')+'</div></div><button class="avOn" data-k="'+esc(x.key)+'">Вернуть</button></div>'}).join(''):'<div style="opacity:.7">Отключённых паков нет.</div>';
+      [].forEach.call(document.querySelectorAll('.avOn'),function(b){b.onclick=async function(){
+        if(!confirm('Вернуть '+b.getAttribute('data-k')+' на сайт? Автопроверка не будет отключать его 24 часа.'))return;
+        b.disabled=true;try{await call('POST','/api/admin/availability/on',{key:b.getAttribute('data-k')});msg('Пак возвращён');avLoad()}catch(e){msg(e.message,'err');b.disabled=false}}});
+    }catch(e){$('avList').innerHTML='<div style="opacity:.7">'+esc(e.message)+'</div>'}
+  }
+  $('avCheck').onclick=async function(){var b=this;b.disabled=true;$('avRes').textContent='Проверяем каталог…';
+    try{var d=await call('POST','/api/admin/availability/check');var r=d.report||{};
+      $('avRes').textContent='Проверено категорий: '+(r.checked||0)+(r.failed&&r.failed.length?'. Не прочитано: '+r.failed.length+' ('+r.failed[0]+')':'')+(r.glitch&&r.glitch.length?'. Похоже на сбой: '+r.glitch.join(', '):'')+(r.off&&r.off.length?'. Отключено: '+r.off.join(', '):'')+(r.back&&r.back.length?'. Вернулось: '+r.back.join(', '):'');
+      avLoad()}catch(e){$('avRes').textContent=e.message}b.disabled=false};
+  $('reload').onclick=function(){load();blLoad();avLoad()};
   start();
 })();
 </script>

@@ -220,6 +220,8 @@ export const GAMES = {
     'level_up_package_20': { offer: 'level_up_package_20' },
     'level_up_package_25': { offer: 'level_up_package_25' },
     'level_up_package_30': { offer: 'level_up_package_30' },
+    'evo_access_7d': { offer: 'evo_access_7d' },
+    'evo_access_30d': { offer: 'evo_access_30d' },
     'weekly_lite': { offer: 'weekly_lite' },
     'weekly_membership': { offer: 'weekly_membership' },
     'monthly_membership': { offer: 'monthly_membership' },
@@ -341,6 +343,7 @@ export const GAMES = {
     '12m': { offer: '12m' },
   } },
   roblox: { category: 'roblox_global', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+    '50_robux': { offer: '50_robux' },
     '100_robux': { offer: '100_robux' }, // 50 Robux убран: у FazerCards больше нет такого номинала (404 No matching offer)
     '800_robux': { offer: '800_robux' },
     '1000_robux': { offer: '1000_robux' },

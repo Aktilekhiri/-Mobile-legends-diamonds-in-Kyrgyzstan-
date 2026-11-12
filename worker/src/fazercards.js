@@ -133,11 +133,17 @@ export async function fzGetBalance(env) {
 }
 
 // ---------- каталог предложений (для автопроверки наличия паков) ----------
-// Точный путь списка офферов в документации не зафиксирован, поэтому пробуем несколько вариантов и запоминаем рабочий (tpl).
-// Офферы ищем рекурсивно по полям offer_id / card_id.
+// Для topups рабочий путь найден: GET /api/v2/topups/{category}. Для giftcards точный путь в документации не зафиксирован,
+// поэтому пробуем несколько вариантов (включая список всего типа) и запоминаем рабочий (индекс tplIdx).
 export function fzCategoryOf(key) { return CATEGORY[key] || ''; }
 export function fzTypeOf(key) { const g = GAMES[key]; return g && g.type === 'gift_cards' ? 'giftcards' : 'topups'; }
-const LIST_PATHS = [c => '/api/v2/TYPE/' + c, c => '/api/v2/TYPE/' + c + '/offers', c => '/api/v2/TYPE?category_id=' + c, c => '/api/v2/TYPE/offers?category_id=' + c];
+const TYPE_NAMES = { topups: ['topups'], giftcards: ['giftcards', 'gift-cards', 'gift_cards'] };
+const PATTERNS = [c => '/' + c, c => '/' + c + '/offers', c => '?category_id=' + c, c => '/offers?category_id=' + c, () => ''];
+function candidates(type, category) {
+  const out = [];
+  for (const t of TYPE_NAMES[type] || [type]) for (let k = 0; k < PATTERNS.length; k++) out.push({ path: '/api/v2/' + t + PATTERNS[k](category), whole: k === PATTERNS.length - 1 });
+  return out;
+}
 function collectOfferIds(node, out, depth) {
   if (!node || depth > 6) return out;
   if (Array.isArray(node)) { for (const x of node) collectOfferIds(x, out, depth + 1); return out; }
@@ -147,17 +153,29 @@ function collectOfferIds(node, out, depth) {
   }
   return out;
 }
-// tplIdx — индекс уже найденного рабочего варианта пути (или -1). Возвращает { ids:Set, tplIdx }.
+// найти в общем списке узел нужной категории (category_id / id / slug совпадают) и собрать офферы только из него
+function findCategoryNode(node, category, depth) {
+  if (!node || depth > 6) return null;
+  if (Array.isArray(node)) { for (const x of node) { const r = findCategoryNode(x, category, depth + 1); if (r) return r; } return null; }
+  if (typeof node === 'object') {
+    if ([node.category_id, node.id, node.slug].some(v => v === category)) return node;
+    for (const v of Object.values(node)) { const r = v && typeof v === 'object' ? findCategoryNode(v, category, depth + 1) : null; if (r) return r; }
+  }
+  return null;
+}
+// tplIdx — индекс найденного рабочего варианта (или -1). Возвращает { ids:Set, tplIdx }.
 export async function fzListOffers(env, type, category, tplIdx) {
-  const order = tplIdx >= 0 ? [tplIdx] : LIST_PATHS.map((_, i) => i);
-  let lastErr = null;
+  const all = candidates(type, category);
+  const order = tplIdx >= 0 && tplIdx < all.length ? [tplIdx] : all.map((_, i) => i);
+  const tried = [];
   for (const i of order) {
     try {
-      const d = await call(env, 'GET', LIST_PATHS[i](category).replace('TYPE', type));
-      const ids = collectOfferIds(d, new Set(), 0);
+      const d = await call(env, 'GET', all[i].path);
+      const root = all[i].whole ? findCategoryNode(d, category, 0) : d;
+      const ids = root ? collectOfferIds(root, new Set(), 0) : new Set();
       if (ids.size) return { ids, tplIdx: i };
-      lastErr = new Error('в ответе нет офферов (поля: ' + Object.keys(d || {}).slice(0, 8).join(',') + ')');
-    } catch (e) { lastErr = e; }
+      tried.push(all[i].path + ' → без офферов (поля: ' + Object.keys(d || {}).slice(0, 6).join(',') + ')');
+    } catch (e) { tried.push(all[i].path + ' → ' + (e.status || String(e.message || e).slice(0, 30))); }
   }
-  throw lastErr || new Error('каталог не прочитан');
+  throw new Error(category + ': ' + tried.join('; ').slice(0, 600));
 }

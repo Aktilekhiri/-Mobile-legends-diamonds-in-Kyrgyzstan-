@@ -10,6 +10,7 @@ const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
 import { loginWithGoogle, getMe, listMyOrders, userFromRequest, adminListUsers } from './auth.js';
 import { maybeSendReport } from './report.js';
+import { ipaccHandle, ipaccRemind } from './ipacc.js';
 import { financeSummary, maybeSendWeekly, maybeRemindTaxes } from './finance.js';
 import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { clientThread, clientSend, clientUnread, adminSend, adminThreads, adminThread, getBanner, setBanner } from './msgs.js';
@@ -369,6 +370,8 @@ export default {
       // ----- админ -----
       if (path.startsWith('/api/admin')) {
         if (!(await isAdmin(req, env))) return err(req, 'Нужен вход', 401);
+        // отдельный изолированный модуль «Финансы и учёт ИП» (worker/src/ipacc.js, таблицы ip_accounting_*)
+        if (path.startsWith('/api/admin/ipacc')) return ipaccHandle(req, env, path, url, { json, err, cors });
 
         // чёрный список телефонов
         if (path === '/api/admin/blacklist' && m === 'GET') return json(req, await listBlacklist(env));
@@ -558,5 +561,6 @@ export default {
     ctx.waitUntil(remindDeals(env).catch(() => {}));
     ctx.waitUntil(cleanupFinik(env).catch(() => {}));
     ctx.waitUntil(cleanupGopay(env).catch(() => {}));
+    ctx.waitUntil(ipaccRemind(env).catch(() => {}));
   },
 };

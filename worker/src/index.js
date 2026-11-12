@@ -23,6 +23,7 @@ import { startGopayOrder, gopayWebhook, cleanupGopay, gopayReady, gopayPublic } 
 import { redeemPromo } from './promo.js';
 import { aiChat, aiReady } from './aichat.js';
 import { SHOP } from './shop_data.js';
+import { postComment, listComments, adminListComments, adminSetComment, deleteAccountComments } from './acomments.js';
 import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, refundToBalance, selfOrder, selfOrders, markManualDone, cancelOrder, blacklistOrder, listBlacklist, addBlacklist, removeBlacklist, pollProcessing, handleWebhook, listRecentDeliveries, requestRefund } from './orders.js';
 
@@ -345,6 +346,14 @@ export default {
         if (r) return r.error ? err(req, r.error, r.status || 400) : json(req, r, 200, { 'Cache-Control': 'no-store' });
       }
 
+      // комментарии покупателей к аккаунтам
+      mm = path.match(/^\/api\/accounts\/(\d{1,9})\/comments$/);
+      if (mm && m === 'GET') return json(req, await listComments(env, mm[1]), 200, { 'Cache-Control': 'public, max-age=30' });
+      if (mm && m === 'POST') {
+        const r = await postComment(env, mm[1], await req.json().catch(() => ({})), req.headers.get('CF-Connecting-IP') || '');
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+      }
+
       // публичный список
       if (path === '/api/accounts' && m === 'GET') {
         const { results } = await env.DB.prepare(
@@ -435,6 +444,12 @@ export default {
           const r = await adminSetReview(env, mm[1], mm[2]);
           return r.error ? err(req, r.error, r.status || 400) : json(req, r);
         }
+        if (path === '/api/admin/account-comments' && m === 'GET') return json(req, await adminListComments(env, url.searchParams.get('status') || 'all'));
+        mm = path.match(/^\/api\/admin\/account-comments\/([A-Za-z0-9]{4,40})\/(approve|hide|pending|delete)$/);
+        if (mm && m === 'POST') {
+          const r = await adminSetComment(env, mm[1], mm[2]);
+          return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+        }
         mm = path.match(/^\/api\/admin\/orders\/([A-Z0-9-]{4,20})\/receipt$/);
         if (mm && m === 'GET') {
           const rc = await getReceipt(env, mm[1]);
@@ -479,6 +494,7 @@ export default {
             env.DB.prepare('DELETE FROM photos WHERE account_id = ?').bind(id),
             env.DB.prepare('DELETE FROM accounts WHERE id = ?').bind(id),
           ]);
+          await deleteAccountComments(env, id);
           return json(req, { ok: true });
         }
 

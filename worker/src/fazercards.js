@@ -148,7 +148,7 @@ function collectOfferIds(node, out, depth) {
   if (!node || depth > 6) return out;
   if (Array.isArray(node)) { for (const x of node) collectOfferIds(x, out, depth + 1); return out; }
   if (typeof node === 'object') {
-    for (const k of ['offer_id', 'card_id']) if (typeof node[k] === 'string' || typeof node[k] === 'number') out.add(String(node[k]));
+    for (const k of ['offer_id', 'card_id', 'offerId', 'cardId', 'sku']) if (typeof node[k] === 'string' || typeof node[k] === 'number') out.add(String(node[k]));
     for (const v of Object.values(node)) if (v && typeof v === 'object') collectOfferIds(v, out, depth + 1);
   }
   return out;
@@ -174,8 +174,10 @@ export async function fzListOffers(env, type, category, tplIdx) {
       const root = all[i].whole ? findCategoryNode(d, category, 0) : d;
       const ids = root ? collectOfferIds(root, new Set(), 0) : new Set();
       if (ids.size) return { ids, tplIdx: i };
-      tried.push(all[i].path + ' → без офферов (поля: ' + Object.keys(d || {}).slice(0, 6).join(',') + ')');
+      const arr = d && (d.items || d.offers || d.data || d.cards);
+      const first = Array.isArray(arr) ? arr[0] : null;
+      tried.push(all[i].path + ' → без офферов (' + (Array.isArray(arr) ? 'элементов: ' + arr.length + ', первый: ' + JSON.stringify(first || {}).slice(0, 260) : 'поля: ' + Object.keys(d || {}).slice(0, 6).join(',')) + ')');
     } catch (e) { tried.push(all[i].path + ' → ' + (e.status || String(e.message || e).slice(0, 30))); }
   }
-  throw new Error(category + ': ' + tried.join('; ').slice(0, 600));
+  throw new Error(category + ': ' + tried.join('; ').slice(0, 900));
 }

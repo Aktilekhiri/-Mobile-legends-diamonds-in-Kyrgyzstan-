@@ -177,7 +177,6 @@ export const BRAZIL_CATALOG = {
 // Регион США (категория mobile_legends_united_states): только для аккаунтов этого региона
 export const USA_CATALOG = {
   '51+5': { offer: '51_5_diamonds', cost: 0.877 },
-  'Weekly Diamond Pass': { offer: 'weekly_diamond_pass', cost: 1.743 },
   '253+25': { offer: '253_25_diamonds', cost: 4.406 },
   '505+66': { offer: '505_66_diamonds', cost: 8.813 },
   '1010+182': { offer: '1010_182_diamonds', cost: 17.636 },

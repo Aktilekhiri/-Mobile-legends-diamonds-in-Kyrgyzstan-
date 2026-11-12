@@ -141,6 +141,7 @@ const TYPE_NAMES = { topups: ['topups'], giftcards: ['giftcards', 'gift-cards', 
 const PATTERNS = [c => '/' + c, c => '/' + c + '/offers', c => '?category_id=' + c, c => '/offers?category_id=' + c, () => ''];
 function candidates(type, category) {
   const out = [];
+  if (type === 'giftcards') out.push({ path: '/api/v2/giftcards/cards?category_id=' + category, whole: false }); // по документации FazerCards
   for (const t of TYPE_NAMES[type] || [type]) for (let k = 0; k < PATTERNS.length; k++) out.push({ path: '/api/v2/' + t + PATTERNS[k](category), whole: k === PATTERNS.length - 1 });
   return out;
 }

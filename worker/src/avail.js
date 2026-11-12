@@ -67,13 +67,16 @@ export async function syncAvailability(env, { force = false, now = Date.now() } 
     await setMeta(env, 'avail_cur', rest.length ? (cur + PER_RUN) % rest.length : 0);
     pick = [...pri, ...take];
   }
-  const rawTpl = await getMeta(env, 'avail_tpl'); let tpl = rawTpl == null ? -1 : Number(rawTpl);
+  const tpls = await getJson(env, 'avail_tpl'); // рабочий путь отдельно для topups и giftcards
+  const dead = new Set(); // тип, для которого поиск пути в этом запуске уже не удался: не повторяем (лимит запросов Workers)
   const off = await getJson(env, 'avail_off'), miss = await getJson(env, 'avail_miss'), forced = await getJson(env, 'avail_forced');
   const msgs = [];
   for (const c of pick) {
     let res;
-    try { res = await fzListOffers(env, c.type, c.category, tpl); } catch (e) { report.failed.push(c.category + ': ' + String(e.message || e).slice(0, 100)); continue; }
-    if (res.tplIdx !== tpl) { tpl = res.tplIdx; await setMeta(env, 'avail_tpl', tpl); }
+    const known = Number.isInteger(tpls[c.type]) ? tpls[c.type] : -1;
+    if (known < 0 && dead.has(c.type)) { report.failed.push(c.category + ': путь к списку офферов не найден'); continue; }
+    try { res = await fzListOffers(env, c.type, c.category, known); } catch (e) { if (known < 0) dead.add(c.type); report.failed.push(String(e.message || e).slice(0, 700)); continue; }
+    if (res.tplIdx !== known) { tpls[c.type] = res.tplIdx; await setMeta(env, 'avail_tpl', JSON.stringify(tpls)); }
     report.checked++;
     const absent = c.packs.filter(p => !p.offers.every(o => res.ids.has(o)));
     if (c.packs.length >= 5 && absent.length / c.packs.length > GLITCH_SHARE) { report.glitch.push(c.category + ' (' + absent.length + '/' + c.packs.length + ')'); continue; }

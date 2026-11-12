@@ -3,13 +3,14 @@
 //  - все маршруты под /api/admin/ipacc/* и только после проверки админ-токена (она делается в index.js до вызова);
 //  - деньги хранятся целым числом в тыйынах (сотых долях сома), чтобы не было ошибок округления float.
 // Налоговые ставки и сроки НЕ зашиты в код: их вводит владелец (с датой действия и источником).
-import { FIN_WHERE, FIN_START_MS } from './catalog.js';
+import { FIN_WHERE } from './catalog.js';
 import { notify } from './notify.js';
 
 export const METHODS = ['MBank', 'O!Bank', 'Bakai', 'Элкарт', 'Наличные', 'Банковский перевод', 'Другое'];
 export const INCOME_CATS = ['Продажа товаров и услуг', 'Пополнение через сайт', 'Возврат от поставщика', 'Прочие доходы'];
 export const EXPENSE_CATS = ['Закупка товаров и услуг', 'Оплата поставщикам', 'Серверы и хостинг', 'Домены', 'Реклама', 'Подписки на сервисы', 'Комиссии банков', 'Прочие расходы'];
 const TZ = 6 * 3600 * 1000; // Бишкек UTC+6
+const AUTO_FROM_DEFAULT = '2027-01-01';
 const MAX_MINOR = 1e13;     // потолок суммы (100 млрд сом) — защита от опечаток
 const MAX_FILE = 5 * 1024 * 1024;
 const FILE_TYPES = { 'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
@@ -68,7 +69,7 @@ async function getSettings(env) {
   return {
     opening_minor: Number(s.opening_minor) || 0,
     auto_orders: s.auto_orders === undefined ? true : s.auto_orders === '1',
-    auto_from: s.auto_from && isDate(s.auto_from) ? s.auto_from : new Date(FIN_START_MS + TZ).toISOString().slice(0, 10),
+    auto_from: s.auto_from && isDate(s.auto_from) ? s.auto_from : AUTO_FROM_DEFAULT, // по умолчанию учёт заказов начинается с 2027 года (решение владельца)
   };
 }
 async function setSetting(env, k, v) { await env.DB.prepare('INSERT INTO ip_accounting_settings (k, v) VALUES (?,?) ON CONFLICT(k) DO UPDATE SET v = excluded.v').bind(k, String(v)).run(); }

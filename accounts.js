@@ -1,6 +1,6 @@
 /* Каталог аккаунтов MLBB — публичная страница (данные из Cloudflare Worker) */
 (function () {
-  var WA = '996555920204', TG = 'topupdiamondkg';
+  var WA = '996555920204', TG = 'DiamondKgSupport';
   var accounts = [], loaded = false, loading = false, failed = false, filter = 'all', cur = null, idx = 0;
 
   var T = {

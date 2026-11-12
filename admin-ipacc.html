@@ -146,12 +146,13 @@ function renderSeg(){
   $('seg').innerHTML=ks.map(function(k){return '<button role="tab" data-v="'+k+'" class="'+(view===k?'on':'')+'" aria-selected="'+(view===k)+'">'+esc(t('tabs.'+k))+'</button>'}).join('');
   Array.prototype.forEach.call($('seg').children,function(b){b.onclick=function(){view=b.dataset.v;edit=null;dupBody=null;supOpen=0;FI.trash=false;if(view==='inc'||view==='exp'){FI.kind=view==='inc'?'income':'expense'}renderSeg();render()}});
 }
+var seq=0;
 function killCharts(){charts.forEach(function(c){try{c.destroy()}catch(e){}});charts=[]}
 async function render(){
-  killCharts();var v=$('view');v.innerHTML='<div class="empty">'+t('loading')+'</div>';
+  var my0=++seq;killCharts();var v=$('view');v.innerHTML='<div class="empty">'+t('loading')+'</div>';
   try{
     if(view==='dash')await rDash();else if(view==='inc'||view==='exp')await rOps();else if(view==='sup')await rSup();else if(view==='tax')await rTax();else if(view==='rep')await rRep();else await rSet();
-  }catch(e){v.innerHTML='';msg(e.message,'err')}
+  }catch(e){if(my0!==seq)return;v.innerHTML='';msg(e.message,'err')}
 }
 function opts(list,sel,blank){return (blank?'<option value="">'+esc(blank)+'</option>':'')+list.map(function(x){var v=Array.isArray(x)?x[0]:x,l=Array.isArray(x)?x[1]:x;return '<option value="'+esc(v)+'"'+(String(v)===String(sel)?' selected':'')+'>'+esc(l)+'</option>'}).join('')}
 function supOpts(sel,blank){return opts(boot.suppliers.map(function(s){return [s.id,s.name]}),sel,blank)}
@@ -169,7 +170,7 @@ var ymax=function(v){return v/100};
 
 /* ---------- ОБЗОР ---------- */
 async function rDash(){
-  var d=await call('GET','/dashboard?from='+P.from+'&to='+P.to);
+  var my=seq,d=await call('GET','/dashboard?from='+P.from+'&to='+P.to);if(my!==seq)return;
   var p=d.period,b=d.balances,mo=d.month;
   var h='';
   if(d.upcoming&&d.upcoming.length)h+='<div class="msg w"><b>Сроки платежей:</b><br>'+d.upcoming.map(function(x){return esc(x.title)+' — '+(x.days_left<0?'просрочено на '+(-x.days_left)+' дн.':x.days_left===0?'сегодня':'через '+x.days_left+' дн.')+' ('+esc(x.due_date)+')'+(x.amount_minor?', '+kgs(x.amount_minor):'')}).join('<br>')+'</div>';
@@ -193,7 +194,7 @@ async function rDash(){
   var ms=p.months,lab=ms.map(function(x){return monthLabel(x.ym)});
   var empty=!ms.length;
   mkChart('c1',{type:'bar',data:{labels:lab,datasets:[{label:'Выручка, сом',data:ms.map(function(x){return ymax(x.income)}),backgroundColor:CCOL[0],borderRadius:6}]},options:{plugins:{legend:{display:false}}}});
-  var catData=await call('GET','/report?from='+P.from+'&to='+P.to),cats=Object.keys(catData.expense_categories);
+  var catData=await call('GET','/report?from='+P.from+'&to='+P.to);if(my!==seq)return;var cats=Object.keys(catData.expense_categories);
   mkChart('c2',{type:'doughnut',data:{labels:cats,datasets:[{data:cats.map(function(k){return ymax(catData.expense_categories[k])}),backgroundColor:CCOL,borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}}}});
   mkChart('c3',{type:'line',data:{labels:lab,datasets:[{label:'Прибыль, сом',data:ms.map(function(x){return ymax(x.profit)}),borderColor:CCOL[2],backgroundColor:'rgba(74,222,128,.15)',fill:true,tension:.3}]},options:{plugins:{legend:{display:false}}}});
   mkChart('c4',{type:'bar',data:{labels:lab,datasets:[{label:'Доходы',data:ms.map(function(x){return ymax(x.income)}),backgroundColor:CCOL[0],borderRadius:4},{label:'Расходы',data:ms.map(function(x){return ymax(x.expense)}),backgroundColor:CCOL[4],borderRadius:4}]},options:{plugins:{legend:{position:'bottom',labels:{boxWidth:10}}}}});
@@ -206,7 +207,7 @@ async function rOps(){
   var kind=FI.kind,isInc=kind==='income';
   var q='?kind='+kind+'&limit=300';['from','to','q','category','supplier_id'].forEach(function(k){if(FI[k])q+='&'+k+'='+encodeURIComponent(FI[k])});
   if(FI.trash)q+='&deleted=1';
-  var d=await call('GET','/ops'+q);
+  var my=seq,d=await call('GET','/ops'+q);if(my!==seq)return;
   var cats=isInc?boot.income_categories:boot.expense_categories;
   var h='';
   h+='<div class="top"><h2>'+(isInc?'Журнал доходов':'Журнал расходов')+'</h2><button class="pri" id="addop">+ '+t('add')+'</button></div>';
@@ -306,13 +307,13 @@ async function refreshBoot(){boot=await call('GET','/bootstrap')}
 
 /* ---------- ПОСТАВЩИКИ ---------- */
 async function rSup(){
-  var d=await call('GET','/suppliers'),h='';
+  var my=seq,d=await call('GET','/suppliers'),h='';if(my!==seq)return;
   h+='<div class="top"><h2>Поставщики</h2><button class="pri" id="addsup">+ '+t('add')+'</button></div>';
   if(edit!==null&&view==='sup'&&!supOpen){
     var s=edit;h+='<div class="card"><h2>'+(s.id?t('edit'):t('add'))+'</h2><div class="f"><div><label>'+t('name')+'</label><input id="s_n" maxlength="100" value="'+esc(s.name||'')+'"></div><div><label>Контакты</label><input id="s_c" maxlength="200" value="'+esc(s.contact||'')+'"></div><div class="full"><label>'+t('comment')+'</label><textarea id="s_m" maxlength="500">'+esc(s.note||'')+'</textarea></div></div><div class="acts"><button class="pri" id="s_save">'+t('save')+'</button><button id="s_cancel">'+t('cancel')+'</button></div></div>';
   }
   if(supOpen){
-    var x=await call('GET','/suppliers/'+supOpen),s2=x.supplier;
+    var x=await call('GET','/suppliers/'+supOpen),s2=x.supplier;if(my!==seq)return;
     h+='<div class="card"><div class="top"><h2>'+esc(s2.name)+'</h2><button class="sm" id="sback">← Все поставщики</button></div><div class="note">'+esc(s2.contact||'контакты не указаны')+(s2.note?' · '+esc(s2.note):'')+'</div>'
       +'<div class="kpi" style="margin-top:10px"><div><small>Всего закупок</small><b class="mono">'+kgs(s2.purchases)+'</b></div><div><small>Оплачено</small><b class="mono">'+kgs(s2.paid)+'</b></div><div><small>Задолженность</small><b class="mono '+(s2.debt>0?'warnc':'')+'">'+kgs(s2.debt)+'</b></div></div></div>'
       +'<div class="card"><h2>Платёж поставщику</h2><div class="f"><div><label>'+t('amount')+'</label><input id="p_a" inputmode="decimal" placeholder="0,00"></div><div><label>'+t('date')+'</label><input id="p_d" type="date" value="'+today+'"></div><div><label>'+t('method')+'</label><select id="p_m">'+opts(boot.methods,boot.methods[0])+'</select></div><div><label>'+t('comment')+'</label><input id="p_c" maxlength="300"></div></div><div class="acts"><button class="pri" id="p_save">Записать платёж</button></div><div class="note">Платёж уменьшает задолженность и деньги на счетах. Закупку вносите в «Расходы», выбрав этого поставщика.</div></div>'
@@ -344,7 +345,7 @@ async function rSup(){
 var taxYear=+today.slice(0,4),ruleEdit=null,dlEdit=null;
 var BASES={revenue:'Выручка (доходы)',profit:'Прибыль (доходы − расходы)',fixed:'Фиксированная сумма за месяц'},PERIODS={month:'Месяц',quarter:'Квартал',year:'Год'};
 async function rTax(){
-  var d=await call('GET','/tax?year='+taxYear),h='';
+  var my=seq,d=await call('GET','/tax?year='+taxYear),h='';if(my!==seq)return;
   h+='<div class="msg w">'+esc(d.disclaimer)+'</div>';
   h+='<div class="top"><h2>Предварительный расчёт за '+taxYear+' год</h2><div class="acts" style="margin:0"><button class="sm" id="ty-">←</button><button class="sm" id="ty+">→</button></div></div>';
   d.rules.forEach(function(r){
@@ -396,7 +397,7 @@ async function rRep(){
   await loadRep();
 }
 async function loadRep(){
-  var r=await call('GET','/report?from='+RP.from+'&to='+RP.to);lastRep=r;
+  var my=seq,r=await call('GET','/report?from='+RP.from+'&to='+RP.to);if(my!==seq||!$('rbody'))return;lastRep=r;
   var h='<div class="kpi"><div><small>'+t('revenue')+'</small><b class="mono">'+kgs(r.income)+'</b></div><div><small>'+t('expenses')+'</small><b class="mono">'+kgs(r.expense)+'</b></div><div><small>'+t('profit')+'</small><b class="mono '+sc(r.profit)+'">'+kgs(r.profit)+'</b></div></div><div class="sp"></div>';
   h+='<div class="acts" style="margin:0 0 10px"><button class="pri" id="xl">⬇ Excel (.xlsx)</button><button id="pdf">⬇ PDF (печать)</button><button id="bk">💾 Резервная копия (JSON)</button></div>';
   h+='<div class="grid2"><div class="card"><h2>Доходы по категориям</h2>'+catRows(r.income_categories)+'</div><div class="card"><h2>Расходы по категориям</h2>'+catRows(r.expense_categories)+'</div></div>';
@@ -439,8 +440,8 @@ async function exportBackup(){
 
 /* ---------- НАСТРОЙКИ ---------- */
 async function rSet(){
-  boot=await call('GET','/bootstrap');var s=boot.settings;
-  var au=await call('GET','/audit?limit=60');
+  var my=seq;boot=await call('GET','/bootstrap');var s=boot.settings;
+  var au=await call('GET','/audit?limit=60');if(my!==seq)return;
   var h='<div class="card"><h2>Основные настройки</h2><div class="f"><div><label>Начальный остаток денег, сом</label><input id="s_o" inputmode="decimal" value="'+(s.opening_minor?esc(amt(s.opening_minor)):'')+'"></div><div><label>Автоучёт заказов сайта с даты</label><input type="date" id="s_f" value="'+esc(s.auto_from)+'"></div>'
    +'<div class="full"><label class="chk"><input type="checkbox" id="s_a"'+(s.auto_orders?' checked':'')+'><span>Автоматически считать выданные заказы diamond.kg доходом, а комиссии Finik расходом (заказы только читаются, не меняются)</span></label></div></div><div class="acts"><button class="pri" id="s_save">'+t('save')+'</button></div></div>';
   h+='<div class="card"><h2>Безопасность и данные</h2><div class="row"><span>Доступ</span><b>только админ (токен админки)</b></div><div class="row"><span>Хранилище чеков (R2)</span><b>'+(boot.r2?'подключено':'<span class="warnc">не подключено</span>')+'</b></div><div class="row"><span>Удаление</span><b>в корзину, с подтверждением</b></div><div class="row"><span>Повторное добавление</span><b>защищено (ключ формы + сверка дублей)</b></div><div class="acts"><button id="bk">💾 Скачать резервную копию (JSON)</button></div><div class="note">Дополнительно база D1 хранит историю изменений (Time Travel) — восстановление возможно через панель Cloudflare.</div></div>';

@@ -181,7 +181,7 @@ button:disabled{opacity:.5;cursor:default}
       return '<div class="item" data-id="'+a.id+'">'+
         (a.photos.length?'<img src="'+api()+'/img/'+a.photos[0]+'" alt="">':'<div class="ph">🎮</div>')+
         '<div class="meta"><b>№'+a.id+' '+esc(a.title)+'</b><span>'+Number(a.price).toLocaleString('ru-RU')+' KGS<span class="st '+a.status+'">'+LBL[a.status]+'</span></span></div>'+
-        '<div class="acts"><button class="sm" data-act="edit">Изменить</button><button class="sm dng" data-act="del">Удалить</button></div></div>';
+        '<div class="acts">'+(a.status==='available'?'<button class="sm pri" data-act="tg">'+(a.tg_posted_at?'📢 Ещё раз':'📢 В канал')+'</button>':'')+'<button class="sm" data-act="edit">Изменить</button><button class="sm dng" data-act="del">Удалить</button></div></div>';
     }).join('');
   }
   var CM_ST={pending:'ждёт',approved:'опубликован',hidden:'скрыт'};
@@ -210,6 +210,13 @@ button:disabled{opacity:.5;cursor:default}
     var b=e.target.closest('button');if(!b)return;
     var id=Number(b.closest('.item').getAttribute('data-id')),a=accounts.filter(function(x){return x.id===id})[0];
     if(b.dataset.act==='edit')openForm(a);
+    if(b.dataset.act==='tg'){
+      var again=!!a.tg_posted_at;
+      if(again&&!confirm('Этот аккаунт уже отправлялся в канал. Отправить ещё раз? В канале будет два поста.'))return;
+      if(!again&&!confirm('Отправить «'+a.title+'» в Telegram-канал?'))return;
+      b.disabled=true;
+      try{await call('POST','/api/admin/accounts/'+id+'/channel',{force:again});msg('Отправлено в канал ✅');loadList()}catch(er){msg(er.message,'err');b.disabled=false}
+    }
     if(b.dataset.act==='del'){
       if(!confirm('Удалить аккаунт «'+a.title+'» и все его фото? Это нельзя отменить.'))return;
       try{await call('DELETE','/api/admin/accounts/'+id);msg('Аккаунт удалён');loadList()}catch(er){msg(er.message,'err')}

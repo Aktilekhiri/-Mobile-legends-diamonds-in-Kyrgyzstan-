@@ -16,7 +16,7 @@ import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { clientThread, clientSend, clientUnread, adminSend, adminThreads, adminThread, getBanner, setBanner } from './msgs.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
-import { ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
+import { postToChannel, ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
 import { createDeal, viewDeal, dealPaid, dealConfirm, dealProblem, remindDeals } from './deals.js';
 import { startFinikOrder, finikWebhook, cleanupFinik, finikReady } from './finik.js';
 import { walletInfo, startTopup, startWalletOrder, makeLinkCode, adminWallets, adminWalletHistory, adminWalletOp } from './wallet.js';
@@ -515,6 +515,21 @@ export default {
             env.DB.prepare('DELETE FROM accounts WHERE id = ?').bind(id),
           ]);
           await deleteAccountComments(env, id);
+          return json(req, { ok: true });
+        }
+
+        mm = path.match(/^\/api\/admin\/accounts\/(\d+)\/channel$/);
+        if (mm && m === 'POST') {
+          const id = Number(mm[1]);
+          const b = await req.json().catch(() => ({}));
+          try { await env.DB.prepare('ALTER TABLE accounts ADD COLUMN tg_posted_at INTEGER').run(); } catch (e) { /* уже есть */ }
+          const a = await env.DB.prepare('SELECT status, tg_posted_at FROM accounts WHERE id = ?').bind(id).first();
+          if (!a) return err(req, 'Аккаунт не найден', 404);
+          if (a.status !== 'available') return err(req, 'В канал можно отправить только аккаунт со статусом «В продаже»');
+          if (a.tg_posted_at && !b.force) return err(req, 'Уже отправлялся в канал ' + new Date(a.tg_posted_at).toLocaleString('ru-RU', { timeZone: 'Asia/Bishkek' }), 409);
+          const r = await postToChannel({ ...env, origin: env.origin || url.origin }, id, '');
+          if (!r.ok) return err(req, 'Не отправилось: ' + r.reason, 502);
+          await env.DB.prepare('UPDATE accounts SET tg_posted_at = ? WHERE id = ?').bind(Date.now(), id).run();
           return json(req, { ok: true });
         }
 

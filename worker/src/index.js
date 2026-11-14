@@ -16,6 +16,7 @@ import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { clientThread, clientSend, clientUnread, adminSend, adminThreads, adminThread, getBanner, setBanner } from './msgs.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
+import { gamesdropProbe } from './gamesdrop.js';
 import { postToChannel, ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
 import { createDeal, viewDeal, dealPaid, dealConfirm, dealProblem, remindDeals } from './deals.js';
 import { startFinikOrder, finikWebhook, cleanupFinik, finikReady } from './finik.js';
@@ -378,6 +379,7 @@ export default {
       if (path.startsWith('/api/admin')) {
         if (!(await isAdmin(req, env))) return err(req, 'Нужен вход', 401);
         // отдельный изолированный модуль «Финансы и учёт ИП» (worker/src/ipacc.js, таблицы ip_accounting_*)
+        if (path === '/api/admin/gamesdrop/probe' && m === 'POST') { const b = await req.json().catch(() => ({})); return json(req, await gamesdropProbe(env, b)); }
         if (path.startsWith('/api/admin/ipacc')) return ipaccHandle(req, env, path, url, { json, err, cors });
 
         // чёрный список телефонов

@@ -298,6 +298,8 @@ export async function syncFromFz(env, o, fz) {
     await setStatus(env, o.id, { status: 'manual', fz_status: st, fz_order_id: fz.id || o.fz_order_id, fail_reason: 'Частично выдан: ' + String(fz.fail_reason || '').slice(0, 200), finished_at: Date.now() });
     await notify(env, `⚠️ Заказ ${o.id}: составной пакет выдан частично (FazerCards ${fz.id}). Проверьте вручную, что получил клиент.`);
   } else if (st === 'refund' || st === 'failed') {
+    // поставщик вернул деньги из-за «нет в наличии / временно недоступно»: прячем пак на сайте, чтобы клиенты не повторяли заказ (вернуть: админка → «Наличие паков»)
+    if (st === 'refund' && /out of stock|temporarily unavailable/i.test(String(fz.fail_reason || ''))) { try { await markPkgOff(env, o.region + ':' + o.pkg, 'нет в наличии у FazerCards'); } catch (e) { /* не мешаем возврату */ } }
     if (st === 'refund' && o.region === 'russia' && o.method !== 'Для себя' && o.method !== 'promo' && /region/i.test(String(fz.fail_reason || '')) && !/\[alt\]/.test(o.fail_reason || '') && await retryInGlobal(env, o)) return;
     // failed: деньги гарантированно вернутся только при refund, поэтому клиенту возвращаем деньги только после refund
     if (st === 'refund' && o.method === 'Для себя') {

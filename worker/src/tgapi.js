@@ -32,7 +32,7 @@ export function tgNotifyOrder(env, orderId, kind, titleOf) {
   if (!env.TG_SHOP_BOT_TOKEN) return;
   return defer(env, (async () => {
     try {
-      const o = await env.DB.prepare('SELECT id, region, pkg_label, price_kgs, player_id, server_id, tg_chat, user_id, method, delivery FROM orders WHERE id = ?').bind(orderId).first();
+      const o = await env.DB.prepare('SELECT id, region, pkg_label, price_kgs, player_id, server_id, tg_chat, user_id, method, delivery, fail_reason FROM orders WHERE id = ?').bind(orderId).first();
       if (!o) return;
       let chat = o.tg_chat;
       if (!chat && o.user_id) { try { const l = await env.DB.prepare('SELECT tg_chat FROM tg_links WHERE user_id = ? ORDER BY created_at DESC LIMIT 1').bind(o.user_id).first(); chat = l && l.tg_chat; } catch (e) { /* таблицы привязки ещё нет */ } }
@@ -43,7 +43,7 @@ export function tgNotifyOrder(env, orderId, kind, titleOf) {
         paid: `✅ <b>Спасибо! Оплата получена.</b>\n🆔 ID: <code>${esc(o.player_id)}</code>${zone}\n\n🎮 ${game ? esc(game) + ' · ' : ''}${esc(o.pkg_label)}\nЗаказ <b>${esc(o.id)}</b> оформлен, пришлём результат сюда.`,
         delivered: `✅ <b>Заказ ${esc(o.id)} выполнен</b>\n${esc(o.pkg_label)}. ${o.delivery ? 'Ваш код:\n<code>' + esc(o.delivery) + '</code>\n\nАктивируйте его в игре и никому не показывайте.' : 'Проверьте аккаунт в игре.'}\n\nЕсли что-то не пришло, напишите в WhatsApp: +996 555 920 204`,
         cancelled: `❌ <b>Заказ ${esc(o.id)} отменён</b>\nЕсли вы уже оплатили, напишите нам в WhatsApp +996 555 920 204, мы вернём деньги.`,
-        refund: `↩️ <b>Заказ ${esc(o.id)} не удалось выполнить</b>\nВернём ${esc(o.price_kgs)} сом на ваш счёт. Если вопросы, WhatsApp +996 555 920 204.`,
+        refund: `↩️ <b>Заказ ${esc(o.id)} не удалось выполнить</b>\n` + (/region/i.test(String(o.fail_reason || '')) ? 'Регион вашего аккаунта не подходит для выбранного пакета. Выберите в форме регион, в котором создан аккаунт (для большинства это «Глобальный»), и оформите заказ ещё раз.\n' : '') + `Вернём ${esc(o.price_kgs)} сом на ваш счёт. Если вопросы, WhatsApp +996 555 920 204.`,
       }[kind];
       if (t) await send(env, chat, t, { reply_markup: MENU_BTN });
     } catch (e) { /* не критично */ }

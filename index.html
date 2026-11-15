@@ -1653,7 +1653,7 @@
       </div>
       </div>
       <div class="zone-warn" id="idWarn" role="alert" hidden></div>
-      <div class="zone-warn" id="zoneWarn" role="alert" hidden>🚫 Сервер 6xxx — российский. Выберите регион «Россия».</div>
+      <div class="zone-warn" id="zoneWarn" role="alert" hidden>⚠️ Зоны 6xxx чаще бывают у российских аккаунтов. Если аккаунт российский, выберите регион «Россия».</div>
       <div class="nick-ok" id="nickOk" role="status" hidden></div>
       <div class="region-fix" id="regionFix" role="status" hidden></div>
       <button type="button" class="help-btn" id="helpBtn" onclick="toggleIdGuide()">? Где найти ID</button>
@@ -2452,8 +2452,7 @@ function selectPackage(id) {
 // Zone ID 6xxx — российские серверы MLBB: в «Глобальном» регионе их принимать нельзя (заказ всё равно отменяется).
 function isRuZoneOnGlobal(sid) {
   if (currentGame === 'mlbb' && nickConfirmed()) {   // проверка ID точнее, чем правило по зоне
-    if (_nickRegion === 'regular') return currentRegion === 'russia';   // аккаунт НЕ российский: зона 6xxx на Global допустима, а «Россия» нет (регион не подойдёт, заказ отменится)
-    if (_nickRegion === 'russia') return currentRegion !== 'russia';   // российский аккаунт при другом регионе: блок (объясняет жёлтая плашка)
+    return false;   // регион определён проверкой ID: покажет жёлтая плашка, старое предупреждение по зоне не нужно
   }
   return currentGame === 'mlbb' && currentRegion === 'global' && /^6\d{3}$/.test(String(sid || '').trim());
 }
@@ -2525,8 +2524,8 @@ function regionHint() {
   const el = document.getElementById('regionFix'); if (!el) return;
   if (currentGame !== 'mlbb' || !nickConfirmed() || !_nickRegion) { el.hidden = true; return; }
   const ru = _nickRegion === 'russia';
-  if (ru && currentRegion !== 'russia') { el.innerHTML = '🇷🇺 Аккаунт российский. Для него нужен регион «Россия». <button type="button" onclick="fixRegion(\'russia\')">Выбрать «Россия»</button>'; el.hidden = false; }
-  else if (!ru && currentRegion === 'russia') { el.innerHTML = '🌍 Аккаунт не российский. Для него нужен регион «Глобальный». <button type="button" onclick="fixRegion(\'global\')">Выбрать «Глобальный»</button>'; el.hidden = false; }
+  if (ru && currentRegion !== 'russia') { el.innerHTML = '🇷🇺 Похоже, это российский аккаунт. Рекомендуем регион «Россия». <button type="button" onclick="fixRegion(\'russia\')">Выбрать «Россия»</button>'; el.hidden = false; }
+  else if (!ru && currentRegion === 'russia') { el.innerHTML = '🌍 Похоже, аккаунт не российский. Рекомендуем регион «Глобальный». <button type="button" onclick="fixRegion(\'global\')">Выбрать «Глобальный»</button>'; el.hidden = false; }
   else el.hidden = true;
 }
 function fixRegion(r) { const sel = document.getElementById('regionSelect'); if (!sel) return; sel.value = r; changeRegion(); }
@@ -2565,7 +2564,7 @@ function updateBuyBtn() {
   const zw = document.getElementById('zoneWarn'); if (zw) zw.hidden = !zoneBad || (nickConfirmed() && !!_nickRegion);
   const firstOk = !(selectedPkg && selectedPkg.firstOnly) || !!(document.getElementById('firstOk') && document.getElementById('firstOk').checked);
   const gdk = gamesData[currentGame], needIdOk = !(gdk && gdk.kind === 'none') && !nickConfirmed();
-  const ready = !!(pid && sid && selectedPkg && !zoneBad && !prob && firstOk);
+  const ready = !!(pid && sid && selectedPkg && !prob && firstOk);   // регион только подсказываем, оплату не блокируем
   const ior = document.getElementById('idOkRow'), iok = document.getElementById('idOk');
   if (ior && iok) {
     const sig = pid + '|' + sid + '|' + (selectedPkg ? selectedPkg.key || selectedPkg.id : '');
@@ -2583,7 +2582,7 @@ function updateBuyBtn() {
 function proceedToPayment() {
   const pid = getPlayerValue();
   const sid = getServerValue();
-  if (!pid || !sid || !selectedPkg || isRuZoneOnGlobal(sid) || mlbbIdProblem(pid, sid)) return;
+  if (!pid || !sid || !selectedPkg || mlbbIdProblem(pid, sid)) return;
   if (selectedPkg.firstOnly && !(document.getElementById('firstOk') || {}).checked) return;
   { const g0 = gamesData[currentGame]; if (!(g0 && g0.kind === 'none') && !nickConfirmed() && !(document.getElementById('idOk') || {}).checked) return; }
   currentOrder = {

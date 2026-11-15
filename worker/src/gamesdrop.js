@@ -110,10 +110,15 @@ export async function comparePrices(env, CATS) {
 
 // Тест: различает ли проверка ID регион аккаунта. Берёт из доставленных заказов по несколько ID разных регионов
 // и прогоняет по офферам Mobile Legends. Ничего не покупает; в ответе ID скрыты (только последние 3 цифры), ники не выводятся.
-export async function regionTest(env) {
+export async function regionTest(env, deep) {
   const q = async (sql) => (await env.DB.prepare(sql).all()).results || [];
   const base = "SELECT region, player_id, server_id FROM orders WHERE status='delivered' AND player_id GLOB '[0-9]*' AND ";
-  const samples = [
+  const samples = deep ? [
+    ...(await q(base + "region='russia' AND server_id LIKE '6%' ORDER BY created_at DESC LIMIT 6")),
+    ...(await q(base + "region='russia' AND server_id NOT LIKE '6%' ORDER BY created_at DESC LIMIT 2")),
+    ...(await q(base + "region='global' AND server_id LIKE '6%' ORDER BY created_at DESC LIMIT 3")),
+    ...(await q(base + "region='global' AND server_id NOT LIKE '6%' ORDER BY created_at ASC LIMIT 2")),
+  ] : [
     ...(await q(base + "region='global' AND server_id NOT LIKE '6%' AND server_id NOT LIKE '4%' ORDER BY created_at DESC LIMIT 1")),
     ...(await q(base + "region='global' AND server_id LIKE '6%' ORDER BY created_at DESC LIMIT 1")),
     ...(await q(base + "region='global' AND server_id LIKE '4%' ORDER BY created_at DESC LIMIT 1")),
@@ -126,6 +131,7 @@ export async function regionTest(env) {
   const rows = (s.data.rows || s.data.data || []).filter(r => r.isRequiredGameUserId && r.inStock);
   const seen = new Set(), offers = [];
   for (const r of rows) { const k = r.productName || r.offerGroupName; if (seen.has(k)) continue; seen.add(k); offers.push({ id: r.offerGroupId, name: k }); }
+  if (deep) { const keep = offers.filter(o => /^Mobile Legends( Russia| Global)?$/i.test(o.name)); offers.length = 0; offers.push(...keep); }
   offers.length = Math.min(offers.length, 6);
   const out = [];
   for (const sm of samples) {

@@ -57,10 +57,12 @@ async function offersFor(env, game) {
   const c = _offers.get(game); if (c && c.exp > Date.now()) return c.list;
   const s = await gd(env, 'POST', '/api/v1/offers/sync', { search: GD_SEARCH[game], page: 1, limit: 100 });
   const words = GD_SEARCH[game].toLowerCase().split(/\s+/);
-  const rows = (s.data.rows || s.data.data || []).filter(r => { const nm = ((r.productName || '') + ' ' + (r.offerGroupName || '')).toLowerCase(); return r.isRequiredGameUserId && r.inStock && words.every(w => nm.includes(w)); });
+  let rows = (s.data.rows || s.data.data || []).filter(r => { const nm = ((r.productName || '') + ' ' + (r.offerGroupName || '')).toLowerCase(); return r.isRequiredGameUserId && r.inStock && words.every(w => nm.includes(w)); });
+  // MLBB: только обычный оффер и Russia. Найден на Russia = российский аккаунт, на обычном = не российский (проверено на реальных заказах)
+  if (game === 'mlbb') rows = rows.filter(r => /^mobile legends( russia)?$/i.test(String(r.productName || '').trim()));
   // по одному офферу с каждого продукта (регион/версия), «Global» в конце; максимум 3 попытки
   const seen = new Set(), list = [];
-  for (const r of rows) { const k = r.productName || r.offerGroupName; if (seen.has(k)) continue; seen.add(k); list.push({ id: r.offerGroupId, srv: !!r.isRequiredGameServerId, glob: /global/i.test(k) }); }
+  for (const r of rows) { const k = r.productName || r.offerGroupName; if (seen.has(k)) continue; seen.add(k); list.push({ id: r.offerGroupId, srv: !!r.isRequiredGameServerId, glob: /global/i.test(k), reg: game === 'mlbb' ? (/russia/i.test(k) ? 'russia' : 'regular') : '' }); }
   list.sort((a, b) => a.glob - b.glob);
   const out = list.slice(0, 3);
   _offers.set(game, { list: out, exp: Date.now() + 6 * 3600e3 });
@@ -73,17 +75,17 @@ export async function checkPlayer(env, ip, b) {
   const rl = _rl.get(ip); if (rl && rl.exp > now) { if (++rl.n > 40) return { nick: null }; } else _rl.set(ip, { n: 1, exp: now + 600e3 });
   if (_rl.size > 5000) _rl.clear();
   const key = game + '|' + pid + '|' + sid;
-  const hit = _res.get(key); if (hit && hit.exp > now) return { nick: hit.nick };
-  let nick = null;
+  const hit = _res.get(key); if (hit && hit.exp > now) return { nick: hit.nick, region: hit.region || '' };
+  let nick = null, region = '';
   try {
     for (const o of await offersFor(env, game)) {
       const body = { offerId: o.id, gameUserId: pid }; if (sid && sid !== '-') body.gameServerId = sid;
       const c = await gd(env, 'POST', '/api/v1/offers/check-game-data', body);
-      if (c.data && c.data.status === 'VALID' && c.data.gameUserLogin) { nick = String(c.data.gameUserLogin).slice(0, 40); break; }
+      if (c.data && c.data.status === 'VALID' && c.data.gameUserLogin) { nick = String(c.data.gameUserLogin).slice(0, 40); region = o.reg || ''; break; }
     }
   } catch (e) { return { nick: null }; }
-  _res.set(key, { nick, exp: now + (nick ? 3600e3 : 600e3) }); if (_res.size > 5000) _res.clear();
-  return { nick };
+  _res.set(key, { nick, region, exp: now + (nick ? 3600e3 : 600e3) }); if (_res.size > 5000) _res.clear();
+  return { nick, region };
 }
 
 // Сравнение цен: наша себестоимость (FazerCards) против GamesDrop. Ничего не покупает.

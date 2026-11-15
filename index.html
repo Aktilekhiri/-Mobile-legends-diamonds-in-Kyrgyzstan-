@@ -1655,6 +1655,7 @@
       <div class="zone-warn" id="idWarn" role="alert" hidden></div>
       <div class="zone-warn" id="zoneWarn" role="alert" hidden>🚫 Сервер 6xxx — российский. Выберите регион «Россия».</div>
       <div class="nick-ok" id="nickOk" role="status" hidden></div>
+      <div class="region-fix" id="regionFix" role="status" hidden></div>
       <button type="button" class="help-btn" id="helpBtn" onclick="toggleIdGuide()">? Где найти ID</button>
       <div class="id-guide" id="idGuide" hidden style="background:rgba(255,186,8,.06); padding:13px; border-radius:12px;"><strong>📖 Как найти ID?</strong><br>Профиль → ваш ID (123456789) и сервер в скобках (1234)</div>
       <div class="first-warn" id="firstWarn" hidden><strong>⚠️ Только для первого пополнения</strong><p>Бонус даётся один раз на аккаунт. Если уже пополняли, выберите другой пакет.</p><label class="first-ok"><input type="checkbox" id="firstOk" onchange="updateBuyBtn()"> Я ещё ни разу не пополнял этот аккаунт</label></div>
@@ -2450,6 +2451,7 @@ function selectPackage(id) {
 
 // Zone ID 6xxx — российские серверы MLBB: в «Глобальном» регионе их принимать нельзя (заказ всё равно отменяется).
 function isRuZoneOnGlobal(sid) {
+  if (currentGame === 'mlbb' && _nickRegion === 'regular' && nickConfirmed()) return false;   // проверка ID: аккаунт НЕ российский, зона 6xxx допустима
   return currentGame === 'mlbb' && currentRegion === 'global' && /^6\d{3}$/.test(String(sid || '').trim());
 }
 // MLBB: ID 6–10 цифр, Zone ID 4–5 цифр. Клиенты часто пишут ID и зону слитно или в одно поле.
@@ -2481,7 +2483,7 @@ function smartPasteId(e) {
   return false;
 }
 // Ник игрока по ID: проверяем сами, как только введены ID и Zone. Показываем только найденный ник, иначе молчим.
-let _nickKey = '', _nickT = null, _nickOkSig = '';
+let _nickKey = '', _nickT = null, _nickOkSig = '', _nickRegion = '';
 // Ник найден для текущих ID/сервера: подтверждение «Проверил(а) ID» не нужно (клиент сам видит аккаунт)
 function nickConfirmed() { return !!_nickOkSig && _nickOkSig === currentGame + '|' + getPlayerValue() + '|' + getServerValue(); }
 function nickCheck() {
@@ -2492,7 +2494,7 @@ function nickCheck() {
   const ready = currentGame === 'mlbb' ? (pid.length >= 6 && pid.length <= 10 && sid.length >= 4 && sid.length <= 5) : (pid.length >= 5 && !!sid);
   const key = currentGame + '|' + pid + '|' + sid + '|' + (ready ? 1 : 0);
   if (key === _nickKey) return;
-  _nickKey = key; box.hidden = true; clearTimeout(_nickT);
+  _nickKey = key; box.hidden = true; clearTimeout(_nickT); _nickRegion = ''; const rh = document.getElementById('regionFix'); if (rh) rh.hidden = true;
   if (!ready || !API_BASE()) return;
   _nickT = setTimeout(async () => {
     try {
@@ -2502,7 +2504,7 @@ function nickCheck() {
       const d = await r.json();
       if (key !== _nickKey || !d || !d.nick) return;
       box.innerHTML = '<span class="nk-ic">✅</span><span class="nk-t"><small>Аккаунт найден</small><b>' + esc(d.nick) + '</b></span>';
-      box.hidden = false; _nickOkSig = currentGame + '|' + pid + '|' + sid; updateBuyBtn();
+      box.hidden = false; _nickOkSig = currentGame + '|' + pid + '|' + sid; _nickRegion = d.region || ''; updateBuyBtn(); regionHint();
     } catch (e) {}
   }, 500);
 }
@@ -2516,6 +2518,15 @@ function updatePmRow() {
   row.hidden = !can; if (!can && _pm === 'wallet') setPm('finik');
   if (can) document.getElementById('pmWallet').textContent = '💰 С баланса · ' + Number(w.balance).toLocaleString('ru-RU');
 }
+function regionHint() {
+  const el = document.getElementById('regionFix'); if (!el) return;
+  if (currentGame !== 'mlbb' || !nickConfirmed() || !_nickRegion) { el.hidden = true; return; }
+  const ru = _nickRegion === 'russia';
+  if (ru && currentRegion !== 'russia') { el.innerHTML = '🇷🇺 Аккаунт российский. Для него нужен регион «Россия». <button type="button" onclick="fixRegion(\'russia\')">Выбрать «Россия»</button>'; el.hidden = false; }
+  else if (!ru && currentRegion === 'russia') { el.innerHTML = 'ℹ️ Похоже, аккаунт не российский. Обычно для таких нужен «Глобальный». <button type="button" onclick="fixRegion(\'global\')">Выбрать «Глобальный»</button>'; el.hidden = false; }
+  else el.hidden = true;
+}
+function fixRegion(r) { const sel = document.getElementById('regionSelect'); if (!sel) return; sel.value = r; changeRegion(); }
 function toggleIdGuide() { const g = document.getElementById('idGuide'); if (g) g.hidden = !g.hidden; }
 async function payNow() {
   const btn = document.getElementById('buyBtn'), msg = document.getElementById('payMsg');
@@ -2532,6 +2543,7 @@ async function payNow() {
 }
 function updateBuyBtn() {
   try { updatePmRow(); } catch (e) {}
+  try { regionHint(); } catch (e) {}
   try { nickCheck(); } catch (e) {}
   const pid = getPlayerValue();
   const sid = getServerValue();

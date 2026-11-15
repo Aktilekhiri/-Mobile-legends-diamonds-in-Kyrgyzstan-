@@ -791,3 +791,7 @@ body.has-banner .page{margin-top:var(--bnH,0)}
 .pay-terms{margin-top:12px;text-align:center;font-size:12px;opacity:.7;line-height:1.5}
 .pay-terms a{color:inherit;text-decoration:underline}
 .pm-row[hidden]{display:none}
+
+.region-fix{margin:10px 0 2px;padding:11px 13px;border-radius:12px;background:rgba(245,166,35,.14);border:1px solid #f5a623;font-size:14px;line-height:1.45}
+.region-fix[hidden]{display:none}
+.region-fix button{margin-top:8px;display:block;padding:8px 14px;border-radius:10px;border:0;background:#f5a623;color:#1a1a1a;font:inherit;font-weight:700;cursor:pointer}

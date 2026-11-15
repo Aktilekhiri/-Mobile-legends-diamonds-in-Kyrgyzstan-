@@ -1632,7 +1632,7 @@
     </div>
     <div class="form-card step-card" id="stepData" hidden>
       <button type="button" class="back-cat" onclick="backToPackages()">← Пакеты</button>
-      <div class="card-title">Ваши данные</div>
+      <div class="card-title" id="dataTitle">Ваши данные</div>
       <div class="sel-info" id="selectedInfo" style="display:none"><div class="sel-ic" id="selIc" hidden></div><div class="sel-body"><div class="sel-name" id="selDiamonds"></div><div class="sel-pay"><span>К оплате</span><b id="selPrice"></b></div></div></div>
       <div id="userRow" style="display:none">
       <label for="tgUser">TELEGRAM @USERNAME</label>
@@ -2129,6 +2129,7 @@ function changeGame(g) {
   const kind = gd && gd.kind;
   document.getElementById('idRow').style.display = kind ? 'none' : '';
   document.getElementById('userRow').style.display = kind === 'username' ? '' : 'none';
+  { const hb = document.getElementById('helpBtn'), ig = document.getElementById('idGuide'), dt = document.getElementById('dataTitle'); if (hb) hb.style.display = kind === 'none' ? 'none' : ''; if (ig && kind) ig.hidden = true; if (dt) dt.textContent = kind === 'none' ? 'Оплата' : 'Ваши данные'; }
   const srvRow = document.getElementById('serverRow'), srvIn = document.getElementById('serverId'), srvSel = document.getElementById('serverSelect');
   if (!gd || gd.zone) { srvRow.style.display = ''; srvIn.style.display = ''; srvSel.style.display = 'none'; document.getElementById('serverLabel').textContent = gd ? 'SERVER ID' : 'ZONE ID (СЕРВЕР)'; document.getElementById('serverId').placeholder = '8403'; }
   else if (gd.servers) {
@@ -2405,7 +2406,7 @@ function backToPackages() { showDataStep(false); window.scrollTo(0, 0); }
 function backFromPayment() {
   const g = gamesData[currentGame];
   showPage('topup');
-  if (g && g.kind === 'none') showDataStep(false); else showDataStep(true);
+  showDataStep(true);
 }
 // клик по пакету: у игр без ID (Roblox) шаг «Данные» пропускаем
 function pickPackage(id) {
@@ -2413,9 +2414,7 @@ function pickPackage(id) {
   pickPackageGo(id);
 }
 function pickPackageGo(id) {
-  selectPackage(id);
-  const g = gamesData[currentGame];
-  if (g && g.kind === 'none') proceedToPayment();
+  selectPackage(id);   // у подарочных карт тоже один экран «оплата», отдельной страницы нет
 }
 
 // ---------- Подсказка гостю: войти через Google или Telegram (один раз за визит, покупать можно и без входа) ----------

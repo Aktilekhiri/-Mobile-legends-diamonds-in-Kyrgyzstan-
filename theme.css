@@ -768,5 +768,11 @@ body.has-banner .page{margin-top:var(--bnH,0)}
 .auth-contact{margin:0 0 14px;padding:14px 0 4px;border-top:1px solid var(--border,rgba(128,128,128,.25))}
 .ac-row{display:flex;gap:8px}.ac-row .input-field{flex:1;min-width:0}
 
-.nick-ok{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.35);font-size:14px}
-.nick-ok b{font-weight:700}
+.nick-ok{display:flex;align-items:center;gap:12px;margin:12px 0 4px;padding:14px 16px;border-radius:14px;background:linear-gradient(135deg,rgba(34,197,94,.28),rgba(34,197,94,.12));border:2px solid #22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.14),0 6px 18px rgba(34,197,94,.22);animation:nickPop .35s ease-out}
+.nick-ok[hidden]{display:none}
+.nick-ok .nk-ic{font-size:26px;line-height:1}
+.nick-ok .nk-t{display:flex;flex-direction:column;min-width:0}
+.nick-ok small{font-size:12px;letter-spacing:.04em;text-transform:uppercase;opacity:.85}
+.nick-ok b{font-size:21px;font-weight:800;line-height:1.25;word-break:break-word}
+@keyframes nickPop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.nick-ok{animation:none}}

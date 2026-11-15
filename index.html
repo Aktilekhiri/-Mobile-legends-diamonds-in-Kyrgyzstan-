@@ -2251,6 +2251,7 @@ function pkgImg(p) {
 }
 function pkgIcon(p) {
   const gd = gamesData[currentGame];
+  if (gd && gd.unit === 'UC' && !gd.pk && p.type !== 'pass') return '';
   return (gd && gd.pk) || (p.type === 'pass' ? '🎫' : '💎');
 }
 function getServerValue() {
@@ -2491,7 +2492,7 @@ function nickCheck() {
       clearTimeout(tm);
       const d = await r.json();
       if (key !== _nickKey || !d || !d.nick) return;
-      box.innerHTML = '✅ Аккаунт: <b>' + esc(d.nick) + '</b>';
+      box.innerHTML = '<span class="nk-ic">✅</span><span class="nk-t"><small>Аккаунт найден</small><b>' + esc(d.nick) + '</b></span>';
       box.hidden = false;
     } catch (e) {}
   }, 500);

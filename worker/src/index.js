@@ -17,7 +17,7 @@ import { clientThread, clientSend, clientUnread, adminSend, adminThreads, adminT
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
 import { CATALOGS } from './catalog.js';
-import { gamesdropProbe, checkPlayer, comparePrices } from './gamesdrop.js';
+import { gamesdropProbe, checkPlayer, comparePrices, regionTest } from './gamesdrop.js';
 import { postToChannel, ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
 import { createDeal, viewDeal, dealPaid, dealConfirm, dealProblem, remindDeals } from './deals.js';
 import { startFinikOrder, finikWebhook, cleanupFinik, finikReady } from './finik.js';
@@ -381,7 +381,7 @@ export default {
       if (path.startsWith('/api/admin')) {
         if (!(await isAdmin(req, env))) return err(req, 'Нужен вход', 401);
         // отдельный изолированный модуль «Финансы и учёт ИП» (worker/src/ipacc.js, таблицы ip_accounting_*)
-        if (path === '/api/admin/gamesdrop/probe' && m === 'POST') { const b = await req.json().catch(() => ({})); if (b.compare) return json(req, await comparePrices(env, { global: CATALOGS.global, russia: CATALOGS.russia, pubg: CATALOGS.pubg })); return json(req, await gamesdropProbe(env, b)); }
+        if (path === '/api/admin/gamesdrop/probe' && m === 'POST') { const b = await req.json().catch(() => ({})); if (b.regiontest) return json(req, await regionTest(env)); if (b.compare) return json(req, await comparePrices(env, { global: CATALOGS.global, russia: CATALOGS.russia, pubg: CATALOGS.pubg })); return json(req, await gamesdropProbe(env, b)); }
         if (path.startsWith('/api/admin/ipacc')) return ipaccHandle(req, env, path, url, { json, err, cors });
 
         // чёрный список телефонов

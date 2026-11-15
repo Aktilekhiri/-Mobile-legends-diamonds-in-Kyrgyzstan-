@@ -107,3 +107,36 @@ export async function comparePrices(env, CATS) {
   }
   return out;
 }
+
+// Тест: различает ли проверка ID регион аккаунта. Берёт из доставленных заказов по несколько ID разных регионов
+// и прогоняет по офферам Mobile Legends. Ничего не покупает; в ответе ID скрыты (только последние 3 цифры), ники не выводятся.
+export async function regionTest(env) {
+  const q = async (sql) => (await env.DB.prepare(sql).all()).results || [];
+  const base = "SELECT region, player_id, server_id FROM orders WHERE status='delivered' AND player_id GLOB '[0-9]*' AND ";
+  const samples = [
+    ...(await q(base + "region='global' AND server_id NOT LIKE '6%' AND server_id NOT LIKE '4%' ORDER BY created_at DESC LIMIT 1")),
+    ...(await q(base + "region='global' AND server_id LIKE '6%' ORDER BY created_at DESC LIMIT 1")),
+    ...(await q(base + "region='global' AND server_id LIKE '4%' ORDER BY created_at DESC LIMIT 1")),
+    ...(await q(base + "region='russia' AND server_id LIKE '6%' ORDER BY created_at DESC LIMIT 1")),
+    ...(await q(base + "region='russia' AND server_id NOT LIKE '6%' ORDER BY created_at DESC LIMIT 1")),
+    ...(await q(base + "region='turkey' ORDER BY created_at DESC LIMIT 1")),
+    ...(await q(base + "region='usa' ORDER BY created_at DESC LIMIT 1")),
+  ];
+  const s = await gd(env, 'POST', '/api/v1/offers/sync', { search: 'Mobile Legends', page: 1, limit: 100 });
+  const rows = (s.data.rows || s.data.data || []).filter(r => r.isRequiredGameUserId && r.inStock);
+  const seen = new Set(), offers = [];
+  for (const r of rows) { const k = r.productName || r.offerGroupName; if (seen.has(k)) continue; seen.add(k); offers.push({ id: r.offerGroupId, name: k }); }
+  offers.length = Math.min(offers.length, 6);
+  const out = [];
+  for (const sm of samples) {
+    const res = {};
+    await Promise.all(offers.map(async (o) => {
+      try {
+        const c = await gd(env, 'POST', '/api/v1/offers/check-game-data', { offerId: o.id, gameUserId: String(sm.player_id), gameServerId: String(sm.server_id) });
+        res[o.name] = c.data && c.data.status === 'VALID' ? 'V' : (c.data && c.data.status === 'INVALID' ? 'x' : '?');
+      } catch (e) { res[o.name] = '?'; }
+    }));
+    out.push({ region: sm.region, zone: sm.server_id, id: '…' + String(sm.player_id).slice(-3), res });
+  }
+  return { offers: offers.map(o => o.name), rows: out };
+}

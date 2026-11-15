@@ -56,7 +56,8 @@ const _offers = new Map(), _res = new Map(), _rl = new Map();
 async function offersFor(env, game) {
   const c = _offers.get(game); if (c && c.exp > Date.now()) return c.list;
   const s = await gd(env, 'POST', '/api/v1/offers/sync', { search: GD_SEARCH[game], page: 1, limit: 100 });
-  const rows = (s.data.rows || s.data.data || []).filter(r => r.isRequiredGameUserId && r.inStock);
+  const words = GD_SEARCH[game].toLowerCase().split(/\s+/);
+  const rows = (s.data.rows || s.data.data || []).filter(r => { const nm = ((r.productName || '') + ' ' + (r.offerGroupName || '')).toLowerCase(); return r.isRequiredGameUserId && r.inStock && words.every(w => nm.includes(w)); });
   // по одному офферу с каждого продукта (регион/версия), «Global» в конце; максимум 3 попытки
   const seen = new Set(), list = [];
   for (const r of rows) { const k = r.productName || r.offerGroupName; if (seen.has(k)) continue; seen.add(k); list.push({ id: r.offerGroupId, srv: !!r.isRequiredGameServerId, glob: /global/i.test(k) }); }

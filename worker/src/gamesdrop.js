@@ -97,7 +97,7 @@ export async function comparePrices(env, CATS) {
       const rows = await load(q), res = [];
       for (const [pk, v] of Object.entries(cat || {})) {
         if (!v || !v.cost) continue;
-        const parts = pk.match(/^(\d+)\+(\d+)$/); const total = parts ? Number(parts[1]) + Number(parts[2]) : num(pk) || num(v.offer);
+        const parts = pk.match(/^(\d+)\+(\d+)$/); const uc = pk.match(/^(\d+)_uc$/); const total = parts ? Number(parts[1]) + Number(parts[2]) : uc ? Number(uc[1]) : num(pk) || num(v.offer);
         if (!total) continue;
         const gdm = rows.filter(r => num((r.productName || '') + ' ' + (r.offerGroupName || '')) === total).slice(0, 4).map(r => ({ n: (r.productName || '') + ' · ' + (r.offerGroupName || ''), p: r.price, d: Math.round((r.price / v.cost - 1) * 1000) / 10 }));
         res.push({ pack: pk, ours: v.cost, gd: gdm });

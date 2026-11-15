@@ -2444,7 +2444,7 @@ function selectPackage(id) {
   document.getElementById('selectedInfo').style.display = '';
   showDataStep(true);
   const label = selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.totalDiamonds} ${unitOf(currentRegion)}` + (selectedPkg.bonus && selectedPkg.diam ? ` (${selectedPkg.diam} + ${selectedPkg.bonus} бонус)` : '');
-  { const im = pkgImg(selectedPkg), ic = document.getElementById('selIc');
+  { const im = pkgImg(selectedPkg) || `<img class="pkg-img" src="/img/games/${currentGame}.webp" width="50" height="50" alt="" style="border-radius:12px" onerror="this.parentNode.hidden=true">`, ic = document.getElementById('selIc');
     ic.innerHTML = im || ''; ic.hidden = !im;
     document.getElementById('selDiamonds').innerHTML = label; }
   document.getElementById('selPrice').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;

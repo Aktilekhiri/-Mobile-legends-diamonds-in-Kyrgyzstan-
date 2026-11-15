@@ -2451,7 +2451,10 @@ function selectPackage(id) {
 
 // Zone ID 6xxx — российские серверы MLBB: в «Глобальном» регионе их принимать нельзя (заказ всё равно отменяется).
 function isRuZoneOnGlobal(sid) {
-  if (currentGame === 'mlbb' && _nickRegion === 'regular' && nickConfirmed()) return false;   // проверка ID: аккаунт НЕ российский, зона 6xxx допустима
+  if (currentGame === 'mlbb' && nickConfirmed()) {   // проверка ID точнее, чем правило по зоне
+    if (_nickRegion === 'regular') return false;   // аккаунт НЕ российский: зона 6xxx допустима
+    if (_nickRegion === 'russia') return currentRegion !== 'russia';   // российский аккаунт при другом регионе: блок (объясняет жёлтая плашка)
+  }
   return currentGame === 'mlbb' && currentRegion === 'global' && /^6\d{3}$/.test(String(sid || '').trim());
 }
 // MLBB: ID 6–10 цифр, Zone ID 4–5 цифр. Клиенты часто пишут ID и зону слитно или в одно поле.
@@ -2559,7 +2562,7 @@ function updateBuyBtn() {
       if (fix) { const b = document.createElement('button'); b.type = 'button'; b.className = 'link-btn'; b.textContent = ' Исправить'; b.onclick = fixMergedId; iw.appendChild(b); }
     }
   }
-  const zw = document.getElementById('zoneWarn'); if (zw) zw.hidden = !zoneBad;
+  const zw = document.getElementById('zoneWarn'); if (zw) zw.hidden = !zoneBad || (nickConfirmed() && !!_nickRegion);
   const firstOk = !(selectedPkg && selectedPkg.firstOnly) || !!(document.getElementById('firstOk') && document.getElementById('firstOk').checked);
   const gdk = gamesData[currentGame], needIdOk = !(gdk && gdk.kind === 'none') && !nickConfirmed();
   const ready = !!(pid && sid && selectedPkg && !zoneBad && !prob && firstOk);

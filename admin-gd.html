@@ -15,19 +15,27 @@ pre{white-space:pre-wrap;word-break:break-word;font-size:.8rem;color:var(--mu)}
 <label for="q">Поиск в каталоге</label><input id="q" value="standoff">
 <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="t" style="width:auto;min-height:0"> Отправить тестовый заказ (оффер 999)</label>
 <button id="go">Проверить</button></div>
+<div class="card"><b>Проверка игрока по ID</b>
+<p style="color:var(--mu);font-size:.9rem;margin:6px 0 0">Ищет игру по полю «Поиск» выше (например mobile legends) и проверяет ID. Ничего не покупает.</p>
+<label for="uid">ID игрока</label><input id="uid" inputmode="numeric" placeholder="2050021303">
+<label for="zid">Zone ID (если нужен)</label><input id="zid" inputmode="numeric" placeholder="19617">
+<label for="oid">offerId (необязательно)</label><input id="oid" inputmode="numeric">
+<button id="chk">Проверить игрока</button></div>
 <div class="card"><pre id="out">Нажмите «Проверить».</pre></div>
 <script src="api-config.js"></script>
 <script>
 var $=function(i){return document.getElementById(i)};
 function sget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
-$('go').onclick=async function(){
-  var b=this;b.disabled=true;$('out').textContent='Проверяем…';
+async function run(b,extra){
+  b.disabled=true;$('out').textContent='Проверяем…';
   try{
     var base=(window.DK_API||sget('dk_admin_api')||'').replace(/\/+$/,'');
-    var r=await fetch(base+'/api/admin/gamesdrop/probe',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+sget('dk_admin_token')},body:JSON.stringify({search:$('q').value.trim(),test_order:$('t').checked})});
+    var r=await fetch(base+'/api/admin/gamesdrop/probe',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+sget('dk_admin_token')},body:JSON.stringify(Object.assign({search:$('q').value.trim(),test_order:$('t').checked},extra||{}))});
     var d=await r.json().catch(function(){return {}});
     $('out').textContent=r.status===401?'Войдите в админку (вкладка «Заказы») и повторите.':JSON.stringify(d,null,2);
   }catch(e){$('out').textContent='Нет связи: '+e.message}
   b.disabled=false;
-};
+}
+$('go').onclick=function(){run(this)};
+$('chk').onclick=function(){run(this,{test_order:false,check:{gameUserId:$('uid').value.trim(),gameServerId:$('zid').value.trim(),offerId:$('oid').value.trim()}})};
 </script></body></html>

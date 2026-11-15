@@ -1652,6 +1652,7 @@
       <div class="zone-warn" id="idWarn" role="alert" hidden></div>
       <div class="zone-warn" id="zoneWarn" role="alert" hidden>🚫 Сервер 6xxx — российский. Выберите регион «Россия».</div>
       </div>
+      <div class="nick-ok" id="nickOk" role="status" hidden></div>
       <div class="id-guide" id="idGuide" style="background:rgba(255,186,8,.06); padding:13px; border-radius:12px;"><strong>📖 Как найти ID?</strong><br>Профиль → ваш ID (123456789) и сервер в скобках (1234)</div>
       <div class="first-warn" id="firstWarn" hidden><strong>⚠️ Только для первого пополнения</strong><p>Бонус даётся один раз на аккаунт. Если уже пополняли, выберите другой пакет.</p><label class="first-ok"><input type="checkbox" id="firstOk" onchange="updateBuyBtn()"> Я ещё ни разу не пополнял этот аккаунт</label></div>
       <label class="id-ok" id="idOkRow" hidden><input type="checkbox" id="idOk" onchange="updateBuyBtn()"><span id="idOkText"></span></label>
@@ -2471,7 +2472,32 @@ function smartPasteId(e) {
   updateBuyBtn();
   return false;
 }
+// Ник игрока по ID: проверяем сами, как только введены ID и Zone. Показываем только найденный ник, иначе молчим.
+let _nickKey = '', _nickT = null;
+function nickCheck() {
+  const box = document.getElementById('nickOk'); if (!box) return;
+  const gd = gamesData[currentGame];
+  if (gd && gd.kind) { box.hidden = true; return; }
+  const pid = getPlayerValue(), sid = getServerValue();
+  const ready = currentGame === 'mlbb' ? (pid.length >= 6 && pid.length <= 10 && sid.length >= 4 && sid.length <= 5) : (pid.length >= 5 && !!sid);
+  const key = currentGame + '|' + pid + '|' + sid + '|' + (ready ? 1 : 0);
+  if (key === _nickKey) return;
+  _nickKey = key; box.hidden = true; clearTimeout(_nickT);
+  if (!ready || !API_BASE()) return;
+  _nickT = setTimeout(async () => {
+    try {
+      const ctrl = new AbortController(); const tm = setTimeout(() => ctrl.abort(), 8000);
+      const r = await fetch(API_BASE() + '/api/check-id', { method: 'POST', signal: ctrl.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: currentGame, playerId: pid, serverId: sid }) });
+      clearTimeout(tm);
+      const d = await r.json();
+      if (key !== _nickKey || !d || !d.nick) return;
+      box.innerHTML = '✅ Аккаунт: <b>' + esc(d.nick) + '</b>';
+      box.hidden = false;
+    } catch (e) {}
+  }, 500);
+}
 function updateBuyBtn() {
+  try { nickCheck(); } catch (e) {}
   const pid = getPlayerValue();
   const sid = getServerValue();
   const btn = document.getElementById('buyBtn');

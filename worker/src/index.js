@@ -16,7 +16,7 @@ import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { clientThread, clientSend, clientUnread, adminSend, adminThreads, adminThread, getBanner, setBanner } from './msgs.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
-import { gamesdropProbe } from './gamesdrop.js';
+import { gamesdropProbe, checkPlayer } from './gamesdrop.js';
 import { postToChannel, ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
 import { createDeal, viewDeal, dealPaid, dealConfirm, dealProblem, remindDeals } from './deals.js';
 import { startFinikOrder, finikWebhook, cleanupFinik, finikReady } from './finik.js';
@@ -255,6 +255,7 @@ export default {
         return new Response(r.body, { status: r.status });
       }
       // промокод розыгрыша: бесплатный Weekly Diamond Pass (одноразовые коды, срок в таблице promo_codes)
+      if (path === '/api/check-id' && m === 'POST') { const b = await req.json().catch(() => ({})); return json(req, await checkPlayer(env, req.headers.get('CF-Connecting-IP') || 'anon', b)); }
       if (path === '/api/promo/redeem' && m === 'POST') {
         const b = await req.json().catch(() => ({}));
         const r = await redeemPromo(env, req.headers.get('CF-Connecting-IP') || 'anon', b, await userFromRequest(req, env));

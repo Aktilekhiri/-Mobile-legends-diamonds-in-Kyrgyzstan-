@@ -48,3 +48,39 @@ export async function gamesdropProbe(env, { search, test_order, check } = {}) {
   } catch (e) { out.error = String(e.message || e); }
   return out;
 }
+
+// ── Публичная проверка ника игрока по ID (клиент видит ник до оплаты). Ничего не покупает, баланс не нужен.
+// Только положительный результат: ник найден → {nick}; всё остальное (не найден, ошибка, нет игры у GamesDrop) → {nick:null}.
+const GD_SEARCH = { mlbb: 'Mobile Legends', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', bloodstrike: 'Blood Strike', hsr: 'Honkai Star Rail', zzz: 'Zenless Zone Zero', mchess: 'Magic Chess', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', whiteout: 'Whiteout Survival', lords: 'Lords Mobile', identityv: 'Identity V' };
+const _offers = new Map(), _res = new Map(), _rl = new Map();
+async function offersFor(env, game) {
+  const c = _offers.get(game); if (c && c.exp > Date.now()) return c.list;
+  const s = await gd(env, 'POST', '/api/v1/offers/sync', { search: GD_SEARCH[game], page: 1, limit: 100 });
+  const rows = (s.data.rows || s.data.data || []).filter(r => r.isRequiredGameUserId && r.inStock);
+  // по одному офферу с каждого продукта (регион/версия), «Global» в конце; максимум 3 попытки
+  const seen = new Set(), list = [];
+  for (const r of rows) { const k = r.productName || r.offerGroupName; if (seen.has(k)) continue; seen.add(k); list.push({ id: r.offerGroupId, srv: !!r.isRequiredGameServerId, glob: /global/i.test(k) }); }
+  list.sort((a, b) => a.glob - b.glob);
+  const out = list.slice(0, 3);
+  _offers.set(game, { list: out, exp: Date.now() + 6 * 3600e3 });
+  return out;
+}
+export async function checkPlayer(env, ip, b) {
+  const game = String(b.game || ''), pid = String(b.playerId || '').replace(/\D/g, ''), sid = String(b.serverId || '').trim().slice(0, 30);
+  if (!GD_SEARCH[game] || pid.length < 5 || pid.length > 14) return { nick: null };
+  const now = Date.now();
+  const rl = _rl.get(ip); if (rl && rl.exp > now) { if (++rl.n > 40) return { nick: null }; } else _rl.set(ip, { n: 1, exp: now + 600e3 });
+  if (_rl.size > 5000) _rl.clear();
+  const key = game + '|' + pid + '|' + sid;
+  const hit = _res.get(key); if (hit && hit.exp > now) return { nick: hit.nick };
+  let nick = null;
+  try {
+    for (const o of await offersFor(env, game)) {
+      const body = { offerId: o.id, gameUserId: pid }; if (sid && sid !== '-') body.gameServerId = sid;
+      const c = await gd(env, 'POST', '/api/v1/offers/check-game-data', body);
+      if (c.data && c.data.status === 'VALID' && c.data.gameUserLogin) { nick = String(c.data.gameUserLogin).slice(0, 40); break; }
+    }
+  } catch (e) { return { nick: null }; }
+  _res.set(key, { nick, exp: now + (nick ? 3600e3 : 600e3) }); if (_res.size > 5000) _res.clear();
+  return { nick };
+}

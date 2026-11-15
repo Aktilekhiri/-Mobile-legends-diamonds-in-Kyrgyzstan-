@@ -15,7 +15,7 @@ async function gd(env, method, path, body) {
 }
 
 // Безопасная проверка: ничего не покупает, кроме тестового оффера 999 (только если test_order=true).
-export async function gamesdropProbe(env, { search, test_order } = {}) {
+export async function gamesdropProbe(env, { search, test_order, check } = {}) {
   const out = {};
   try {
     const b = await gd(env, 'GET', '/api/v1/offers/balance');
@@ -24,6 +24,18 @@ export async function gamesdropProbe(env, { search, test_order } = {}) {
     const s = await gd(env, 'POST', '/api/v1/offers/sync', { search: q, page: 1, limit: 30 });
     const rows = (s.data.rows || s.data.data || []);
     out.catalog = { http: s.http, query: q, count: rows.length, items: rows.slice(0, 30).map(r => ({ offerId: r.offerGroupId, name: [r.productName, r.offerGroupName].filter(Boolean).join(' · '), price: r.price, currency: r.currency, inStock: r.inStock, needUserId: r.isRequiredGameUserId, needServer: r.isRequiredGameServerId })), error: s.data.code || undefined };
+    // Проверка игрока (ник по ID): check = { offerId?, gameUserId, gameServerId? }. Ничего не покупает.
+    if (check && check.gameUserId) {
+      let offerId = Number(check.offerId) || 0;
+      if (!offerId) { const hit = rows.find(r => r.isRequiredGameUserId && r.inStock); offerId = hit ? hit.offerGroupId : 0; }
+      if (!offerId) out.check = { error: 'Не нашёл оффер с проверкой ID в результатах поиска. Уточните поиск или укажите offerId.' };
+      else {
+        const body = { offerId, gameUserId: String(check.gameUserId).slice(0, 30) };
+        if (check.gameServerId) body.gameServerId = String(check.gameServerId).slice(0, 30);
+        const c = await gd(env, 'POST', '/api/v1/offers/check-game-data', body);
+        out.check = { offerId, http: c.http, data: c.data };
+      }
+    }
     if (test_order) {
       const f = await gd(env, 'POST', '/api/v1/offers/find-one', { offerId: 999 });
       const price = f.data.price != null ? f.data.price : (f.data.offer && f.data.offer.price);

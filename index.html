@@ -2452,7 +2452,7 @@ function selectPackage(id) {
 // Zone ID 6xxx — российские серверы MLBB: в «Глобальном» регионе их принимать нельзя (заказ всё равно отменяется).
 function isRuZoneOnGlobal(sid) {
   if (currentGame === 'mlbb' && nickConfirmed()) {   // проверка ID точнее, чем правило по зоне
-    if (_nickRegion === 'regular') return false;   // аккаунт НЕ российский: зона 6xxx допустима
+    if (_nickRegion === 'regular') return currentRegion === 'russia';   // аккаунт НЕ российский: зона 6xxx на Global допустима, а «Россия» нет (регион не подойдёт, заказ отменится)
     if (_nickRegion === 'russia') return currentRegion !== 'russia';   // российский аккаунт при другом регионе: блок (объясняет жёлтая плашка)
   }
   return currentGame === 'mlbb' && currentRegion === 'global' && /^6\d{3}$/.test(String(sid || '').trim());
@@ -2526,7 +2526,7 @@ function regionHint() {
   if (currentGame !== 'mlbb' || !nickConfirmed() || !_nickRegion) { el.hidden = true; return; }
   const ru = _nickRegion === 'russia';
   if (ru && currentRegion !== 'russia') { el.innerHTML = '🇷🇺 Аккаунт российский. Для него нужен регион «Россия». <button type="button" onclick="fixRegion(\'russia\')">Выбрать «Россия»</button>'; el.hidden = false; }
-  else if (!ru && currentRegion === 'russia') { el.innerHTML = 'ℹ️ Похоже, аккаунт не российский. Обычно для таких нужен «Глобальный». <button type="button" onclick="fixRegion(\'global\')">Выбрать «Глобальный»</button>'; el.hidden = false; }
+  else if (!ru && currentRegion === 'russia') { el.innerHTML = '🌍 Аккаунт не российский. Для него нужен регион «Глобальный». <button type="button" onclick="fixRegion(\'global\')">Выбрать «Глобальный»</button>'; el.hidden = false; }
   else el.hidden = true;
 }
 function fixRegion(r) { const sel = document.getElementById('regionSelect'); if (!sel) return; sel.value = r; changeRegion(); }

@@ -1634,29 +1634,35 @@
       <button type="button" class="back-cat" onclick="backToPackages()">← Пакеты</button>
       <div class="card-title">Ваши данные</div>
       <div class="sel-info" id="selectedInfo" style="display:none"><div>ВЫБРАННЫЙ ПАКЕТ</div><div class="sir"><span id="selDiamonds"></span><span id="selPrice"></span></div></div>
-      <div id="idRow">
-      <label>ID ИГРОКА</label>
-      <input type="text" class="input-field" id="playerId" placeholder="598505997" inputmode="numeric" autocomplete="off" onpaste="return smartPasteId(event)" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
-      <div class="field-hint" id="idHint">Только цифры</div>
-      </div>
       <div id="userRow" style="display:none">
       <label for="tgUser">TELEGRAM @USERNAME</label>
       <input type="text" class="input-field" id="tgUser" placeholder="@username" autocomplete="off" autocapitalize="off" spellcheck="false" oninput="this.value=this.value.replace(/[^A-Za-z0-9_@]/g,'');updateBuyBtn()">
       <div class="field-hint">Ник из Настроек Telegram. @ можно не писать</div>
+      </div>
+      <div class="id-grid">
+      <div id="idRow">
+      <label>ID ИГРОКА</label>
+      <input type="text" class="input-field" id="playerId" placeholder="598505997" inputmode="numeric" autocomplete="off" onpaste="return smartPasteId(event)" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
+      <div class="field-hint" id="idHint">Только цифры</div>
       </div>
       <div id="serverRow">
       <label id="serverLabel">ZONE ID (СЕРВЕР)</label>
       <input type="text" class="input-field" id="serverId" placeholder="8403" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'');updateBuyBtn()">
       <select class="input-field" id="serverSelect" style="display:none" onchange="updateBuyBtn()"></select>
       <div class="field-hint" id="serverHint">Цифры в скобках рядом с ID</div>
+      </div>
+      </div>
       <div class="zone-warn" id="idWarn" role="alert" hidden></div>
       <div class="zone-warn" id="zoneWarn" role="alert" hidden>🚫 Сервер 6xxx — российский. Выберите регион «Россия».</div>
-      </div>
       <div class="nick-ok" id="nickOk" role="status" hidden></div>
-      <div class="id-guide" id="idGuide" style="background:rgba(255,186,8,.06); padding:13px; border-radius:12px;"><strong>📖 Как найти ID?</strong><br>Профиль → ваш ID (123456789) и сервер в скобках (1234)</div>
+      <button type="button" class="help-btn" id="helpBtn" onclick="toggleIdGuide()">? Где найти ID</button>
+      <div class="id-guide" id="idGuide" hidden style="background:rgba(255,186,8,.06); padding:13px; border-radius:12px;"><strong>📖 Как найти ID?</strong><br>Профиль → ваш ID (123456789) и сервер в скобках (1234)</div>
       <div class="first-warn" id="firstWarn" hidden><strong>⚠️ Только для первого пополнения</strong><p>Бонус даётся один раз на аккаунт. Если уже пополняли, выберите другой пакет.</p><label class="first-ok"><input type="checkbox" id="firstOk" onchange="updateBuyBtn()"> Я ещё ни разу не пополнял этот аккаунт</label></div>
       <label class="id-ok" id="idOkRow" hidden><input type="checkbox" id="idOk" onchange="updateBuyBtn()"><span id="idOkText"></span></label>
-      <button class="btn-primary btn-full" onclick="proceedToPayment()" id="buyBtn" disabled style="margin-top:14px; opacity:0.5">Перейти к оплате →</button>
+      <div class="pm-row" id="pmRow" hidden><button type="button" class="pm on" id="pmFinik" onclick="setPm('finik')">⚡ QR банка</button><button type="button" class="pm" id="pmWallet" onclick="setPm('wallet')">💰 С баланса</button></div>
+      <button class="btn-primary btn-full" onclick="payNow()" id="buyBtn" disabled style="margin-top:14px; opacity:0.5">Оплатить</button>
+      <div id="payMsg" class="receipt-msg" role="alert" aria-live="polite"></div>
+      <div class="pay-terms">Нажимая «Оплатить», вы принимаете <a href="/terms/" target="_blank" rel="noopener">условия</a> и <a href="/refund/" target="_blank" rel="noopener">правила возврата</a>.</div>
     </div>
   </div>
 
@@ -2381,7 +2387,7 @@ function quickBuy(diam) {
 
 // Шаги заказа: 1 пакет → 2 данные → 3 оплата
 function setSteps(n) {
-  const names = ['Пакет', 'Данные', 'Оплата'];
+  const names = ['Пакет', 'Данные и оплата'];
   const html = names.map((t, i) => `<span class="sb${i + 1 === n ? ' on' : (i + 1 < n ? ' done' : '')}"><b>${i + 1}</b>${t}</span>`).join('');
   ['stepsBarTopup', 'stepsBarPay'].forEach(id => { const e = document.getElementById(id); if (e) e.innerHTML = html; });
 }
@@ -2390,6 +2396,7 @@ function showDataStep(show, scroll) {
   el.hidden = !show;
   const pg = document.getElementById('page-topup'); if (pg) pg.dataset.step = show ? 'data' : 'pkg';
   setSteps(show ? 2 : 1);
+  if (show && getCurrentUser() && !walletState) { try { loadWallet(); } catch (e) {} }
   if (show && scroll !== false) window.scrollTo(0, 0);
 }
 function backToPackages() { showDataStep(false); window.scrollTo(0, 0); }
@@ -2499,7 +2506,32 @@ function nickCheck() {
     } catch (e) {}
   }, 500);
 }
+// Оплата прямо на экране «Данные»: ID, зона, ник и кнопка «Оплатить N сом» вместе
+let _pm = 'finik';
+function setPm(m) { _pm = m; document.getElementById('pmFinik').classList.toggle('on', m === 'finik'); document.getElementById('pmWallet').classList.toggle('on', m === 'wallet'); }
+function updatePmRow() {
+  const row = document.getElementById('pmRow'); if (!row) return;
+  const w = walletState, price = selectedPkg && selectedPkg.price;
+  const can = !!(getCurrentUser() && w && price && w.balance >= price);
+  row.hidden = !can; if (!can && _pm === 'wallet') setPm('finik');
+  if (can) document.getElementById('pmWallet').textContent = '💰 С баланса · ' + Number(w.balance).toLocaleString('ru-RU');
+}
+function toggleIdGuide() { const g = document.getElementById('idGuide'); if (g) g.hidden = !g.hidden; }
+async function payNow() {
+  const btn = document.getElementById('buyBtn'), msg = document.getElementById('payMsg');
+  msg.textContent = ''; msg.className = 'receipt-msg';
+  if (btn.disabled) return;
+  const off = document.getElementById('finikOff');
+  if (_pm !== 'wallet' && off && !off.hidden) { msg.textContent = 'Оплата временно недоступна. Попробуйте позже.'; msg.className = 'receipt-msg err'; return; }
+  window._payInline = true;
+  try { proceedToPayment(); } finally { window._payInline = false; }
+  if (!currentOrder) { updateBuyBtn(); return; }
+  const ui = { btn, msg };
+  if (_pm === 'wallet') await payWithWallet(ui); else await payWithFinik(ui);
+  updateBuyBtn();
+}
 function updateBuyBtn() {
+  try { updatePmRow(); } catch (e) {}
   try { nickCheck(); } catch (e) {}
   const pid = getPlayerValue();
   const sid = getServerValue();
@@ -2524,13 +2556,13 @@ function updateBuyBtn() {
     const sig = pid + '|' + sid + '|' + (selectedPkg ? selectedPkg.key || selectedPkg.id : '');
     if (iok.dataset.sig !== sig) { iok.checked = false; iok.dataset.sig = sig; }
     ior.hidden = !(ready && needIdOk);
-    if (ready) { const sl = gdk && gdk.servers ? ((gdk.servers.find(x => x.v === sid) || {}).l || sid) : sid; document.getElementById('idOkText').innerHTML = 'Проверил(а): ID <b>' + esc(pid) + '</b>' + (sid && sid !== '-' ? ', сервер <b>' + esc(sl) + '</b>' : '') + '. Пополнение придёт именно на этот аккаунт, а ошибочный ID вернуть нельзя.'; }
+    if (ready) { const sl = gdk && gdk.servers ? ((gdk.servers.find(x => x.v === sid) || {}).l || sid) : sid; document.getElementById('idOkText').innerHTML = 'ID <b>' + esc(pid) + '</b>' + (sid && sid !== '-' ? ', сервер <b>' + esc(sl) + '</b>' : '') + '. Ошибочный ID вернуть нельзя.'; }
   }
   const idOkPass = !needIdOk || !!(iok && iok.checked);
   const ok = ready && idOkPass;
   btn.disabled = !ok;
   btn.style.opacity = ok ? '1' : '0.5';
-  btn.textContent = (ok && selectedPkg) ? `Оплатить ${selectedPkg.price.toLocaleString()} Сом →` : 'Перейти к оплате →';
+  btn.textContent = (ok && selectedPkg) ? `Оплатить ${selectedPkg.price.toLocaleString()} Сом` : 'Оплатить';
 }
 
 function proceedToPayment() {
@@ -2565,7 +2597,7 @@ function proceedToPayment() {
   document.getElementById('payProduct').textContent = gdPay ? (payKind ? gdPay.name + ' — код активации' : gdPay.name + ' — ' + gdPay.unit) : 'Mobile Legends — Алмазы';
   document.getElementById('payPackage').innerHTML = pkgIcon(selectedPkg) + ' ' + currentOrder.label;
   document.getElementById('payTotal').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;
-  showPage('payment');
+  if (!window._payInline) showPage('payment');
   selectedMethod = null;
   document.getElementById('successBox').classList.remove('show');
   document.getElementById('confirmForm')?.classList?.remove('hide');
@@ -2832,8 +2864,8 @@ async function redeemPromoForm(ev) {
 (function () { try { const c = new URLSearchParams(location.search).get('promo'); if (c) { const el = document.getElementById('pmCode'); if (el) { el.value = c.slice(0, 20); document.getElementById('promo').open = true; } } } catch (e) {} })();
 
 // Быстрая оплата через Finik: сервер создаёт заказ и возвращает ссылку на страницу оплаты (банки / QR)
-async function payWithFinik() {
-  const btn = document.getElementById('finikBtn'), msg = document.getElementById('finikMsg');
+async function payWithFinik(ui) {
+  const btn = ui ? ui.btn : document.getElementById('finikBtn'), msg = ui ? ui.msg : document.getElementById('finikMsg');
   const set = (t, c) => { msg.textContent = t; msg.className = 'receipt-msg' + (c ? ' ' + c : ''); };
   const phone = document.getElementById('finikPhone').value.trim();
   if (!currentOrder) { set('Ошибка: нет данных заказа', 'err'); return; }
@@ -2983,7 +3015,7 @@ function syncPhones(el) { ['finikPhone', 'walletPhone'].forEach(id => { const o 
 async function loadWallet() {
   if (!getCurrentUser() || !window.DK_API) return null;
   try { const r = await fetch(API_BASE() + '/api/wallet', { headers: authHeaders() }); if (!r.ok) return null; walletState = await r.json(); } catch (e) { return null; }
-  renderWallet(); updateWalletPay(); return walletState;
+  renderWallet(); updateWalletPay(); try { updatePmRow(); } catch (e) {} return walletState;
 }
 const WAL_KIND = { refund: 'Возврат за заказ', topup: 'Пополнение', spend: 'Оплата заказа', withdraw: 'Вывод', admin: 'Корректировка', 'link-in': 'Перенос из Telegram', 'link-out': 'Перенос' };
 function renderWallet() {
@@ -3026,8 +3058,8 @@ async function walletLinkTg() {
     msg.innerHTML = 'Откройте бота и нажмите «Запустить»: <a href="' + esc(d.url) + '" target="_blank" rel="noopener">привязать Telegram</a>. Ссылка действует 15 минут.';
   } catch (e) { msg.textContent = 'Нет связи с сервером'; }
 }
-async function payWithWallet() {
-  const btn = document.getElementById('walletBtn'), msg = document.getElementById('walletMsg');
+async function payWithWallet(ui) {
+  const btn = ui ? ui.btn : document.getElementById('walletBtn'), msg = ui ? ui.msg : document.getElementById('walletMsg');
   const set = (t, c) => { msg.textContent = t; msg.className = 'receipt-msg' + (c ? ' ' + c : ''); };
   const phone = document.getElementById('walletPhone').value.trim();
   if (!currentOrder) { set('Ошибка: нет данных заказа', 'err'); return; }
@@ -3146,7 +3178,7 @@ function showPage(name) {
   document.body.dataset.page = name;
   { const map = { home:'home', catalog:'topup', topup:'topup', payment:'topup', orders:'orders', status:'orders', accounts:'accounts', account:'profile' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
   window.scrollTo(0,0);
-  if (name === 'payment') { setSteps(3); if (getCurrentUser()) loadWallet(); else updateWalletPay(); }
+  if (name === 'payment') { setSteps(2); if (getCurrentUser()) loadWallet(); else updateWalletPay(); }
   if (name === 'topup') renderPackages();
   if (name === 'catalog') renderCatalog();
   if (name === 'orders') renderOrders();

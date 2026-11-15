@@ -776,3 +776,18 @@ body.has-banner .page{margin-top:var(--bnH,0)}
 .nick-ok b{font-size:21px;font-weight:800;line-height:1.25;word-break:break-word}
 @keyframes nickPop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.nick-ok{animation:none}}
+
+/* Экран «Данные и оплата»: ID и Zone в одну строку, меньше текста */
+.id-grid{display:flex;gap:12px;align-items:flex-start}
+.id-grid>#idRow{flex:3;min-width:0}
+.id-grid>#serverRow{flex:2;min-width:0}
+#stepData .field-hint{display:none}
+#stepData .id-guide[hidden]{display:none}
+.help-btn{display:inline-flex;align-items:center;gap:6px;margin:10px 0 2px;padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--muted);font:inherit;font-size:13px;cursor:pointer}
+.help-btn:hover{color:var(--text)}
+.pm-row{display:flex;gap:10px;margin-top:14px}
+.pm{flex:1;padding:12px 10px;border-radius:12px;border:2px solid var(--border);background:transparent;color:inherit;font:inherit;font-weight:600;cursor:pointer}
+.pm.on{border-color:#f5a623;background:rgba(245,166,35,.12)}
+.pay-terms{margin-top:12px;text-align:center;font-size:12px;opacity:.7;line-height:1.5}
+.pay-terms a{color:inherit;text-decoration:underline}
+.pm-row[hidden]{display:none}

@@ -21,6 +21,7 @@ pre{white-space:pre-wrap;word-break:break-word;font-size:.8rem;color:var(--mu)}
 <label for="zid">Zone ID (если нужен)</label><input id="zid" inputmode="numeric" placeholder="19617">
 <label for="oid">offerId (необязательно)</label><input id="oid" inputmode="numeric">
 <button id="chk">Проверить игрока</button></div>
+<div class="card"><h2>Сравнение цен</h2><p>FazerCards (наша себестоимость) против GamesDrop: MLBB и PUBG. Ничего не покупает. Минус % = GamesDrop дешевле.</p><button id="cmp">Сравнить цены</button></div>
 <div class="card"><pre id="out">Нажмите «Проверить».</pre></div>
 <script src="api-config.js"></script>
 <script>
@@ -36,6 +37,17 @@ async function run(b,extra){
   }catch(e){$('out').textContent='Нет связи: '+e.message}
   b.disabled=false;
 }
+$('cmp').onclick=async function(){var b=this;b.disabled=true;$('out').textContent='Сравниваем (до минуты)…';
+  try{var base=(window.DK_API||sget('dk_admin_api')||'').replace(/\/+$/,'');
+    var r=await fetch(base+'/api/admin/gamesdrop/probe',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+sget('dk_admin_token')},body:JSON.stringify({compare:true})});
+    var d=await r.json().catch(function(){return {}});
+    if(r.status===401){$('out').textContent='Войдите в админку (вкладка «Заказы») и повторите.';b.disabled=false;return}
+    var t=[];Object.keys(d).forEach(function(k){t.push('== '+k);var a=d[k];if(!Array.isArray(a)){t.push(JSON.stringify(a));return}
+      a.forEach(function(x){if(!x.gd.length){t.push(x.pack+': наша $'+x.ours+' | GD нет');return}
+        x.gd.forEach(function(g,i){t.push((i?'   ':x.pack+': наша $'+x.ours+' | ')+'GD $'+g.p+' ('+(g.d>0?'+':'')+g.d+'%) '+g.n.replace(/Mobile Legends/g,'ML').slice(0,48))})})});
+    $('out').textContent=t.join('\n')||JSON.stringify(d,null,2);
+  }catch(e){$('out').textContent='Нет связи: '+e.message}
+  b.disabled=false};
 $('go').onclick=function(){run(this)};
 $('chk').onclick=function(){run(this,{test_order:false,check:{gameUserId:$('uid').value.trim(),gameServerId:$('zid').value.trim(),offerId:$('oid').value.trim()}})};
 </script></body></html>

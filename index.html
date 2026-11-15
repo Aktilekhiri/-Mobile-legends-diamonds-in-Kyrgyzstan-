@@ -2474,7 +2474,9 @@ function smartPasteId(e) {
   return false;
 }
 // Ник игрока по ID: проверяем сами, как только введены ID и Zone. Показываем только найденный ник, иначе молчим.
-let _nickKey = '', _nickT = null;
+let _nickKey = '', _nickT = null, _nickOkSig = '';
+// Ник найден для текущих ID/сервера: подтверждение «Проверил(а) ID» не нужно (клиент сам видит аккаунт)
+function nickConfirmed() { return !!_nickOkSig && _nickOkSig === currentGame + '|' + getPlayerValue() + '|' + getServerValue(); }
 function nickCheck() {
   const box = document.getElementById('nickOk'); if (!box) return;
   const gd = gamesData[currentGame];
@@ -2493,7 +2495,7 @@ function nickCheck() {
       const d = await r.json();
       if (key !== _nickKey || !d || !d.nick) return;
       box.innerHTML = '<span class="nk-ic">✅</span><span class="nk-t"><small>Аккаунт найден</small><b>' + esc(d.nick) + '</b></span>';
-      box.hidden = false;
+      box.hidden = false; _nickOkSig = currentGame + '|' + pid + '|' + sid; updateBuyBtn();
     } catch (e) {}
   }, 500);
 }
@@ -2515,7 +2517,7 @@ function updateBuyBtn() {
   }
   const zw = document.getElementById('zoneWarn'); if (zw) zw.hidden = !zoneBad;
   const firstOk = !(selectedPkg && selectedPkg.firstOnly) || !!(document.getElementById('firstOk') && document.getElementById('firstOk').checked);
-  const gdk = gamesData[currentGame], needIdOk = !(gdk && gdk.kind === 'none');
+  const gdk = gamesData[currentGame], needIdOk = !(gdk && gdk.kind === 'none') && !nickConfirmed();
   const ready = !!(pid && sid && selectedPkg && !zoneBad && !prob && firstOk);
   const ior = document.getElementById('idOkRow'), iok = document.getElementById('idOk');
   if (ior && iok) {
@@ -2536,7 +2538,7 @@ function proceedToPayment() {
   const sid = getServerValue();
   if (!pid || !sid || !selectedPkg || isRuZoneOnGlobal(sid) || mlbbIdProblem(pid, sid)) return;
   if (selectedPkg.firstOnly && !(document.getElementById('firstOk') || {}).checked) return;
-  { const g0 = gamesData[currentGame]; if (!(g0 && g0.kind === 'none') && !(document.getElementById('idOk') || {}).checked) return; }
+  { const g0 = gamesData[currentGame]; if (!(g0 && g0.kind === 'none') && !nickConfirmed() && !(document.getElementById('idOk') || {}).checked) return; }
   currentOrder = {
     playerId: pid,
     serverId: sid,

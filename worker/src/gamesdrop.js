@@ -85,3 +85,25 @@ export async function checkPlayer(env, ip, b) {
   _res.set(key, { nick, exp: now + (nick ? 3600e3 : 600e3) }); if (_res.size > 5000) _res.clear();
   return { nick };
 }
+
+// Сравнение цен: наша себестоимость (FazerCards) против GamesDrop. Ничего не покупает.
+export async function comparePrices(env, CATS) {
+  const out = {};
+  const num = (s) => { const m = String(s).match(/(\d[\d\s]*)\s*(?:diamonds|uc|алмаз)/i); return m ? Number(m[1].replace(/\s/g, '')) : 0; };
+  const load = async (q) => { let all = []; for (let p = 1; p <= 4; p++) { const s = await gd(env, 'POST', '/api/v1/offers/sync', { search: q, page: p, limit: 100 }); const rows = s.data.rows || s.data.data || []; all = all.concat(rows); if (rows.length < 100) break; } return all.filter(r => r.isRequiredGameUserId && r.inStock && r.price != null); };
+  const jobs = [['mlbb_global', 'Mobile Legends', CATS.global], ['mlbb_russia', 'Mobile Legends', CATS.russia], ['pubg', 'PUBG Mobile', CATS.pubg]];
+  for (const [k, q, cat] of jobs) {
+    try {
+      const rows = await load(q), res = [];
+      for (const [pk, v] of Object.entries(cat || {})) {
+        if (!v || !v.cost) continue;
+        const parts = pk.match(/^(\d+)\+(\d+)$/); const total = parts ? Number(parts[1]) + Number(parts[2]) : num(pk) || num(v.offer);
+        if (!total) continue;
+        const gdm = rows.filter(r => num((r.productName || '') + ' ' + (r.offerGroupName || '')) === total).slice(0, 4).map(r => ({ n: (r.productName || '') + ' · ' + (r.offerGroupName || ''), p: r.price, d: Math.round((r.price / v.cost - 1) * 1000) / 10 }));
+        res.push({ pack: pk, ours: v.cost, gd: gdm });
+      }
+      out[k] = res;
+    } catch (e) { out[k] = { error: String(e.message || e) }; }
+  }
+  return out;
+}

@@ -1633,7 +1633,7 @@
     <div class="form-card step-card" id="stepData" hidden>
       <button type="button" class="back-cat" onclick="backToPackages()">← Пакеты</button>
       <div class="card-title">Ваши данные</div>
-      <div class="sel-info" id="selectedInfo" style="display:none"><div>ВЫБРАННЫЙ ПАКЕТ</div><div class="sir"><span id="selDiamonds"></span><span id="selPrice"></span></div></div>
+      <div class="sel-info" id="selectedInfo" style="display:none"><div class="sel-ic" id="selIc" hidden></div><div class="sel-body"><div class="sel-name" id="selDiamonds"></div><div class="sel-pay"><span>К оплате</span><b id="selPrice"></b></div></div></div>
       <div id="userRow" style="display:none">
       <label for="tgUser">TELEGRAM @USERNAME</label>
       <input type="text" class="input-field" id="tgUser" placeholder="@username" autocomplete="off" autocapitalize="off" spellcheck="false" oninput="this.value=this.value.replace(/[^A-Za-z0-9_@]/g,'');updateBuyBtn()">
@@ -2256,7 +2256,8 @@ function pkgImg(p) {
   } else return '';
   return `<img class="pkg-img" src="/img/packs/${dir}/${f}.webp${dir === 'mlbb' || dir === 'freefire' || dir === 'roblox' || dir === 'genshin' ? '?v=2' : ''}" width="120" height="120" alt="" loading="lazy" decoding="async">`;
 }
-function pkgIcon(p) {
+function pkgIcon() { return ''; } // эмодзи убраны: вместо них картинки пакетов
+function pkgEmoji(p) {
   const gd = gamesData[currentGame];
   if (gd && gd.unit === 'UC' && !gd.pk && p.type !== 'pass') return '';
   return (gd && gd.pk) || (p.type === 'pass' ? '🎫' : '💎');
@@ -2357,13 +2358,13 @@ function renderPackages() {
   const oneGroup = list.length > 0 && list.every(p => p.type === list[0].type);   // один тип пакетов: заголовок группы не нужен (например, Robux)
   grid.innerHTML = list.map(p => {
     let head = '';
-    if (!useTabs && !oneGroup && p.type !== lastType) { head = `<div class="pkg-group">${p.type === 'pass' ? pkgIcon(p) + ' Пассы и наборы' : pkgIcon(p) + ' ' + (p.unit ? p.unit.charAt(0).toUpperCase() + p.unit.slice(1) : 'Алмазы')}</div>`; lastOut = false; }
+    if (!useTabs && !oneGroup && p.type !== lastType) { head = `<div class="pkg-group">${p.type === 'pass' ? 'Пассы и наборы' : (p.unit ? p.unit.charAt(0).toUpperCase() + p.unit.slice(1) : 'Алмазы')}</div>`; lastOut = false; }
     if (p.out && !lastOut) head += `<div class="pkg-group">⏳ Нет в наличии</div>`;
     lastType = p.type; lastOut = !!p.out;
     return head + `
     <div class="pkg-card ${p.popular && !p.out ? 'popular' : ''} ${p.out ? 'out' : ''} ${selectedPkg?.id === p.id ? 'selected' : ''}" ${p.out ? 'aria-disabled="true"' : `onclick="pickPackage('${p.id}')"`}>
       ${pkgNote(p) ? `<button type="button" class="pkg-warn" aria-label="Внимание: условия пакета" onclick="event.stopPropagation();showPkgNote('${p.id}')">!</button>` : ''}
-      <div class="pkg-diamond">${pkgImg(p) || pkgIcon(p)}</div>
+      <div class="pkg-diamond">${pkgImg(p) || pkgEmoji(p)}</div>
       ${p.type === 'pass'
         ? `<div class="pkg-amount" style="font-size:0.92rem; line-height:1.25">${p.name}</div>`
         : `<div class="pkg-amount"><span>${p.totalDiamonds}</span></div>${p.unit ? `<div class="pkg-bonus" style="color:var(--muted)">${p.unit}</div>` : ''}`}
@@ -2440,10 +2441,12 @@ function selectPackage(id) {
   selectedPkg = cand;
   pkgTab = pkgCat(cand);
   renderPackages();
-  document.getElementById('selectedInfo').style.display = 'block';
+  document.getElementById('selectedInfo').style.display = '';
   showDataStep(true);
   const label = selectedPkg.type === 'pass' ? selectedPkg.name : `${selectedPkg.totalDiamonds} ${unitOf(currentRegion)}` + (selectedPkg.bonus && selectedPkg.diam ? ` (${selectedPkg.diam} + ${selectedPkg.bonus} бонус)` : '');
-  document.getElementById('selDiamonds').innerHTML = `${pkgIcon(selectedPkg)} ${label}`;
+  { const im = pkgImg(selectedPkg), ic = document.getElementById('selIc');
+    ic.innerHTML = im || ''; ic.hidden = !im;
+    document.getElementById('selDiamonds').innerHTML = label; }
   document.getElementById('selPrice').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;
   { const fw = document.getElementById('firstWarn'), fo = document.getElementById('firstOk'); if (fo) fo.checked = false; if (fw) fw.hidden = !selectedPkg.firstOnly; }
   updateBuyBtn();
@@ -2609,7 +2612,7 @@ function proceedToPayment() {
   document.getElementById('payServerId').innerText = srvShown;
   document.getElementById('payServerRow').style.display = (gdPay && !gdPay.servers && !gdPay.zone) ? 'none' : '';
   document.getElementById('payProduct').textContent = gdPay ? (payKind ? gdPay.name + ' — код активации' : gdPay.name + ' — ' + gdPay.unit) : 'Mobile Legends — Алмазы';
-  document.getElementById('payPackage').innerHTML = pkgIcon(selectedPkg) + ' ' + currentOrder.label;
+  document.getElementById('payPackage').textContent = currentOrder.label;
   document.getElementById('payTotal').innerHTML = `${selectedPkg.price.toLocaleString()} Сом`;
   if (!window._payInline) showPage('payment');
   selectedMethod = null;

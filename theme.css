@@ -795,3 +795,13 @@ body.has-banner .page{margin-top:var(--bnH,0)}
 .region-fix{margin:10px 0 2px;padding:11px 13px;border-radius:12px;background:rgba(245,166,35,.14);border:1px solid #f5a623;font-size:14px;line-height:1.45}
 .region-fix[hidden]{display:none}
 .region-fix button{margin-top:8px;display:block;padding:8px 14px;border-radius:10px;border:0;background:#f5a623;color:#1a1a1a;font:inherit;font-weight:700;cursor:pointer}
+/* выбранный пакет: картинка слева, как у конкурентов */
+#stepData .sel-info{display:flex;align-items:center;gap:14px}
+#stepData .sel-ic{flex:0 0 76px;width:76px;height:76px;border-radius:16px;background:linear-gradient(135deg,rgba(80,120,255,.16),rgba(0,255,170,.08));display:flex;align-items:center;justify-content:center}
+#stepData .sel-ic[hidden]{display:none}
+#stepData .sel-ic .pkg-img{width:60px;height:60px}
+#stepData .sel-ic .pkg-img.gc{width:auto;height:60px}
+#stepData .sel-body{flex:1;min-width:0}
+#stepData .sel-name{font-size:1.05rem;font-weight:800;color:var(--text);line-height:1.25}
+#stepData .sel-pay{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
+#stepData .sel-pay b{font-size:1.3rem;font-weight:800;color:var(--cyan)}

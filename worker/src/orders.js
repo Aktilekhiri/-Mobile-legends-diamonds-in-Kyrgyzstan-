@@ -3,6 +3,7 @@ import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS, OFF_PKGS, MLBB_REGIONS } f
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { isPkgOff, markPkgOff } from './avail.js';
 import { notify, notifyPhoto, defer } from './notify.js';
+import { isManualDone, chargeDoubleDelivery, debtBlock } from './debts.js';
 import { marketHint, COMPETITOR_PRICES } from './competitors.js';
 import { sendOrderMail } from './mail.js';
 import { tgNotifyOrder, send, esc } from './tgapi.js';
@@ -104,6 +105,10 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
     if (!game && region === 'global' && /^6\d{3}$/.test(server)) return { error: 'Сервер 6xxx — российский. Выберите регион «Россия»' };
     if (!game && (player.length < 6 || player.length > 10 || server.length < 3 || server.length > 5)) return { error: 'Проверьте ID (6–10 цифр) и Zone ID (4–5 цифр) — вводите их в отдельные поля' };
     if (player.length < 5 || !server || (game && game.serverText && server.length < 3)) return { error: game ? 'Проверьте ID и сервер' : 'Проверьте ID и Zone ID' };
+  }
+  if (!opts.promo) {
+    const debt = await debtBlock(env, { userId, tgChat: opts.tgChat || b.tgChat || 0, player });
+    if (debt) return { error: `${debt.reason}. Пополните баланс на ${Math.abs(debt.balance)} сом, и покупки снова станут доступны.`, status: 403 };
   }
   const pkg = clean(b.pkg, 60);
   const price = Math.max(0, Math.min(10000000, Math.floor(Number(b.price) || 0)));
@@ -279,6 +284,14 @@ function seqPending(o) {
 export async function syncFromFz(env, o, fz) {
   const st = fz.status;
   if (seqPending(o) && st !== 'refund' && st !== 'failed') return; // ждём вторую часть, пока не «выдан»
+  if ((st === 'completed' || st === 'refund' || st === 'failed') && o.status !== 'delivered' && await isManualDone(env, o.id)) {
+    // заказ уже выдан вручную владельцем: клиенту ничего не возвращаем, а если поставщик всё же выполнил заказ, ставим долг
+    const upd = await env.DB.prepare("UPDATE orders SET status = 'delivered', fz_status = ?, finished_at = ?, fail_reason = '', updated_at = ? WHERE id = ? AND status != 'delivered'").bind(st, Date.now(), Date.now(), o.id).run();
+    if (!upd.meta.changes) return;
+    if (st === 'completed') await chargeDoubleDelivery(env, o);
+    else await notify(env, `ℹ️ ${o.id}: поставщик отменил заказ (${String(fz.fail_reason || st).slice(0, 80)}), деньги вернулись вам. Заказ выдан вручную, клиенту ничего не возвращаем, долга нет.`);
+    return;
+  }
   if (st === 'completed') {
     const isCode = !!(GAMES[o.region] && GAMES[o.region].type === 'gift_cards' && !GAMES[o.region].direct);
     const codes = isCode ? (fz.codes || []) : [];

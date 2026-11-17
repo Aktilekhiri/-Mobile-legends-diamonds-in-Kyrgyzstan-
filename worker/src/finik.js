@@ -2,7 +2,8 @@
 // и сами подтверждаем заказ. Документация: https://www.finik.kg/documentation/web-sdk/
 // Секреты Cloudflare: FINIK_API_KEY, FINIK_PRIVATE_KEY (PEM), FINIK_PUBLIC_KEY (PEM от Finik, для проверки вебхуков),
 // FINIK_ACCOUNT_ID, FINIK_QR_NAME; необязательно: FINIK_BASE (адрес API, по умолчанию боевой), FINIK_FEE_PCT (комиссия, по умолчанию 0.02).
-import { createOrder, confirmOrder, orderCard } from './orders.js';
+import { createOrder, confirmOrder, orderCard, adminButtons } from './orders.js';
+import { marketHint } from './competitors.js';
 import { notify } from './notify.js';
 import { handleTopupPayment } from './wallet.js';
 
@@ -133,7 +134,7 @@ export async function finikWebhook(env, req) {
     const r = await confirmOrder(env, o.id);
     if (r.error) await notify(env, `⚠️ Заказ ${o.id} оплачен, но авто-выдача не удалась: ${r.error}. Выдайте вручную в админке.`);
   } else {
-    await notify(env, `💳 Finik: заказ ${o.id} оплачен (${o.pkg_label}, ${o.price_kgs} сом), но он в статусе «${o.status}» — авто-выдача невозможна. Выдайте вручную в админке или верните деньги.`);
+    { const oo = { ...o, fee_kgs: fee }; await notify(env, `💳 Finik: заказ ${o.id} оплачен, статус «${o.status}»\n${orderCard(oo)}${marketHint(oo).text}\n${o.status === 'manual' ? 'Выдайте вручную и нажмите «Выдано вручную».' : 'Авто-выдача невозможна: выдайте вручную или верните деньги.'}`, adminButtons(oo)); }
   }
   return { status: 200, body: 'ok' };
 }

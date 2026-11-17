@@ -3,7 +3,8 @@
 // Необязательно: GOPAY_PUBLIC=1 (показывать кнопку оплаты клиентам; пока пусто, кнопка скрыта, тест по ссылке ?gopaytest=1),
 // GOPAY_FEE_PCT (комиссия, по умолчанию 0.02), GOPAY_BASE (по умолчанию https://api.gopay.kg).
 // В кабинете GoPay: Developer → Webhooks → events_url = https://<воркер>/api/gopay/webhook, событие payment.committed.
-import { createOrder, confirmOrder } from './orders.js';
+import { createOrder, confirmOrder, orderCard, adminButtons } from './orders.js';
+import { marketHint } from './competitors.js';
 import { notify } from './notify.js';
 
 const BASE = 'https://api.gopay.kg';
@@ -93,7 +94,7 @@ async function applyCommitted(env, orderId, paymentId, amount, testing) {
     const r = await confirmOrder(env, o.id);
     if (r.error) await notify(env, `⚠️ Заказ ${o.id} оплачен, но авто-выдача не удалась: ${r.error}. Выдайте вручную в админке.`);
   } else {
-    await notify(env, `💳 GoPay: заказ ${o.id} оплачен (${o.pkg_label}, ${o.price_kgs} сом), но он в статусе «${o.status}», авто-выдача невозможна. Выдайте вручную в админке или верните деньги.`);
+    { const oo = { ...o, fee_kgs: fee }; await notify(env, `💳 GoPay: заказ ${o.id} оплачен, статус «${o.status}»\n${orderCard(oo)}${marketHint(oo).text}\n${o.status === 'manual' ? 'Выдайте вручную и нажмите «Выдано вручную».' : 'Авто-выдача невозможна: выдайте вручную или верните деньги.'}`, adminButtons(oo)); }
   }
   return 'ok';
 }

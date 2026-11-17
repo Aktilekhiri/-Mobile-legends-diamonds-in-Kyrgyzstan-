@@ -1,5 +1,6 @@
 // Соответствие пакетов сайта и офферов FazerCards (регион Global).
-// cost — ожидаемая себестоимость в USD (Gold-цены). Нет записи = выдача вручную.
+// Себестоимость (cost, USD) в репозитории НЕ хранится: она берётся из секрета CATALOG_COSTS (JSON, см. loadCosts ниже).
+// Нет cost у пакета = выдача вручную.
 export const GLOBAL_CATALOG = {
   '13+1':   { offer: '14_diamonds' },
   '38+4':   { offer: '42_diamonds' },
@@ -490,3 +491,18 @@ export const OFF_PKGS = [];
 
 // Все регионы Mobile Legends (ключ региона = ключ каталога); категории FazerCards — в fazercards.js
 export const MLBB_REGIONS = ['global', 'russia', 'indonesia', 'turkey', 'malaysia', 'philippines', 'singapore', 'brazil', 'usa'];
+
+// Подмешивает себестоимость из секрета CATALOG_COSTS: {"<регион или игра>|<ключ пакета>": USD}.
+// Без секрета cost не задан и все заказы уходят на ручную выдачу (безопасный режим).
+let _costsLoaded = false;
+export function loadCosts(env) {
+  if (_costsLoaded) return;
+  let m = {};
+  try { m = JSON.parse((env && env.CATALOG_COSTS) || '{}') || {}; } catch (e) { m = {}; }
+  for (const k of Object.keys(m)) {
+    const i = k.indexOf('|'), group = k.slice(0, i), key = k.slice(i + 1);
+    const cat = CATALOGS[group] || (GAMES[group] && GAMES[group].catalog);
+    if (cat && cat[key]) cat[key].cost = Number(m[k]);
+  }
+  _costsLoaded = Object.keys(m).length > 0;
+}

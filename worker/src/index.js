@@ -16,7 +16,7 @@ import { handleTgUpdate, handleOrdersBotUpdate } from './tgbot.js';
 import { clientThread, clientSend, clientUnread, adminSend, adminThreads, adminThread, getBanner, setBanner } from './msgs.js';
 import { tgApi, webhookSecret } from './tgapi.js';
 import { defer } from './notify.js';
-import { CATALOGS } from './catalog.js';
+import { CATALOGS, loadCosts } from './catalog.js';
 import { gamesdropProbe, checkPlayer, comparePrices, regionTest } from './gamesdrop.js';
 import { postToChannel, ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
 import { createDeal, viewDeal, dealPaid, dealConfirm, dealProblem, remindDeals } from './deals.js';
@@ -124,6 +124,7 @@ function fromBase64(str) {
 // ---------- роутер ----------
 export default {
   async fetch(req, env0, ctx) {
+    loadCosts(env0);
     const env = Object.create(env0); env.ctx = ctx; // ctx нужен для фоновой отправки уведомлений
     const url = new URL(req.url);
     env.origin = url.origin; // нужен для публикации фото в канал
@@ -578,6 +579,7 @@ export default {
   },
   // раз в минуту опрашиваем FazerCards по заказам, которые ещё в обработке
   async scheduled(event, env, ctx) {
+    loadCosts(env);
     ctx.waitUntil(pollProcessing(env).catch(() => {}));
     ctx.waitUntil(syncAvailability(env).catch(() => {}));
     ctx.waitUntil(checkBalance(env).catch(() => {}));

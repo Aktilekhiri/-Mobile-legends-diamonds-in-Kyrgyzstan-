@@ -1,7 +1,7 @@
 // Автопроверка наличия паков у FazerCards. Раз в 15 минут (из cron) сверяем каталог поставщика с нашим.
 // Пак, которого нет у поставщика два раза подряд, скрывается на сайте и перестаёт приниматься в заказ; вернулся — включается сам.
 // Состояние хранится в таблице meta: avail_off (отключённые), avail_miss (счётчики пропаж), avail_forced (ручное «вернуть», 24 ч), avail_tpl (рабочий путь API), avail_cur (курсор).
-import { CATALOGS, OFF_PKGS } from './catalog.js';
+import { CATALOGS, GAMES, OFF_PKGS } from './catalog.js';
 import { SHOP } from './shop_data.js';
 import { fzCategoryOf, fzTypeOf, fzListOffers } from './fazercards.js';
 import { notify } from './notify.js';
@@ -42,7 +42,7 @@ function plan() {
   const byCat = new Map();
   for (const g of SHOP) {
     const cat = CATALOGS[g.id]; const category = fzCategoryOf(g.id);
-    if (!cat || !category) continue;
+    if (!cat || !category || (GAMES[g.id] && GAMES[g.id].manual)) continue;
     for (const p of g.packs) {
       const e = cat[p.k]; if (!e || !e.offer) continue;
       if (!byCat.has(category)) byCat.set(category, { key: g.id, category, type: fzTypeOf(g.id), packs: [] });

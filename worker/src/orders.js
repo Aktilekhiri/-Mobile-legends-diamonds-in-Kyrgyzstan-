@@ -132,8 +132,7 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
   const now = Date.now();
   let id = '';
   const secret = newSecret();
-  const manualGame = !!(GAMES[region] && GAMES[region].manual);
-  const auto = !manualGame && !!(cat && (cat.cost <= MAX_AUTO_COST_USD || opts.forceAuto));
+  const auto = !!(cat && (cat.cost <= MAX_AUTO_COST_USD || opts.forceAuto));
   // номер заказа: DK-1001, DK-1002… (по порядку; старые заказы с длинными кодами DKXXXXXXXX остаются как есть)
   for (let attempt = 0; attempt < 6; attempt++) {
     if (attempt < 4) {
@@ -554,7 +553,7 @@ export async function saveReceipt(env, id, buf, opts = {}) {
     env.DB.prepare('UPDATE orders SET receipt_at = ?, updated_at = ? WHERE id = ?').bind(now, now, o.id),
   ]);
   const cat = (CATALOGS[o.region] || {})[o.pkg] || null;
-  const auto = !(GAMES[o.region] && GAMES[o.region].manual) && !!(cat && cat.cost <= MAX_AUTO_COST_USD) && o.status === 'new';
+  const auto = !!(cat && cat.cost <= MAX_AUTO_COST_USD) && o.status === 'new';
   const text = alertText(o, cat, auto, true);
   if (first && !opts.silent) { // повторная загрузка чека не плодит уведомления
     await defer(env, (async () => {

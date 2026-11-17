@@ -193,7 +193,7 @@ export const GAMES = {
   standoff2: { category: '', serverField: null, servers: null, manual: true, catalog: {
     '100_gold': {}, '200_gold': {}, '300_gold': {}, '500_gold': {}, '1000_gold': {}, '3000_gold': {},
   } },
-  pubg: { category: 'pubg_mobile_auto', serverField: null, servers: null, manual: true, catalog: {
+  pubg: { category: 'pubg_mobile_auto', serverField: null, servers: null, catalog: {
     '60_uc': { offer: '60_uc' },
     '325_uc': { offer: '325_uc' },
     '660_uc': { offer: '660_uc' },

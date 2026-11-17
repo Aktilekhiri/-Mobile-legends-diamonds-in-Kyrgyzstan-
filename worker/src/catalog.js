@@ -189,6 +189,10 @@ export const USA_CATALOG = {
 };
 // Игры (не MLBB): категория FazerCards, поле сервера, каталог офферов (ключ = offer_id).
 export const GAMES = {
+  // Ручная игра: без категории FazerCards и без cost, заказы всегда уходят владельцу на ручную выдачу (докупает у конкурентов).
+  standoff2: { category: '', serverField: null, servers: null, manual: true, catalog: {
+    '100_gold': {}, '200_gold': {}, '300_gold': {}, '500_gold': {}, '1000_gold': {}, '3000_gold': {},
+  } },
   pubg: { category: 'pubg_mobile_auto', serverField: null, servers: null, catalog: {
     '60_uc': { offer: '60_uc' },
     '325_uc': { offer: '325_uc' },

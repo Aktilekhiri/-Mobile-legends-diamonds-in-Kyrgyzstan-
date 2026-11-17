@@ -3,6 +3,7 @@ import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS, OFF_PKGS, MLBB_REGIONS } f
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { isPkgOff, markPkgOff } from './avail.js';
 import { notify, notifyPhoto, defer } from './notify.js';
+import { marketHint, COMPETITOR_PRICES } from './competitors.js';
 import { sendOrderMail } from './mail.js';
 import { tgNotifyOrder, send, esc } from './tgapi.js';
 import { refundOrderToWallet, credit, ownerForOrder, tellOwner, ownerLabel } from './ledger.js';
@@ -43,7 +44,7 @@ function profitText(price, cat) {
   return ` (${p >= 0 ? '+' : '−'}${Math.abs(p)} сом прибыль)`;
 }
 
-const GAME_TITLE = {  whiteout: 'Whiteout Survival', lords: 'Lords Mobile', identityv: 'Identity V', fortnite: 'Fortnite Gift Card (ЕС)',mchess: 'Magic Chess Go Go', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', bloodstrike: 'Blood Strike', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox Gift Card', steam: 'Steam Gift Card (СНГ)', discord: 'Discord Nitro', netflix: 'Netflix Gift Card (США)', psn: 'PlayStation Gift Card (США)', gplay: 'Google Play Gift Card (США)', apple_us: 'App Store & iTunes (США)', apple_tr: 'App Store & iTunes (Турция)', apple_ru: 'App Store & iTunes (Россия)', nintendo: 'Nintendo eShop Card (США)', valorant: 'Valorant VP (регион RU)', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', indonesia: 'Mobile Legends (Индонезия)', turkey: 'Mobile Legends (Турция)', malaysia: 'Mobile Legends (Малайзия)', philippines: 'Mobile Legends (Филиппины)', singapore: 'Mobile Legends (Сингапур)', brazil: 'Mobile Legends (Бразилия)', usa: 'Mobile Legends (США)', global: 'Mobile Legends' };
+const GAME_TITLE = {  standoff2: 'Standoff 2', whiteout: 'Whiteout Survival', lords: 'Lords Mobile', identityv: 'Identity V', fortnite: 'Fortnite Gift Card (ЕС)',mchess: 'Magic Chess Go Go', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', bloodstrike: 'Blood Strike', hsr: 'Honkai: Star Rail', zzz: 'Zenless Zone Zero', tgstars: 'Telegram Stars', tgpremium: 'Telegram Premium', roblox: 'Roblox Gift Card', steam: 'Steam Gift Card (СНГ)', discord: 'Discord Nitro', netflix: 'Netflix Gift Card (США)', psn: 'PlayStation Gift Card (США)', gplay: 'Google Play Gift Card (США)', apple_us: 'App Store & iTunes (США)', apple_tr: 'App Store & iTunes (Турция)', apple_ru: 'App Store & iTunes (Россия)', nintendo: 'Nintendo eShop Card (США)', valorant: 'Valorant VP (регион RU)', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', russia: 'Mobile Legends (Россия)', indonesia: 'Mobile Legends (Индонезия)', turkey: 'Mobile Legends (Турция)', malaysia: 'Mobile Legends (Малайзия)', philippines: 'Mobile Legends (Филиппины)', singapore: 'Mobile Legends (Сингапур)', brazil: 'Mobile Legends (Бразилия)', usa: 'Mobile Legends (США)', global: 'Mobile Legends' };
 const gameTitle = region => GAME_TITLE[region] || 'Mobile Legends';
 
 // Карточка заказа для уведомлений владельцу: игра, пакет, ID, сумма и прибыль (с учётом комиссии оплаты, если она известна)
@@ -56,12 +57,12 @@ export function orderCard(o) {
 
 // Кнопки под уведомлением: подтверждение/отказ прямо в Telegram (обрабатывает /api/tg/orders-webhook)
 export function adminButtons(o) {
-  const row = o.status === 'new' ? [{ text: '✅ Подтвердить и выдать', callback_data: 'ok:' + o.id }, { text: '❌ Отказать', callback_data: 'no:' + o.id }] : o.status === 'manual' ? [{ text: '✅ Выдано вручную', callback_data: 'mn:' + o.id }, { text: '❌ Отказать', callback_data: 'no:' + o.id }] : null;
+  const row = o.status === 'new' ? [{ text: '✅ Подтвердить и выдать', callback_data: 'ok:' + o.id }, { text: '❌ Отказать', callback_data: 'no:' + o.id }] : o.status === 'manual' ? [{ text: '✅ Выдано вручную', callback_data: 'mn:' + o.id }, { text: '↩️ На баланс', callback_data: 'bm:' + o.id }, { text: '❌ Отказать', callback_data: 'no:' + o.id }] : null;
   return row ? { inline_keyboard: [row] } : undefined;
 }
 
 export function alertText(o, cat, auto, withReceipt) {
-  return `🆕 Новый заказ ${o.id}\n🎮 ${gameTitle(o.region)}\n${o.pkg_label} · ${o.price_kgs} сом${profitText(o.price_kgs, cat)} · ${o.method}\nID ${o.player_id}${o.server_id === '-' ? '' : ' (' + o.server_id + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)'}${withReceipt ? '\n📎 Чек приложен' : ''}\nПроверьте оплату и подтвердите в админке.`;
+  return `🆕 Новый заказ ${o.id}\n🎮 ${gameTitle(o.region)}\n${o.pkg_label} · ${o.price_kgs} сом${profitText(o.price_kgs, cat)} · ${o.method}\nID ${o.player_id}${o.server_id === '-' ? '' : ' (' + o.server_id + ')'}${auto ? '' : '\n⚠️ Выдача вручную (нет авто-оффера)' + marketHint(o).text}${withReceipt ? '\n📎 Чек приложен' : ''}\nПроверьте оплату и подтвердите в админке.`;
 }
 
 // GET /api/recent — публично: последние выданные заказы без персональных данных (игра, пакет, время) + счётчики
@@ -118,7 +119,9 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
   }
   if (!opts.promo && (OFF_PKGS.includes(region + ':' + pkg) || await isPkgOff(env, region + ':' + pkg))) return { error: 'Этот пакет временно недоступен. Выберите другой или попробуйте позже.' };
   const cat0 = (CATALOGS[region] || {})[pkg] || null;
-  if (!opts.promo && (cat0 ? price < Math.floor(cat0.cost * USD_KGS * 0.9) : price < 20)) return { error: 'Некорректная сумма заказа' };
+  // нижняя граница суммы: по себестоимости; если её нет (ручной пак), по цене конкурента, иначе 20 сом
+  const minPrice = cat0 && cat0.cost > 0 ? Math.floor(cat0.cost * USD_KGS * 0.9) : (COMPETITOR_PRICES[region + ':' + pkg] ? COMPETITOR_PRICES[region + ':' + pkg].price : 20);
+  if (!opts.promo && price < minPrice) return { error: 'Некорректная сумма заказа' };
 
   // защита от спама: не более 8 заказов с одного IP за час
   if (ip) {
@@ -299,7 +302,19 @@ export async function syncFromFz(env, o, fz) {
     await notify(env, `⚠️ Заказ ${o.id}: составной пакет выдан частично (FazerCards ${fz.id}). Проверьте вручную, что получил клиент.`);
   } else if (st === 'refund' || st === 'failed') {
     // поставщик вернул деньги из-за «нет в наличии / временно недоступно»: прячем пак на сайте, чтобы клиенты не повторяли заказ (вернуть: админка → «Наличие паков»)
-    if (st === 'refund' && /out of stock|temporarily unavailable/i.test(String(fz.fail_reason || ''))) { try { await markPkgOff(env, o.region + ':' + o.pkg, 'нет в наличии у FazerCards'); } catch (e) { /* не мешаем возврату */ } }
+    const oos = st === 'refund' && /out of stock|temporarily unavailable/i.test(String(fz.fail_reason || ''));
+    const hint = marketHint(o);
+    // клиентский заказ (не «для себя» и не промо): деньги клиента НЕ возвращаем, держим заказ и просим владельца выдать вручную (докупить у конкурента)
+    if (oos && o.method !== 'Для себя' && o.method !== 'promo') {
+      if (/\[oos\]/.test(o.fail_reason || '') || o.status === 'delivered') return; // повтор вебхука: уже держим заказ или он выдан, деньги не трогаем
+      // пак прячем только если докупать невыгодно (или цены конкурентов нет): иначе продолжаем продавать и выдаём вручную
+      if (hint.profitable !== true) { try { await markPkgOff(env, o.region + ':' + o.pkg, 'нет в наличии у FazerCards'); } catch (e) { /* не мешаем */ } }
+      await setStatus(env, o.id, { status: 'manual', fz_status: st, fail_reason: '[oos] нет в наличии у поставщика, выдача вручную', finished_at: 0 });
+      const o2 = { ...o, status: 'manual' };
+      await notify(env, `📦 Нет в наличии у поставщика: заказ ${o.id}\n${orderCard(o)}\nКлиент уже оплатил, деньги не возвращены.${hint.text || '\n(цены конкурентов для этого пакета не заданы)'}\n${hint.profitable === false ? '⚠️ Докупать невыгодно: лучше вернуть клиенту на баланс.' : 'Выдайте вручную и нажмите «Выдано вручную».'}`, adminButtons(o2));
+      return;
+    }
+    if (oos) { try { await markPkgOff(env, o.region + ':' + o.pkg, 'нет в наличии у FazerCards'); } catch (e) { /* не мешаем возврату */ } }
     if (st === 'refund' && o.region === 'russia' && o.method !== 'Для себя' && o.method !== 'promo' && /region/i.test(String(fz.fail_reason || '')) && !/\[alt\]/.test(o.fail_reason || '') && await retryInGlobal(env, o)) return;
     // failed: деньги гарантированно вернутся только при refund, поэтому клиенту возвращаем деньги только после refund
     if (st === 'refund' && o.method === 'Для себя') {

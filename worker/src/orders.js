@@ -315,7 +315,7 @@ export async function syncFromFz(env, o, fz) {
     await notify(env, `⚠️ Заказ ${o.id}: составной пакет выдан частично (FazerCards ${fz.id}). Проверьте вручную, что получил клиент.`);
   } else if (st === 'refund' || st === 'failed') {
     // поставщик вернул деньги из-за «нет в наличии / временно недоступно»: прячем пак на сайте, чтобы клиенты не повторяли заказ (вернуть: админка → «Наличие паков»)
-    const oos = st === 'refund' && /out of stock|temporarily unavailable/i.test(String(fz.fail_reason || ''));
+    const oos = st === 'refund' && /out of stock|(temporarily|currently) unavailable/i.test(String(fz.fail_reason || ''));
     const hint = marketHint(o);
     // клиентский заказ (не «для себя» и не промо): деньги клиента НЕ возвращаем, держим заказ и просим владельца выдать вручную (докупить у конкурента)
     if (oos && o.method !== 'Для себя' && o.method !== 'promo') {

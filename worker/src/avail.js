@@ -38,7 +38,7 @@ export async function markPkgOff(env, key, reason) {
 }
 
 // Что мониторим: только то, что реально продаётся на сайте (SHOP), сгруппировано по категориям FazerCards
-function plan() {
+function plan(env) {
   const byCat = new Map();
   for (const g of SHOP) {
     const cat = CATALOGS[g.id]; const category = fzCategoryOf(g.id);
@@ -56,7 +56,7 @@ function plan() {
 export async function syncAvailability(env, { force = false, now = Date.now() } = {}) {
   if (!force && new Date(now).getUTCMinutes() % 15 !== 0) return null;
   const report = { checked: 0, failed: [], off: [], back: [], glitch: [] };
-  const byCat = plan();
+  const byCat = plan(env);
   const all = [...byCat.values()];
   let pick = all;
   if (!force) {

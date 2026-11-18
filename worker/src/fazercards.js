@@ -5,7 +5,8 @@
 export const FZ_READY = true;
 const BASE = 'https://api.fzr.cards';
 
-import { GAMES } from './catalog.js';
+import { GAMES, CATALOGS } from './catalog.js';
+import { gdCreatePubgOrder, gdGetOrder } from './gamesdrop.js';
 const CATEGORY = { global: 'mobile_legends_global', russia: 'mobile_legends_ru', indonesia: 'mobile_legends_indonesia', turkey: 'mobile_legends_turkey', malaysia: 'mobile_legends_malaysia', philippines: 'mobile_legends_philippines', singapore: 'mobile_legends_singapore', brazil: 'mobile_legends_brazil', usa: 'mobile_legends_united_states', ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.category])) };
 
 async function call(env, method, path, body, extraHeaders) {
@@ -52,6 +53,11 @@ function normalize(o) {
 // Создать заказ. Один и тот же idempotencyKey безопасно повторять: вернётся тот же заказ, повторного списания не будет.
 // offerId вида 'a|b' = составной пакет: несколько заказов FazerCards подряд (ключи key, key-2, ...), id склеиваются через запятую.
 export async function fzCreateOrder(env, { region, offerId, playerId, serverId, idempotencyKey }) {
+  if (region === 'pubg' && env.PUBG_SUPPLIER === 'gamesdrop') { // PUBG через GamesDrop (включается переменной PUBG_SUPPLIER)
+    const cat = (CATALOGS.pubg || {})[offerId];
+    const maxUsd = cat && cat.cost > 0 ? cat.cost * 1.15 : 0;
+    return gdCreatePubgOrder(env, { offerKey: offerId, playerId, idempotencyKey, maxUsd });
+  }
   const category_id = CATEGORY[region || 'global'];
   if (!category_id) throw new Error('Регион не поддерживается для авто-выдачи');
   const g = GAMES[region];
@@ -112,6 +118,7 @@ function combine(parts) {
 }
 
 export async function fzGetOrder(env, fzOrderId) {
+  if (String(fzOrderId).startsWith('gd-')) return gdGetOrder(env, fzOrderId);
   const ids = String(fzOrderId).split(',').filter(Boolean);
   const parts = [];
   for (const id of ids) {

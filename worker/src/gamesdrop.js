@@ -148,3 +148,67 @@ export async function regionTest(env, deep) {
   }
   return { offers: offers.map(o => o.name), rows: out };
 }
+
+// ══ Покупка PUBG Mobile (UC по ID игрока) через GamesDrop ══
+// Включается секретом/переменной PUBG_SUPPLIER=gamesdrop (по умолчанию PUBG идёт через FazerCards).
+// Номер заказа у нас хранится как 'gd-<orderId>' в поле fz_order_id, статусы приводим к виду FazerCards (completed/processing/refund/failed).
+const _pubg = { list: null, exp: 0 };
+function ucOf(r) { const m = ((r.productName || '') + ' ' + (r.offerGroupName || '')).match(/(\d[\d\s]*)\s*uc\b/i); return m ? Number(m[1].replace(/\s/g, '')) : 0; }
+async function pubgOffers(env) {
+  if (_pubg.list && _pubg.exp > Date.now()) return _pubg.list;
+  let all = [];
+  for (let p = 1; p <= 4; p++) {
+    const s = await gd(env, 'POST', '/api/v1/offers/sync', { search: 'PUBG Mobile', page: p, limit: 100 });
+    const rows = s.data.rows || s.data.data || [];
+    all = all.concat(rows);
+    if (rows.length < 100) break;
+  }
+  const list = all.filter(r => r.isRequiredGameUserId && !r.isRequiredGameServerId && r.inStock && /pubg\s*mobile/i.test(r.productName || '') && !/lite|new state|battlegrounds|india|korea|vietnam|taiwan|japan/i.test((r.productName || '') + ' ' + (r.offerGroupName || '')));
+  _pubg.list = list; _pubg.exp = Date.now() + 15 * 60e3;
+  return list;
+}
+function gdErr(msg, status) { const e = new Error(msg); e.status = status; return e; }
+
+// offerKey — наш ключ пакета, например '325_uc'; maxUsd — потолок цены (наша себестоимость +15%), чтобы не переплатить
+export async function gdCreatePubgOrder(env, { offerKey, playerId, idempotencyKey, maxUsd }) {
+  const uc = Number(String(offerKey).match(/^(\d+)_uc$/)?.[1] || 0);
+  if (!uc) throw gdErr('GamesDrop: этот пакет PUBG не поддерживается авто-выдачей (только UC)', 422);
+  const cands = (await pubgOffers(env)).filter(r => ucOf(r) === uc).sort((a, b) => (a.price || 1e9) - (b.price || 1e9));
+  if (!cands.length) throw gdErr('GamesDrop: OUT OF STOCK (нет оффера на ' + uc + ' UC)', 422);
+  let last = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const f = await gd(env, 'POST', '/api/v1/offers/find-one', { offerId: cands[0].offerGroupId });
+    const price = f.data.price != null ? Number(f.data.price) : (f.data.offer && Number(f.data.offer.price));
+    if (!(price > 0)) throw gdErr('GamesDrop: не удалось получить цену (' + (f.data.error && f.data.error.code || f.http) + ')', 502);
+    if (maxUsd && price > maxUsd) throw gdErr('GamesDrop: цена $' + price + ' выше допустимой $' + maxUsd.toFixed(2), 422);
+    const body = { offerId: Number(cands[0].offerGroupId), price, transactionId: String(idempotencyKey), quantity: 1, customer: { gameUserId: String(playerId) } };
+    if (f.data.productOfferId) body.productOfferId = Number(f.data.productOfferId);
+    const r = await gd(env, 'POST', '/api/v1/offers/create-order', body);
+    const d = r.data || {}, er = d.error || null;
+    if (!er && d.orderId) return { id: 'gd-' + d.orderId, status: mapStatus(d.status), fail_reason: '', codes: [], cost_usd: price };
+    const code = er && er.code || '';
+    last = code || ('HTTP ' + r.http);
+    if (code === 'TRANSACTION_DUPLICATE') { const q = await gd(env, 'POST', '/api/v1/offers/order-status', { transactionId: String(idempotencyKey) }); if (q.data && q.data.orderId) return { id: 'gd-' + q.data.orderId, status: mapStatus(q.data.status), fail_reason: '', codes: [] }; }
+    if (code === 'WRONG_PRICE' && attempt === 0) continue;
+    if (code === 'OFFER_NOT_FOUND') throw gdErr('GamesDrop: OUT OF STOCK (' + (er.message || code) + ')', 422);
+    if (code === 'INVALID_TOKEN' || code === 'PERMISSION_DENIED') throw gdErr('GamesDrop: ' + code + ' — проверьте токен', 401);
+    if (code === 'INVALID_REQUEST_BODY') throw gdErr('GamesDrop: ' + (er.message || code), 422);
+    break;
+  }
+  // исход неизвестен (сеть/5xx/«занято»): статус 502 — заказ остаётся «в обработке», повтор с тем же transactionId безопасен
+  throw gdErr('GamesDrop: ' + last, 502);
+}
+function mapStatus(s) {
+  s = String(s || '').toUpperCase();
+  if (s === 'COMPLETED' || s === 'DELIVERED') return 'completed';
+  if (s === 'REFUND') return 'refund';
+  if (s === 'CANCELED' || s === 'FAILED') return 'failed';
+  return 'processing';
+}
+export async function gdGetOrder(env, gdId) {
+  const id = String(gdId).replace(/^gd-/, '');
+  const r = await gd(env, 'POST', '/api/v1/offers/order-status', { orderId: Number(id) });
+  const d = r.data || {};
+  if (!d.orderId) throw gdErr('GamesDrop: статус заказа не получен (' + (d.error && d.error.code || r.http) + ')', 502);
+  return { id: 'gd-' + id, status: mapStatus(d.status), fail_reason: [d.failureCode, d.failureReason].filter(Boolean).join(' ').slice(0, 200), codes: [] };
+}

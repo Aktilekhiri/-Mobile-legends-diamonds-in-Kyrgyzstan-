@@ -401,6 +401,31 @@ export const GAMES = {
     '50_usd': { offer: '50_usd' },
     '100_usd': { offer: '100_usd' },
   } },
+  gplay_tr: { category: 'google_play_tr', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+    '50_try': { offer: '50_try' },
+    '100_try': { offer: '100_try' },
+    '250_try': { offer: '250_try' },
+    '500_try': { offer: '500_try' },
+    '1000_try': { offer: '1000_try' },
+  } },
+  gplay_de: { category: 'google_play_de', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+    '10_eur': { offer: '10_eur' },
+    '15_eur': { offer: '15_eur' },
+    '25_eur': { offer: '25_eur' },
+    '50_eur': { offer: '50_eur' },
+  } },
+  gplay_uk: { category: 'google_play_uk', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+    '10_gbp': { offer: '10_gbp' },
+    '25_gbp': { offer: '25_gbp' },
+    '50_gbp': { offer: '50_gbp' },
+    '100_gbp': { offer: '100_gbp' },
+  } },
+  gplay_ae: { category: 'google_play_ae', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+    '30_aed': { offer: '30_aed' },
+    '50_aed': { offer: '50_aed' },
+    '100_aed': { offer: '100_aed' },
+    '300_aed': { offer: '300_aed' },
+  } },
   nintendo: { category: 'nintendo_us', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
     '5_usd': { offer: '5_usd' },
     '10_usd': { offer: '10_usd' },

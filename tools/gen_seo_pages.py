@@ -405,9 +405,10 @@ document.getElementById('rvBox').innerHTML='<div class="lr-sum"><strong>'+Number
 document.getElementById('rv').hidden=false}}).catch(function(){{}})}})();</script>
 </body></html>"""
 for g in G:
+    if g == 'standoff2': continue  # страница-инструкция (карты Google Play / App Store): tools/gen_card_guides.py
     os.makedirs(os.path.join(ROOT, SLUG[g]), exist_ok=True)
     open(os.path.join(ROOT, SLUG[g], 'index.html'), 'w', encoding='utf-8').write(page(g))
-urls = [(BASE + '/', '1.0')] + [(f"{BASE}/{SLUG[g]}/", '0.9') for g in G] + [(BASE + '/delivery/', '0.5'), (BASE + '/refund/', '0.5'), (BASE + '/guides/', '0.5'), (BASE + '/privacy/', '0.3'), (BASE + '/terms/', '0.3')]
+urls = [(BASE + '/', '1.0')] + [(f"{BASE}/{SLUG[g]}/", '0.9') for g in G] + [(BASE + '/brawl-stars-kyrgyzstan/', '0.8'), (BASE + '/clash-of-clans-kyrgyzstan/', '0.8')] + [(BASE + '/delivery/', '0.5'), (BASE + '/refund/', '0.5'), (BASE + '/guides/', '0.5'), (BASE + '/privacy/', '0.3'), (BASE + '/terms/', '0.3')]
 sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join(
     f"  <url>\n    <loc>{u}</loc>\n    <lastmod>{TODAY}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>{p}</priority>\n  </url>\n" for u, p in urls) + '</urlset>\n'
 open(os.path.join(ROOT, 'sitemap.xml'), 'w', encoding='utf-8').write(sm)

@@ -532,7 +532,7 @@ export default {
           if (!a) return err(req, 'Аккаунт не найден', 404);
           if (a.status !== 'available') return err(req, 'В канал можно отправить только аккаунт со статусом «В продаже»');
           if (a.tg_posted_at && !b.force) return err(req, 'Уже отправлялся в канал ' + new Date(a.tg_posted_at).toLocaleString('ru-RU', { timeZone: 'Asia/Bishkek' }), 409);
-          const r = await postToChannel({ ...env, origin: env.origin || url.origin }, id, '');
+          const r = await postToChannel(env, id, '', env.origin || url.origin);
           if (!r.ok) return err(req, 'Не отправилось: ' + r.reason, 502);
           await env.DB.prepare('UPDATE accounts SET tg_posted_at = ? WHERE id = ?').bind(Date.now(), id).run();
           return json(req, { ok: true });

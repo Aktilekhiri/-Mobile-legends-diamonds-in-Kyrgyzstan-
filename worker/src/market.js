@@ -145,7 +145,7 @@ export async function rejectOffer(env, code) {
 }
 
 // ---------- канал ----------
-export async function postToChannel(env, accountId, code) {
+export async function postToChannel(env, accountId, code, origin) {
   const channel = env.TG_CHANNEL || '@topupdiamondskg';
   const token = env.TG_SHOP_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN;
   if (!token) return { ok: false, reason: 'нет токена бота' };
@@ -154,7 +154,7 @@ export async function postToChannel(env, accountId, code) {
   if (!a) return { ok: false, reason: 'нет объявления' };
   const caption = `🎮 <b>${esc(a.title)}</b>\n💰 ${Number(a.price).toLocaleString('ru-RU').replace(/ /g, ' ')} сом\n\n${esc((a.description || '').slice(0, 600))}\n\n🛡 Сделка через гаранта Diamond.kg. Подробности и все фото: ${SITE}`.slice(0, 1020);
   const markup = { inline_keyboard: [[{ text: '🛒 Смотреть и купить', url: SITE }]] };
-  const base = env.origin || '';
+  const base = origin || env.origin || '';
   let r = null;
   if (p && base) r = await tgApi(env, 'sendPhoto', { chat_id: channel, photo: `${base}/img/${p.id}`, caption, parse_mode: 'HTML', reply_markup: markup }, 15000, token);
   if (!r || !r.ok) r = await tgApi(env, 'sendMessage', { chat_id: channel, text: caption, parse_mode: 'HTML', reply_markup: markup, disable_web_page_preview: true }, 10000, token);

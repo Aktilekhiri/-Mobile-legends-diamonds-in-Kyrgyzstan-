@@ -89,6 +89,7 @@ export async function listRecentDeliveries(env, game = '') {
 export async function createOrder(env, ip, b, userId = null, opts = {}) {
   const region = clean(b.region, 20) || 'global';
   const game = GAMES[region]; // undefined = Mobile Legends
+  if (game && game.disabled) return { error: 'Пока что недоступно' }; // игра временно отключена
   const kind = game && game.kind; // 'username' (Telegram) | 'none' (Roblox) | undefined
   let player, server;
   if (kind === 'none') { player = '-'; server = '-'; }

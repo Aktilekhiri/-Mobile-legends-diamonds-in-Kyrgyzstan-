@@ -1504,7 +1504,7 @@
       <a class="game-card" href="/delta-force-delta-coins/"><div class="gc-i"><img src="/img/games/deltaforce.webp" width="56" height="56" alt="Delta Force" loading="lazy" decoding="async"></div><h3>Delta Force</h3><p>Delta Coins</p></a>
       <a class="game-card" href="/marvel-rivals-lattices/"><div class="gc-i"><img src="/img/games/marvel.webp" width="56" height="56" alt="Marvel Rivals" loading="lazy" decoding="async"></div><h3>Marvel Rivals</h3><p>Lattices</p></a>
       <a class="game-card" href="/arena-breakout-bonds/"><div class="gc-i"><img src="/img/games/arena.webp" width="56" height="56" alt="Arena Breakout" loading="lazy" decoding="async"></div><h3>Arena Breakout</h3><p>Bonds</p></a>
-      <a class="game-card" href="/standoff-2-gold-kyrgyzstan/"><div class="gc-i"><img src="/img/games/standoff2.webp" width="56" height="56" alt="Standoff 2" loading="lazy" decoding="async"></div><h3>Standoff 2</h3><p>Gold</p></a>
+      <a class="game-card" href="/#catalog" onclick="showNotice('Standoff 2: пока что недоступно. Мы работаем над возвращением.');return false" style="opacity:.55;filter:grayscale(1)"><div class="gc-i"><img src="/img/games/standoff2.webp" width="56" height="56" alt="Standoff 2" loading="lazy" decoding="async"></div><h3>Standoff 2</h3><p>Пока недоступно</p></a>
       <a class="game-card" href="/whiteout-survival-frost-stars/"><div class="gc-i"><img src="/img/games/whiteout.webp" width="56" height="56" alt="Whiteout Survival" loading="lazy" decoding="async"></div><h3>Whiteout Survival</h3><p>Frost Stars</p></a>
       <a class="game-card" href="/lords-mobile-almazy/"><div class="gc-i"><img src="/img/games/lords.webp" width="56" height="56" alt="Lords Mobile" loading="lazy" decoding="async"></div><h3>Lords Mobile</h3><p>Алмазы, Diamond Pass</p></a>
       <a class="game-card" href="/identity-v-echoes/"><div class="gc-i"><img src="/img/games/identityv.webp" width="56" height="56" alt="Identity V" loading="lazy" decoding="async"></div><h3>Identity V</h3><p>Echoes и наборы</p></a>
@@ -1596,7 +1596,7 @@
         <option value="deltaforce">Delta Force</option>
         <option value="marvel">Marvel Rivals</option>
         <option value="arena">Arena Breakout</option>
-        <option value="standoff2">Standoff 2</option>
+        <option value="standoff2" disabled>Standoff 2 (пока недоступно)</option>
         <option value="whiteout">Whiteout Survival</option>
         <option value="lords">Lords Mobile</option>
         <option value="identityv">Identity V</option>
@@ -2038,7 +2038,7 @@ function syncThemePicker() { const c = currentTheme(); document.querySelectorAll
 // ===== Каталог =====
 const CAT_ORDER = ['mlbb','freefire','pubg','genshin','hok','wuwa','hsr','zzz','bloodstrike','mchess','deltaforce','marvel','arena','standoff2','whiteout','lords','identityv'];
 const CAT_SERVICES = ['roblox', 'steam', 'discord', 'netflix', 'psn', 'gplay', 'nintendo', 'valorant', 'pubgcode', 'fortnite', 'apple_us', 'apple_tr', 'apple_ru', 'tgstars', 'tgpremium'];
-const CAT_DISABLED = [];
+const CAT_DISABLED = ['standoff2'];
 const CAT_TG = ['tgstars', 'tgpremium'], CAT_GIFT = ['roblox', 'steam', 'discord', 'netflix', 'psn', 'gplay', 'nintendo', 'valorant', 'pubgcode', 'fortnite', 'apple_us', 'apple_tr', 'apple_ru'];
 let catTab = 'all';
 function setCatTab(t) { catTab = t; renderCatalog(); }
@@ -2053,7 +2053,7 @@ function catMinPrice(g) {
 }
 function catRow(g) {
   const nm = catName(g), pr = catMinPrice(g), off = CAT_DISABLED.includes(g);
-  return `<button type="button" class="cat-row${off ? ' off' : ''}" onclick="openGame('${g}')"><img src="/img/games/${g}.webp" width="56" height="56" alt="" loading="lazy" decoding="async"><span class="cr-tx"><span class="cr-nm">${esc(nm)}</span><span class="cr-sub">${esc(CAT_SUB[g] || '')}</span></span><span class="cr-pr">${pr ? 'от <b>' + pr.toLocaleString('ru-RU') + '</b> с' : ''}</span></button>`;
+  return `<button type="button" class="cat-row${off ? ' off' : ''}" onclick="openGame('${g}')"><img src="/img/games/${g}.webp" width="56" height="56" alt="" loading="lazy" decoding="async"><span class="cr-tx"><span class="cr-nm">${esc(nm)}</span><span class="cr-sub">${esc(CAT_SUB[g] || '')}</span></span><span class="cr-pr">${off ? 'Пока недоступно' : pr ? 'от <b>' + pr.toLocaleString('ru-RU') + '</b> с' : ''}</span></button>`;
 }
 function renderCatalog() {
   const box = document.getElementById('catList'); if (!box) return;
@@ -2070,7 +2070,7 @@ function renderCatalog() {
   box.innerHTML = html;
 }
 function openGame(g) {
-  if (CAT_DISABLED.includes(g)) { showNotice('Пополнение временно недоступно по техническим причинам. Пожалуйста, попробуйте позже.'); return; }
+  if (CAT_DISABLED.includes(g)) { showNotice('Пока что недоступно. Мы работаем над возвращением, попробуйте позже.'); return; }
   changeGame(g); showPage('topup'); restoreLastId();
 }
 
@@ -3635,7 +3635,8 @@ renderGameAbout();
 syncThemePicker(); { const m0 = document.querySelector('meta[name="theme-color"]'); if (m0) m0.setAttribute('content', THEME_COLORS[currentTheme()]); }
 (function(){ try {
   const g = new URLSearchParams(location.search).get('game');
-  if (g && (g === 'mlbb' || gamesData[g])) { changeGame(g); showPage('topup'); restoreLastId(); }
+  if (g && CAT_DISABLED.includes(g)) { showNotice('Пока что недоступно. Мы работаем над возвращением, попробуйте позже.'); }
+  else if (g && (g === 'mlbb' || gamesData[g])) { changeGame(g); showPage('topup'); restoreLastId(); }
 } catch (e) {} })();
 
 // Закрытие мобильного меню при клике вне

@@ -346,6 +346,11 @@ export const GAMES = {
     '6m': { offer: '6m' },
     '12m': { offer: '12m' },
   } },
+  // PUBG Mobile кодом для Midasbuy (подарочные карты FazerCards): мгновенно, игрок активирует код сам
+  pubgcode: { category: 'pubg_mobile', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+    '60_uc': { offer: '60_uc' }, '325_uc': { offer: '325_uc' }, '660_uc': { offer: '660_uc' },
+    '3850_uc': { offer: '3850_uc' }, '8100_uc': { offer: '8100_uc' },
+  } },
   roblox: { category: 'roblox_global', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
     '50_robux': { offer: '50_robux' },
     '100_robux': { offer: '100_robux' }, // 50 Robux убран: у FazerCards больше нет такого номинала (404 No matching offer)
@@ -510,6 +515,11 @@ export function loadCosts(env) {
     const i = k.indexOf('|'), group = k.slice(0, i), key = k.slice(i + 1);
     const cat = CATALOGS[group] || (GAMES[group] && GAMES[group].catalog);
     if (cat && cat[key]) cat[key].cost = Number(m[k]);
+  }
+  // Карты PUBG-кодом (pubgcode): себестоимость берём у такого же пакета PUBG (карта на 0.5-2% дешевле, запас в нашу пользу)
+  if (GAMES.pubgcode && GAMES.pubg) for (const k of Object.keys(GAMES.pubgcode.catalog)) {
+    const src = GAMES.pubg.catalog[k], dst = GAMES.pubgcode.catalog[k];
+    if (src && src.cost > 0 && !(dst.cost > 0)) dst.cost = src.cost;
   }
   _costsLoaded = Object.keys(m).length > 0;
 }

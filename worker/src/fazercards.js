@@ -94,9 +94,16 @@ export async function fzCreateOrder(env, { region, offerId, playerId, serverId, 
   const offers = String(offerId).split('|');
   const parts = [];
   for (let i = 0; i < offers.length; i++) {
-    const d = await call(env, 'POST', '/api/v2/topups/order',
+    const idem = String(idempotencyKey) + (i ? '-' + (i + 1) : '');
+    let d;
+    // PUBG UC: сначала запасной провайдер (Reserve), он быстрее при задержках основного. При чёткой отмене (4xx) пробуем Auto: ничего не куплено
+    if (region === 'pubg' && /^\d+_uc$/.test(offers[i]) && env.PUBG_UC_RESERVE !== 'off') {
+      try { d = await call(env, 'POST', '/api/v2/topups/order', { category_id: 'pubg_mobile_reserve', offer_id: offers[i], fields }, { 'Idempotency-Key': idem }); }
+      catch (e) { if (!(e.status >= 400 && e.status < 500) || e.status === 401 || e.status === 402 || e.status === 403 || e.status === 429) throw e; }
+    }
+    if (!d) d = await call(env, 'POST', '/api/v2/topups/order',
       { category_id, offer_id: offers[i], fields },
-      { 'Idempotency-Key': String(idempotencyKey) + (i ? '-' + (i + 1) : '') });
+      { 'Idempotency-Key': idem });
     const o = normalize(d.order);
     if (!o.id) throw new Error('FazerCards не вернул номер заказа');
     parts.push(o);

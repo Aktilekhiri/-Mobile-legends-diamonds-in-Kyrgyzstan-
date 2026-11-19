@@ -351,6 +351,16 @@ export const GAMES = {
     '60_uc': { offer: '60_uc' }, '325_uc': { offer: '325_uc' }, '660_uc': { offer: '660_uc' },
     '3850_uc': { offer: '3850_uc' }, '8100_uc': { offer: '8100_uc' },
   } },
+  // Free Fire и Mobile Legends кодами (подарочные карты FazerCards): игрок активирует код сам
+  ffcode: { category: 'free_fire', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+    '110_diamonds': { offer: '110' }, '341_diamonds': { offer: '341' }, '572_diamonds': { offer: '572' },
+    '1166_diamonds': { offer: '1166' }, '2398_diamonds': { offer: '2398' }, '6160_diamonds': { offer: '6160' },
+  } },
+  mlbbcode: { category: 'mobile_legends_voucher_global', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+    '56_diamonds': { offer: '56_diamonds' }, '278_diamonds': { offer: '278_diamonds' }, '571_diamonds': { offer: '571_diamonds' },
+    '1167_diamonds': { offer: '1167_diamonds' }, '1783_diamonds': { offer: '1783_diamonds' }, '3005_diamonds': { offer: '3005_diamonds' },
+    '4770_diamonds': { offer: '4770_diamonds' }, '6012_diamonds': { offer: '6012_diamonds' },
+  } },
   roblox: { category: 'roblox_global', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
     '50_robux': { offer: '50_robux' },
     '100_robux': { offer: '100_robux' }, // 50 Robux убран: у FazerCards больше нет такого номинала (404 No matching offer)
@@ -533,7 +543,7 @@ export function loadCosts(env) {
   if (_costsLoaded) return;
   let m = {};
   // секрет не больше 5 КБ: себестоимость лежит в нескольких секретах CATALOG_COSTS, CATALOG_COSTS2, ...
-  for (const nm of ['CATALOG_COSTS', 'CATALOG_COSTS2', 'CATALOG_COSTS3', 'CATALOG_COSTS4', 'CATALOG_COSTS5']) {
+  for (const nm of ['CATALOG_COSTS', 'CATALOG_COSTS2', 'CATALOG_COSTS3', 'CATALOG_COSTS4', 'CATALOG_COSTS5', 'CATALOG_COSTS6']) {
     try { Object.assign(m, JSON.parse((env && env[nm]) || '{}') || {}); } catch (e) {}
   }
   for (const k of Object.keys(m)) {

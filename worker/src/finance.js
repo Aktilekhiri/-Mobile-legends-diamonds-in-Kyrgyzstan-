@@ -7,10 +7,10 @@ import { notify } from './notify.js';
 const TZ = 6 * 3600 * 1000;            // Бишкек = UTC+6
 const DAY = 86400000;
 export const RESERVE_PCT = 0.03;       // 3% выручки остаётся на карте приёма: комиссии сети, курс, возвраты
-export const TAX_FROM = Date.UTC(2027, 0, 1) - TZ;   // до 1 января 2027 налог 2% не платим, только Соцфонд и комиссия Finik
-export const TAX_PCT = 0.02;           // единый налог ИП: 2% от выручки (за вычетом возвратов), платится раз в квартал
+export const TAX_FROM = Date.UTC(2026, 10, 1) - TZ;   // налог 2% считаем с 1 ноября 2026 (налоговая 19.11: ноябрь–январь платим до 20 января 2027)
+export const TAX_PCT = 0.02;           // единый налог ИП: 2% от всей выручки за вычетом возвратов (комиссии Finik и закупка не вычитаются), раз в 3 месяца
 const taxOf = (rev, ts) => (ts < TAX_FROM ? 0 : Math.round(Math.max(0, rev) * TAX_PCT));
-export const SOCIAL_MONTH = 1800;      // взнос в Соцфонд в месяц, сом (с запасом: официально 1257)
+export const SOCIAL_MONTH = 1257;      // взнос в Соцфонд в месяц, сом (по полису ЭПП от 19.11.2026)
 export const SOCIAL_WEEK = Math.round(SOCIAL_MONTH * 12 / 52); // недельная доля взноса
 export const MIN_BALANCE_USD = 116;    // не опускаем баланс FazerCards ниже (запас на ~4 дня)
 export const MIN_DEPOSIT_USD = 50;     // меньше не пополняем: комиссия 1 USDT съест слишком много
@@ -125,13 +125,17 @@ export async function maybeSendWeekly(env, nowMs = Date.now()) {
 
 // Напоминания о взносах и налоге (из cron каждую минуту, шлём в 10:00 по Бишкеку, каждое напоминание один раз):
 // • Соцфонд: 13, 19 и 20 числа каждого месяца, взнос SOCIAL_MONTH сом до 20 числа;
-// • налог за квартал: 1, 10 и 18 числа апреля/июля/октября/января, сумма 2% с выручки прошедшего квартала (кварталы с 2027 года).
+// • налог: первый период ноябрь 2026 – январь 2027 (напоминания 10, 15, 18 января, срок до 20 января); дальше по кварталам.
 export async function maybeRemindTaxes(env, nowMs = Date.now()) {
   const local = new Date(nowMs + TZ);
   if (local.getUTCHours() < 10) return;
   const y = local.getUTCFullYear(), m = local.getUTCMonth(), d = local.getUTCDate();
   const todo = [];
-  if ([13, 19, 20].includes(d)) todo.push({ k: `soc-${y}-${pad(m + 1)}-${d}`, t: `🧾 Соцфонд: взнос ${fmt(SOCIAL_MONTH)} сом нужно оплатить до 20 числа${d === 20 ? ' (сегодня последний день)' : d === 19 ? ' (завтра последний день)' : ''}.` });
+  if ([13, 19, 20].includes(d) && !(y === 2026 && m === 10)) todo.push({ k: `soc-${y}-${pad(m + 1)}-${d}`, t: `🧾 Соцфонд: взнос ${fmt(SOCIAL_MONTH)} сом нужно оплатить до 20 числа${d === 20 ? ' (сегодня последний день)' : d === 19 ? ' (завтра последний день)' : ''}.` });
+  if (y === 2027 && m === 0 && [10, 15, 18].includes(d)) {   // первый налоговый период: ноябрь 2026 – январь 2027, срок до 20 января
+    const q = await sums(env, TAX_FROM, nowMs), tax = Math.round(Math.max(0, q.rev) * TAX_PCT);
+    todo.push({ k: `tax-first-${d}`, t: `🧾 Налог за ноябрь–январь: ${fmt(tax)} сом (2% с выручки ${fmt(q.rev)} сом, возвраты уже вычтены). Оплатить и сдать документы до 20 января. Выгрузку и справку возвратов можно подготовить через Claude.` });
+  }
   if (m % 3 === 0 && [1, 10, 18].includes(d)) {
     const qStart = Date.UTC(m === 0 ? y - 1 : y, m === 0 ? 9 : m - 3, 1) - TZ, qEnd = Date.UTC(y, m, 1) - TZ;
     if (qStart >= TAX_FROM) {

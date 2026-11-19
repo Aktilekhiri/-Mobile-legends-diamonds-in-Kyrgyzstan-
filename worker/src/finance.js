@@ -7,7 +7,7 @@ import { notify } from './notify.js';
 const TZ = 6 * 3600 * 1000;            // Бишкек = UTC+6
 const DAY = 86400000;
 export const RESERVE_PCT = 0.03;       // 3% выручки остаётся на карте приёма: комиссии сети, курс, возвраты
-export const TAX_FROM = Date.UTC(2026, 10, 1) - TZ;   // налог 2% считаем с 1 ноября 2026 (налоговая 19.11: ноябрь–январь платим до 20 января 2027)
+export const TAX_FROM = FIN_START_MS;   // налог 2% считаем со дня подключения Finik и начала заказов, 5 ноября 2026 (налоговая 19.11: ноябрь–январь платим до 20 января 2027)
 export const TAX_PCT = 0.02;           // единый налог ИП: 2% от всей выручки за вычетом возвратов (комиссии Finik и закупка не вычитаются), раз в 3 месяца
 const taxOf = (rev, ts) => (ts < TAX_FROM ? 0 : Math.round(Math.max(0, rev) * TAX_PCT));
 export const SOCIAL_MONTH = 1257;      // взнос в Соцфонд в месяц, сом (по полису ЭПП от 19.11.2026)
@@ -74,7 +74,7 @@ export async function financeSummary(env, nowMs = Date.now()) {
   const weekStart = dayStart - dow * DAY, lastWeekStart = weekStart - 7 * DAY;
   const monthStart = Date.UTC(y, m, 1) - TZ;
   let balance = null; try { balance = await fzGetBalance(env); } catch (e) { /* баланс недоступен */ }
-  const quarterStart = TAX_FROM;   // налоговый период: с 1 ноября 2026 (первый платёж до 20 января 2027)
+  const quarterStart = TAX_FROM;   // налоговый период: с 5 ноября 2026, дня подключения Finik (первый платёж до 20 января 2027)
   const [today, thisWeek, lastWeek, month, all, r7, quarter] = await Promise.all([
     sums(env, dayStart, dayEnd), sums(env, weekStart, dayEnd), sums(env, lastWeekStart, weekStart),
     sums(env, monthStart, dayEnd), sums(env, 0, dayEnd), sums(env, dayEnd - 7 * DAY, dayEnd), sums(env, quarterStart, dayEnd),
@@ -96,7 +96,7 @@ export async function financeSummary(env, nowMs = Date.now()) {
     rate: USD_KGS, balance_usd: balance, balance_kgs: balance == null ? null : Math.round(balance * USD_KGS),
     spend_per_day_usd: Number((spend7 / 7).toFixed(2)), days_left: spend7 > 0 && balance != null ? Number((balance / (spend7 / 7)).toFixed(1)) : null,
     weeks, today, week: thisWeek, last_week: lastWeek, month, all,
-    quarter: { ...quarter, tax: taxOf(quarter.rev, Date.now()), period: 'ноябрь 2026 – январь 2027', due: '20.01.2027', social_paid: { amount: 1257, month: 'ноябрь 2026', date: '19.11.2026' }, social_next: socNext },
+    quarter: { ...quarter, tax: taxOf(quarter.rev, Date.now()), period: '5 ноября 2026 – январь 2027', due: '20.01.2027', social_paid: { amount: 1257, month: 'ноябрь 2026', date: '19.11.2026' }, social_next: socNext },
     plan_week: plan({ ...thisWeek, social: socialOf(weekStart), cost_usd: Math.max(thisWeek.cost_usd + thisWeek.promo_usd, spend7) }, balance),
     plan_last: plan({ ...lastWeek, social: socialOf(lastWeekStart), cost_usd: Math.max(lastWeek.cost_usd + lastWeek.promo_usd, spend7) }, balance),
     constants: { tax_pct: Date.now() < TAX_FROM ? 0 : TAX_PCT, social_month: SOCIAL_MONTH, reserve_pct: RESERVE_PCT, min_balance_usd: MIN_BALANCE_USD, min_deposit_usd: MIN_DEPOSIT_USD },

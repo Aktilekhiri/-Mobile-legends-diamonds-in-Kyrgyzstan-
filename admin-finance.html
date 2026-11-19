@@ -100,13 +100,13 @@ button:disabled{opacity:.5;cursor:default}
         +'<div class="row"><span>Комиссия Finik</span><b class="neg">−'+n(w.fee)+' сом</b></div>'
         +'<div class="row"><span>Закупка у поставщика</span><b class="neg">−'+n(w.cost)+' сом</b></div>'
         +(w.promo?'<div class="row"><span>Промо</span><b class="neg">−'+n(w.promo)+' сом</b></div>':'')
-        +'<div class="row"><span>Налог 2% (с выручки, с 5 ноября 2026)</span><b class="neg">−'+n(w.tax)+' сом</b></div>'
+        +'<div class="row"><span>Налог 2% (с поступлений Finik)</span><b class="neg">−'+n(w.tax)+' сом</b></div>'
         +'<div class="row"><span>Соцфонд (отложить)</span><b class="neg">−'+n(w.social)+' сом</b></div>'
         +'<div class="row"><span><b>Чистая прибыль</b></span>'+pr(w.net)+'</div></div>';
     });
     h+='<div style="padding:10px 0;border-top:2px solid var(--line)"><div class="o-head"><b>Итого за период</b></div>'
       +'<div class="row"><span>Выручка</span><b>'+n(t.rev)+' сом</b></div><div class="row"><span>Комиссия Finik</span><b class="neg">−'+n(t.fee)+' сом</b></div>'
-      +'<div class="row"><span>Налог 2% (с выручки, с 5 ноября 2026)</span><b class="neg">−'+n(t.tax)+' сом</b></div><div class="row"><span>Соцфонд</span><b class="neg">−'+n(t.social)+' сом</b></div>'
+      +'<div class="row"><span>Налог 2% (с поступлений Finik)</span><b class="neg">−'+n(t.tax)+' сом</b></div><div class="row"><span>Соцфонд</span><b class="neg">−'+n(t.social)+' сом</b></div>'
       +'<div class="row"><span><b>Чистая прибыль</b></span>'+pr(t.net)+'</div></div>'
       +'<div class="warn">Налог и Соцфонд здесь «отложить»: налог за ноябрь–январь платится до 20 января, Соцфонд '+n(f.constants.social_month)+' сом в месяц до 20 числа (ноябрь уже оплачен).</div></div>';
     return h;
@@ -130,11 +130,12 @@ button:disabled{opacity:.5;cursor:default}
     h+=weeksCard(f);
     var q=f.quarter; if(q){var dl=Math.ceil((Date.UTC(2027,0,20)-Date.now())/86400000);
       h+='<div class="card"><div class="o-head"><b>Налог: '+q.period+'</b><span class="o-meta" style="margin:0">срок '+q.due+(dl>0?' (ещё '+dl+' дн.)':'')+'</span></div>'
-        +'<div class="row"><span>Оплачено клиентами</span><b>'+n(q.gross)+' сом</b></div>'
-        +'<div class="row"><span>Возвраты</span><b class="neg">−'+n(q.refunds)+' сом</b></div>'
-        +'<div class="row"><span>Выручка для налога</span><b>'+n(q.rev)+' сом</b></div>'
+        +'<div class="row"><span>Оплаты заказов через Finik</span><b>'+n(q.finik.orders)+' сом</b></div>'
+        +'<div class="row"><span>Пополнения баланса</span><b>'+n(q.finik.topups)+' сом</b></div>'
+        +'<div class="row"><span>Тойго и Clip4K</span><b>'+n(q.finik.other)+' сом</b></div>'
+        +'<div class="row"><span>Всего поступлений Finik</span><b>'+n(q.finik.base)+' сом</b></div>'
         +'<div class="row"><span><b>Налог 2%</b></span><b>'+n(q.tax)+' сом</b></div>'
-        +'<div class="warn">Единый налог: комиссия Finik и закупка не вычитаются. Нужны документы: выписка/реестр Finik за период и подтверждения возвратов. Считается со дня подключения Finik (5 ноября 2026), только выданные заказы; пополнения баланса не входят.</div></div>'
+        +'<div class="warn">База = всё, что пришло через Finik с 5 ноября 2026 (как в выписке Finik). Возвраты не вычитаем: платим 2% с полной суммы, без документов. Заказы, оплаченные с баланса, не считаем, иначе деньги посчитаются дважды. Тойго и Clip4K вносятся в код вручную.</div></div>'
         +'<div class="card"><div class="o-head"><b>Соцфонд</b><span class="o-meta" style="margin:0">'+n(q.social_paid.amount)+' сом в месяц</span></div>'
         +'<div class="row"><span>'+q.social_paid.month+'</span><b class="pos">оплачено '+q.social_paid.date+'</b></div>'
         +'<div class="row"><span>Следующий взнос</span><b>'+n(q.social_next.amount)+' сом до '+q.social_next.due+'</b></div>'

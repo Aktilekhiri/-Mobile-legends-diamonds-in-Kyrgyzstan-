@@ -11,6 +11,8 @@ export const TAX_FROM = Date.UTC(2026, 10, 1) - TZ;   // налог 2% счит�
 export const TAX_PCT = 0.02;           // единый налог ИП: 2% от всей выручки за вычетом возвратов (комиссии Finik и закупка не вычитаются), раз в 3 месяца
 const taxOf = (rev, ts) => (ts < TAX_FROM ? 0 : Math.round(Math.max(0, rev) * TAX_PCT));
 export const SOCIAL_MONTH = 1257;      // взнос в Соцфонд в месяц, сом (по полису ЭПП от 19.11.2026)
+export const SOCIAL_PAID_UNTIL = Date.UTC(2026, 11, 1) - TZ;   // ноябрь 2026 уже оплачен (1257 сом, 19.11.2026): откладывать на Соцфонд начинаем с декабря
+const socialOf = ws => (ws + 3 * DAY < SOCIAL_PAID_UNTIL ? 0 : SOCIAL_WEEK);
 export const SOCIAL_WEEK = Math.round(SOCIAL_MONTH * 12 / 52); // недельная доля взноса
 export const MIN_BALANCE_USD = 116;    // не опускаем баланс FazerCards ниже (запас на ~4 дня)
 export const MIN_DEPOSIT_USD = 50;     // меньше не пополняем: комиссия 1 USDT съест слишком много
@@ -28,6 +30,8 @@ async function sums(env, from, to) {
   const r = await env.DB.prepare(
     `SELECT COALESCE(SUM(CASE WHEN ${NP} THEN 1 ELSE 0 END),0) AS n,
             COALESCE(SUM(CASE WHEN ${NP} THEN price_kgs - refund_kgs ELSE 0 END),0) AS rev,
+            COALESCE(SUM(CASE WHEN ${NP} THEN price_kgs ELSE 0 END),0) AS gross,
+            COALESCE(SUM(CASE WHEN ${NP} THEN refund_kgs ELSE 0 END),0) AS refunds,
             COALESCE(SUM(CASE WHEN ${NP} THEN cost_usd ELSE 0 END),0) AS cost_usd,
             COALESCE(SUM(CASE WHEN ${NP} THEN fee_kgs ELSE 0 END),0) AS fee,
             COALESCE(SUM(CASE WHEN ${NP} AND cost_usd > 0 THEN price_kgs - refund_kgs - fee_kgs - cost_usd * ? ELSE 0 END),0) AS profit,
@@ -37,8 +41,8 @@ async function sums(env, from, to) {
        FROM orders WHERE status = 'delivered' AND ${FIN_WHERE}
         AND COALESCE(NULLIF(finished_at,0), created_at) >= ? AND COALESCE(NULLIF(finished_at,0), created_at) < ?`
   ).bind(USD_KGS, from, to).first();
-  const s = r || { n: 0, rev: 0, fee: 0, cost_usd: 0, profit: 0, nocost: 0, promo_n: 0, promo_usd: 0 };
-  return { n: s.n, rev: Math.round(s.rev), fee: Math.round(s.fee), cost: Math.round(s.cost_usd * USD_KGS), cost_usd: Number(s.cost_usd.toFixed(2)), profit: Math.round(s.profit), nocost: s.nocost,
+  const s = r || { n: 0, rev: 0, gross: 0, refunds: 0, fee: 0, cost_usd: 0, profit: 0, nocost: 0, promo_n: 0, promo_usd: 0 };
+  return { n: s.n, rev: Math.round(s.rev), gross: Math.round(s.gross), refunds: Math.round(s.refunds), fee: Math.round(s.fee), cost: Math.round(s.cost_usd * USD_KGS), cost_usd: Number(s.cost_usd.toFixed(2)), profit: Math.round(s.profit), nocost: s.nocost,
     promo_n: s.promo_n, promo_cost: Math.round(s.promo_usd * USD_KGS), promo_usd: Number(s.promo_usd.toFixed(2)) };
 }
 
@@ -46,7 +50,7 @@ async function sums(env, from, to) {
 function plan(week, balanceUsd) {
   const reserve = Math.round(week.rev * RESERVE_PCT);
   const profitSafe = Math.max(0, week.profit - reserve - (week.promo_cost || 0));   // расход на промо вычитаем: деньги реально потрачены
-  const tax = taxOf(week.rev, Date.now()), social = SOCIAL_WEEK;   // налог и Соцфонд откладываем на сейф вместе с прибылью
+  const tax = taxOf(week.rev, Date.now()), social = week.social != null ? week.social : SOCIAL_WEEK;   // налог и Соцфонд откладываем на сейф вместе с прибылью
   const toSafe = Math.max(profitSafe, tax + social);                  // налоги обязательны, даже если прибыли не хватает
   const free = Math.max(0, profitSafe - tax - social);                // прибыль, которую можно тратить
   const weeklySpend = week.cost_usd;                                 // расход на поставщика за неделю, USD
@@ -70,19 +74,21 @@ export async function financeSummary(env, nowMs = Date.now()) {
   const weekStart = dayStart - dow * DAY, lastWeekStart = weekStart - 7 * DAY;
   const monthStart = Date.UTC(y, m, 1) - TZ;
   let balance = null; try { balance = await fzGetBalance(env); } catch (e) { /* баланс недоступен */ }
-  const quarterStart = Date.UTC(y, Math.floor(m / 3) * 3, 1) - TZ;
+  const quarterStart = TAX_FROM;   // налоговый период: с 1 ноября 2026 (первый платёж до 20 января 2027)
   const [today, thisWeek, lastWeek, month, all, r7, quarter] = await Promise.all([
     sums(env, dayStart, dayEnd), sums(env, weekStart, dayEnd), sums(env, lastWeekStart, weekStart),
     sums(env, monthStart, dayEnd), sums(env, 0, dayEnd), sums(env, dayEnd - 7 * DAY, dayEnd), sums(env, quarterStart, dayEnd),
   ]);
-  const qMonths = (m % 3) + 1;     // сколько месяцев квартала уже идёт (для начисленного взноса в Соцфонд)
+  // ближайший взнос в Соцфонд: ноябрь 2026 оплачен, дальше каждый месяц до 20 числа
+  const nextIdx = Math.max(2026 * 12 + 11, y * 12 + m + (d > 20 ? 1 : 0));
+  const socNext = { amount: SOCIAL_MONTH, month: nextIdx % 12, year: Math.floor(nextIdx / 12), due: `20.${pad(nextIdx % 12 + 1)}.${Math.floor(nextIdx / 12)}` };
   // прозрачная таблица по неделям (с понедельника): выручка, комиссия Finik, закупка, налог, Соцфонд, чистая прибыль
   const startLocal = new Date(FIN_START_MS + TZ), sdow = (startLocal.getUTCDay() + 6) % 7;
   const firstWeek = Date.UTC(startLocal.getUTCFullYear(), startLocal.getUTCMonth(), startLocal.getUTCDate()) - TZ - sdow * DAY;
   const weeks = [];
   for (let ws = weekStart, i = 0; ws >= firstWeek && i < 12; ws -= 7 * DAY, i++) {
     const w = await sums(env, ws, Math.min(ws + 7 * DAY, dayEnd));
-    const tax = taxOf(w.rev, ws), social = SOCIAL_WEEK;
+    const tax = taxOf(w.rev, ws), social = socialOf(ws);
     weeks.push({ from: ws + TZ, n: w.n, rev: w.rev, fee: w.fee, cost: w.cost, promo: w.promo_cost, tax, social, profit: w.profit, net: w.profit - w.promo_cost - tax - social, current: ws === weekStart });
   }
   const spend7 = r7.cost_usd + r7.promo_usd;                                        // реальный темп расхода: последние 7 дней
@@ -90,9 +96,9 @@ export async function financeSummary(env, nowMs = Date.now()) {
     rate: USD_KGS, balance_usd: balance, balance_kgs: balance == null ? null : Math.round(balance * USD_KGS),
     spend_per_day_usd: Number((spend7 / 7).toFixed(2)), days_left: spend7 > 0 && balance != null ? Number((balance / (spend7 / 7)).toFixed(1)) : null,
     weeks, today, week: thisWeek, last_week: lastWeek, month, all,
-    quarter: { ...quarter, tax: taxOf(quarter.rev, Date.now()), social: SOCIAL_MONTH * 3, social_accrued: SOCIAL_MONTH * qMonths },
-    plan_week: plan({ ...thisWeek, cost_usd: Math.max(thisWeek.cost_usd + thisWeek.promo_usd, spend7) }, balance),
-    plan_last: plan({ ...lastWeek, cost_usd: Math.max(lastWeek.cost_usd + lastWeek.promo_usd, spend7) }, balance),
+    quarter: { ...quarter, tax: taxOf(quarter.rev, Date.now()), period: 'ноябрь 2026 – январь 2027', due: '20.01.2027', social_paid: { amount: 1257, month: 'ноябрь 2026', date: '19.11.2026' }, social_next: socNext },
+    plan_week: plan({ ...thisWeek, social: socialOf(weekStart), cost_usd: Math.max(thisWeek.cost_usd + thisWeek.promo_usd, spend7) }, balance),
+    plan_last: plan({ ...lastWeek, social: socialOf(lastWeekStart), cost_usd: Math.max(lastWeek.cost_usd + lastWeek.promo_usd, spend7) }, balance),
     constants: { tax_pct: Date.now() < TAX_FROM ? 0 : TAX_PCT, social_month: SOCIAL_MONTH, reserve_pct: RESERVE_PCT, min_balance_usd: MIN_BALANCE_USD, min_deposit_usd: MIN_DEPOSIT_USD },
   };
 }
@@ -106,7 +112,7 @@ export function weeklyText(f) {
     if (f.days_left != null) t += `, хватит примерно на ${f.days_left} дн.`;
     t += p.buy_usd > 0 ? `\n• Докупите USDT на $${p.buy_usd} (≈ ${fmt(p.buy_kgs)} сом) одним платежом: комиссия сети 1 USDT одна` : '\n• Пополнять пока не нужно';
   }
-  const q = f.quarter; if (q) t += `\n\n🧾 За квартал: налог 2% ${fmt(q.tax)} сом (с выручки ${fmt(q.rev)} сом), Соцфонд ${fmt(q.social_accrued)} сом начислено. Налог платится раз в квартал, деньги должны лежать на сейфе.`;
+  const q = f.quarter; if (q) t += `\n\n🧾 Налог за ${q.period}: ${fmt(q.tax)} сом (2% с выручки ${fmt(q.rev)} сом; оплачено клиентами ${fmt(q.gross)}, возвраты −${fmt(q.refunds)}). Срок: до ${q.due}. Соцфонд: ноябрь оплачен, следующий взнос ${fmt(q.social_next.amount)} сом до ${q.social_next.due}. Деньги должны лежать на сейфе.`;
   if (w.nocost) t += `\n\n(у ${w.nocost} заказ(ов) нет себестоимости: они не входят в прибыль)`;
   return t;
 }

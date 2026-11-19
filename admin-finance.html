@@ -108,7 +108,7 @@ button:disabled{opacity:.5;cursor:default}
       +'<div class="row"><span>Выручка</span><b>'+n(t.rev)+' сом</b></div><div class="row"><span>Комиссия Finik</span><b class="neg">−'+n(t.fee)+' сом</b></div>'
       +'<div class="row"><span>Налог 2% (с выручки, с ноября 2026)</span><b class="neg">−'+n(t.tax)+' сом</b></div><div class="row"><span>Соцфонд</span><b class="neg">−'+n(t.social)+' сом</b></div>'
       +'<div class="row"><span><b>Чистая прибыль</b></span>'+pr(t.net)+'</div></div>'
-      +'<div class="warn">Налог и Соцфонд здесь «отложить»: платятся не каждую неделю, а раз в квартал и раз в месяц. Соцфонд в расчёте '+n(f.constants.social_month)+' сом/мес с запасом.</div></div>';
+      +'<div class="warn">Налог и Соцфонд здесь «отложить»: налог за ноябрь–январь платится до 20 января, Соцфонд '+n(f.constants.social_month)+' сом в месяц до 20 числа (ноябрь уже оплачен).</div></div>';
     return h;
   }
   function render(){
@@ -128,7 +128,17 @@ button:disabled{opacity:.5;cursor:default}
       +'<div class="step"><span class="n">3</span><div>'+(p.buy_usd>0?'Докупите USDT для FazerCards<div class="big">$'+p.buy_usd+' ≈ '+n(p.buy_kgs)+' сом</div><div class="o-meta" style="margin:0">Одним платежом: комиссия сети 1 USDT одна. Расход за неделю ≈ $'+p.weekly_spend_usd+', держим запас не ниже $'+f.constants.min_balance_usd+'</div>':'Пополнять FazerCards пока не нужно<div class="o-meta" style="margin:2px 0 0">Баланса хватает с запасом (расход за неделю ≈ $'+p.weekly_spend_usd+')</div>')+'</div></div>'
       +'<div class="warn">Это оценка по каталожным ценам. Каждый понедельник в 14:00 в Telegram приходит план по итогам прошлой недели.</div></div>';
     h+=weeksCard(f);
-    var q=f.quarter; if(q) h+='<div class="card"><div class="o-head"><b>Налоги за квартал</b></div><div class="row"><span>Выручка за квартал</span><b>'+n(q.rev)+' сом</b></div><div class="row"><span>Налог 2% (к оплате раз в квартал)</span><b>'+n(q.tax)+' сом</b></div><div class="row"><span>Соцфонд (начислено, '+n(f.constants.social_month)+' сом/мес)</span><b>'+n(q.social_accrued)+' сом</b></div><div class="warn">Эти деньги должны лежать на карте-сейфе до оплаты. Сумма налога примерная: считается по выручке за вычетом возвратов.</div></div>';
+    var q=f.quarter; if(q){var dl=Math.ceil((Date.UTC(2027,0,20)-Date.now())/86400000);
+      h+='<div class="card"><div class="o-head"><b>Налог: '+q.period+'</b><span class="o-meta" style="margin:0">срок '+q.due+(dl>0?' (ещё '+dl+' дн.)':'')+'</span></div>'
+        +'<div class="row"><span>Оплачено клиентами</span><b>'+n(q.gross)+' сом</b></div>'
+        +'<div class="row"><span>Возвраты</span><b class="neg">−'+n(q.refunds)+' сом</b></div>'
+        +'<div class="row"><span>Выручка для налога</span><b>'+n(q.rev)+' сом</b></div>'
+        +'<div class="row"><span><b>Налог 2%</b></span><b>'+n(q.tax)+' сом</b></div>'
+        +'<div class="warn">Единый налог: комиссия Finik и закупка не вычитаются. Нужны документы: выписка/реестр Finik за период и подтверждения возвратов. Учтены только выданные заказы с 1 ноября; пополнения баланса не входят.</div></div>'
+        +'<div class="card"><div class="o-head"><b>Соцфонд</b><span class="o-meta" style="margin:0">'+n(q.social_paid.amount)+' сом в месяц</span></div>'
+        +'<div class="row"><span>'+q.social_paid.month+'</span><b class="pos">оплачено '+q.social_paid.date+'</b></div>'
+        +'<div class="row"><span>Следующий взнос</span><b>'+n(q.social_next.amount)+' сом до '+q.social_next.due+'</b></div>'
+        +'<div class="warn">Откладываем по '+n(Math.round(f.constants.social_month*12/52))+' сом в неделю, начиная с декабря. Ноябрь уже оплачен, за него ничего не откладывается.</div></div>';}
     h+=period('Сегодня',f.today)+period('Эта неделя (с понедельника)',f.week)+period('Прошлая неделя',f.last_week)+period('С начала месяца',f.month)+period('За всё время',f.all);
     $('fin').innerHTML=h;
     Array.prototype.forEach.call(document.querySelectorAll('[data-w]'),function(b){b.onclick=function(){wk=b.dataset.w;render()}});

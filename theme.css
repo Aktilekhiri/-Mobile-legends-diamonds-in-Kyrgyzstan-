@@ -772,6 +772,12 @@ body.has-banner .page{margin-top:var(--bnH,0)}
 .nick-ok[hidden]{display:none}
 .nick-ok.miss{background:linear-gradient(135deg,rgba(245,158,11,.28),rgba(245,158,11,.12));border-color:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.14),0 6px 18px rgba(245,158,11,.22)}
 .nick-ok.miss .nk-t b{font-size:.85rem;font-weight:600}
+.nick-ok.load{background:rgba(100,116,139,.12);border-color:rgba(100,116,139,.45);box-shadow:none;animation:none}
+.nick-ok.load .nk-t b{font-size:.95rem}
+.nick-ok.load .nk-t small{display:block;opacity:.75}
+.nk-spin{flex:none;width:22px;height:22px;border:3px solid rgba(100,116,139,.35);border-top-color:#2563eb;border-radius:50%;animation:nkSpin .8s linear infinite}
+@keyframes nkSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.nk-spin{animation-duration:2s}}
 .nick-ok .nk-ic{font-size:26px;line-height:1}
 .nick-ok .nk-t{display:flex;flex-direction:column;min-width:0}
 .nick-ok small{font-size:12px;letter-spacing:.04em;text-transform:uppercase;opacity:.85}

@@ -2387,7 +2387,7 @@ function renderGamePromo() {
 function renderPackages() {
   renderGamePromo();
   const ask = document.getElementById('pkgAsk');   // подсказка: нужного пакета нет в списке
-  if (ask) { if (currentGame === 'mlbb') { ask.innerHTML = '💬 Не нашли подходящее количество алмазов или цену? Напишите нам в <a href="https://wa.me/996555920204" target="_blank" rel="noopener">WhatsApp</a> или в <a href="https://t.me/diamond_kg_bot" target="_blank" rel="noopener">Telegram</a>: всё учтём и подберём нужный вариант.'; ask.hidden = false; } else { ask.hidden = true; ask.innerHTML = ''; } }
+  if (ask) { if (currentGame === 'mlbb') { ask.innerHTML = '💬 Не нашли подходящее количество алмазов или цену? Напишите нам в <a href="https://wa.me/996555920204" target="_blank" rel="noopener">WhatsApp</a> или в <a href="https://t.me/DiamondKgSupport" target="_blank" rel="noopener">Telegram</a>: всё учтём и подберём нужный вариант.'; ask.hidden = false; } else { ask.hidden = true; ask.innerHTML = ''; } }
   const grid = document.getElementById('packagesGrid'), tabsEl = document.getElementById('pkgTabs');
   const cats = [...new Set(packages.map(pkgCat))];
   const useTabs = cats.length > 1;

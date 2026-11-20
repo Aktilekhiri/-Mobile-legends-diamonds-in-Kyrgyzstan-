@@ -382,7 +382,7 @@ export default {
       if (path.startsWith('/api/admin')) {
         if (!(await isAdmin(req, env))) return err(req, 'Нужен вход', 401);
         // отдельный изолированный модуль «Финансы и учёт ИП» (worker/src/ipacc.js, таблицы ip_accounting_*)
-        if (path === '/api/admin/gamesdrop/probe' && m === 'POST') { const b = await req.json().catch(() => ({})); if (b.regiontest) return json(req, await regionTest(env, !!b.deep)); if (b.compare) return json(req, await comparePrices(env, { global: CATALOGS.global, russia: CATALOGS.russia, pubg: CATALOGS.pubg })); return json(req, await gamesdropProbe(env, b)); }
+        if (path === '/api/admin/gamesdrop/probe' && m === 'POST') { const b = await req.json().catch(() => ({})); if (b.regiontest) return json(req, await regionTest(env, !!b.deep, b.id ? { id: b.id, server: b.server } : null)); if (b.compare) return json(req, await comparePrices(env, { global: CATALOGS.global, russia: CATALOGS.russia, pubg: CATALOGS.pubg })); return json(req, await gamesdropProbe(env, b)); }
         if (path.startsWith('/api/admin/ipacc')) return ipaccHandle(req, env, path, url, { json, err, cors });
 
         // чёрный список телефонов

@@ -23,6 +23,7 @@ pre{white-space:pre-wrap;word-break:break-word;font-size:.8rem;color:var(--mu)}
 <button id="chk">Проверить игрока</button></div>
 <div class="card"><h2>Сравнение цен</h2><p>FazerCards (наша себестоимость) против GamesDrop: MLBB и PUBG. Ничего не покупает. Минус % = GamesDrop дешевле.</p><button id="cmp">Сравнить цены</button></div>
 <div class="card"><h2>Тест регионов</h2><p>Берёт ID из доставленных заказов (Global, Россия, Турция, США) и проверяет их на офферах разных регионов. V = найден, x = нет. Ничего не покупает.</p><button id="rt">Запустить тест регионов</button> <button id="rt2">Расширенный тест (12 аккаунтов)</button></div>
+<div class="card"><h2>Проверка одного ID по всем регионам</h2><p>Прогоняет этот ID и Zone по всем офферам Mobile Legends (Global, Россия, Турция и др.). V = найден, x = нет, у найденных показывается ник. Ничего не покупает.</p><input id="rid" value="949781770" inputmode="numeric" placeholder="Player ID"> <input id="rsid" value="12770" inputmode="numeric" placeholder="Zone ID"> <button id="rt3">Проверить ID по регионам</button></div>
 <div class="card"><pre id="out">Нажмите «Проверить».</pre></div>
 <script src="api-config.js"></script>
 <script>
@@ -50,6 +51,18 @@ $('cmp').onclick=async function(){var b=this;b.disabled=true;$('out').textConten
   }catch(e){$('out').textContent='Нет связи: '+e.message}
   b.disabled=false};
 $('rt2').onclick=function(){$('rt').onclick.call(this,true)};
+$('rt3').onclick=async function(){var b=this;b.disabled=true;$('out').textContent='Проверяем ID по всем регионам (до минуты)…';
+  try{var base=(window.DK_API||sget('dk_admin_api')||'').replace(/\/+$/,'');
+    var r=await fetch(base+'/api/admin/gamesdrop/probe',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+sget('dk_admin_token')},body:JSON.stringify({regiontest:true,id:$('rid').value.trim(),server:$('rsid').value.trim()})});
+    var d=await r.json().catch(function(){return {}});
+    if(r.status===401){$('out').textContent='Войдите в админку (вкладка «Заказы») и повторите.';b.disabled=false;return}
+    if(!d.rows||!d.rows.length){$('out').textContent=JSON.stringify(d,null,2);b.disabled=false;return}
+    var x=d.rows[0],t=['ID '+x.id+', зона '+x.zone,''];
+    d.offers.forEach(function(n){t.push((x.res[n]==='V'?'✅ ':x.res[n]==='x'?'❌ ':'❔ ')+n+(d.nicks&&d.nicks[n]?' — ник: '+d.nicks[n]:''))});
+    t.push('','✅ найден, ❌ не найден, ❔ проверка не удалась');
+    $('out').textContent=t.join('\n');
+  }catch(e){$('out').textContent='Нет связи: '+e.message}
+  b.disabled=false};
 $('rt').onclick=async function(deep){var b=this;b.disabled=true;$('out').textContent='Тестируем (до минуты)…';
   try{var base=(window.DK_API||sget('dk_admin_api')||'').replace(/\/+$/,'');
     var r=await fetch(base+'/api/admin/gamesdrop/probe',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+sget('dk_admin_token')},body:JSON.stringify({regiontest:true,deep:deep===true})});

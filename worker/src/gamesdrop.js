@@ -75,17 +75,20 @@ export async function checkPlayer(env, ip, b) {
   const rl = _rl.get(ip); if (rl && rl.exp > now) { if (++rl.n > 40) return { nick: null }; } else _rl.set(ip, { n: 1, exp: now + 600e3 });
   if (_rl.size > 5000) _rl.clear();
   const key = game + '|' + pid + '|' + sid;
-  const hit = _res.get(key); if (hit && hit.exp > now) return { nick: hit.nick, region: hit.region || '' };
-  let nick = null, region = '';
+  const hit = _res.get(key); if (hit && hit.exp > now) return { nick: hit.nick, region: hit.region || '', notfound: !!hit.notfound };
+  let nick = null, region = '', invalid = 0, total = 0;
   try {
     for (const o of await offersFor(env, game)) {
       const body = { offerId: o.id, gameUserId: pid }; if (sid && sid !== '-') body.gameServerId = sid;
-      const c = await gd(env, 'POST', '/api/v1/offers/check-game-data', body);
+      const c = await gd(env, 'POST', '/api/v1/offers/check-game-data', body); total++;
       if (c.data && c.data.status === 'VALID' && c.data.gameUserLogin) { nick = String(c.data.gameUserLogin).slice(0, 40); region = o.reg || ''; break; }
+      if (c.data && c.data.status === 'INVALID') invalid++;
     }
   } catch (e) { return { nick: null }; }
-  _res.set(key, { nick, region, exp: now + (nick ? 3600e3 : 600e3) }); if (_res.size > 5000) _res.clear();
-  return { nick, region };
+  // «Не найден» только когда все проверки честно ответили INVALID (не сбой, не лимит); для Mobile Legends, где проверка надёжна для Global и России
+  const notfound = !nick && game === 'mlbb' && total > 0 && invalid === total;
+  _res.set(key, { nick, region, notfound, exp: now + (nick ? 3600e3 : 600e3) }); if (_res.size > 5000) _res.clear();
+  return { nick, region, notfound };
 }
 
 // Сравнение цен: наша себестоимость (FazerCards) против GamesDrop. Ничего не покупает.

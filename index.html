@@ -2528,7 +2528,7 @@ function smartPasteId(e) {
   return false;
 }
 // Ник игрока по ID: проверяем сами, как только введены ID и Zone. Показываем только найденный ник, иначе молчим.
-let _nickKey = '', _nickT = null, _nickOkSig = '', _nickRegion = '';
+let _nickKey = '', _nickT = null, _nickOkSig = '', _nickRegion = '', _nickMissSig = '';
 // Ник найден для текущих ID/сервера: подтверждение «Проверил(а) ID» не нужно (клиент сам видит аккаунт)
 function nickConfirmed() { return !!_nickOkSig && _nickOkSig === currentGame + '|' + getPlayerValue() + '|' + getServerValue(); }
 function nickCheck() {
@@ -2539,7 +2539,7 @@ function nickCheck() {
   const ready = currentGame === 'mlbb' ? (pid.length >= 6 && pid.length <= 10 && sid.length >= 4 && sid.length <= 5) : (pid.length >= 5 && !!sid);
   const key = currentGame + '|' + pid + '|' + sid + '|' + (ready ? 1 : 0);
   if (key === _nickKey) return;
-  _nickKey = key; box.hidden = true; clearTimeout(_nickT); _nickRegion = ''; const rh = document.getElementById('regionFix'); if (rh) rh.hidden = true;
+  _nickKey = key; box.hidden = true; box.className = 'nick-ok'; clearTimeout(_nickT); _nickRegion = ''; const rh = document.getElementById('regionFix'); if (rh) rh.hidden = true;
   if (!ready || !API_BASE()) return;
   _nickT = setTimeout(async () => {
     try {
@@ -2547,7 +2547,11 @@ function nickCheck() {
       const r = await fetch(API_BASE() + '/api/check-id', { method: 'POST', signal: ctrl.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: currentGame, playerId: pid, serverId: sid }) });
       clearTimeout(tm);
       const d = await r.json();
-      if (key !== _nickKey || !d || !d.nick) return;
+      if (key !== _nickKey || !d) return;
+      if (!d.nick) {
+        if (d.notfound) { _nickMissSig = currentGame + '|' + pid + '|' + sid; box.className = 'nick-ok miss'; box.innerHTML = '<span class="nk-ic">⚠️</span><span class="nk-t"><small>Аккаунт не найден</small><b>Проверьте Player ID и Zone ID в профиле игры: Zone ID это число в скобках рядом с ID</b></span>'; box.hidden = false; updateBuyBtn(); }
+        return;
+      }
       box.innerHTML = '<span class="nk-ic">✅</span><span class="nk-t"><small>Аккаунт найден</small><b>' + esc(d.nick) + '</b></span>';
       box.hidden = false; _nickOkSig = currentGame + '|' + pid + '|' + sid; _nickRegion = d.region || ''; updateBuyBtn(); regionHint();
     } catch (e) {}
@@ -2613,7 +2617,7 @@ function updateBuyBtn() {
     const sig = pid + '|' + sid + '|' + (selectedPkg ? selectedPkg.key || selectedPkg.id : '');
     if (iok.dataset.sig !== sig) { iok.checked = false; iok.dataset.sig = sig; }
     ior.hidden = !(ready && needIdOk);
-    if (ready) { const sl = gdk && gdk.servers ? ((gdk.servers.find(x => x.v === sid) || {}).l || sid) : sid; document.getElementById('idOkText').innerHTML = 'ID <b>' + esc(pid) + '</b>' + (sid && sid !== '-' ? ', сервер <b>' + esc(sl) + '</b>' : '') + '. Ошибочный ID вернуть нельзя.'; }
+    if (ready) { const sl = gdk && gdk.servers ? ((gdk.servers.find(x => x.v === sid) || {}).l || sid) : sid; document.getElementById('idOkText').innerHTML = 'ID <b>' + esc(pid) + '</b>' + (sid && sid !== '-' ? ', сервер <b>' + esc(sl) + '</b>' : '') + (_nickMissSig && _nickMissSig === currentGame + '|' + pid + '|' + sid ? '. ⚠️ Аккаунт с такими ID не найден. Отметьте, только если уверены, что ID и Zone верные' : '') + '. Ошибочный ID вернуть нельзя.'; }
   }
   const idOkPass = !needIdOk || !!(iok && iok.checked);
   const ok = ready && idOkPass;

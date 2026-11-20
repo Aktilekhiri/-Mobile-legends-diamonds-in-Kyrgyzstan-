@@ -1454,7 +1454,7 @@
    <div class="bn-track" id="bnTrack">
     <a class="bn-slide bn-gw" href="https://t.me/topupdiamondskg" target="_blank" rel="noopener"><span class="bn-gem"><svg viewBox="0 0 44 40" aria-hidden="true"><defs><linearGradient id="bnG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7FE7FF"/><stop offset=".6" stop-color="#4F7CFF"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs><path d="M12 3h20l10 11-20 24L2 14z" fill="url(#bnG)"/><path d="M12 3l-4 11h28l-4-11z" fill="#fff" opacity=".4"/><path d="M15 14l7-11 7 11M15 14l7 24 7-24M8 14h28" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" stroke-linejoin="round"/></svg></span><div class="bn-tag">Розыгрыш</div><h3>3000 алмазов в подарок</h3><p>Подпишитесь на наш Telegram-канал и нажмите «Принять участие». Разыграем, когда наберём 500 подписчиков.</p><span class="bn-btn">Участвовать →</span></a>
     <div class="bn-slide bn-pm"><span class="bn-gift" aria-hidden="true">🎁</span><div class="bn-tag">Промокод</div><h3>Есть промокод? Weekly Pass бесплатно</h3><p>Для Mobile Legends, аккаунты Global. Один код — одно использование.</p><button type="button" class="bn-btn" onclick="bnPromoOpen()">Ввести промокод →</button></div>
-    <div class="bn-slide bn-game" style="--bg:url(/img/banners/mlbb.webp?v=2)"><div class="bn-tag">Пополнить у нас</div><h3>Mobile Legends</h3><p>Алмазы и пассы · оплата в сомах</p><button type="button" class="bn-btn" onclick="openGame('mlbb')">Пополнить →</button></div>
+    <div class="bn-slide bn-game" style="--bg:url(/img/banners/mlbb.webp?v=2)"><div class="bn-tag">Пополнить у нас</div><h3>Mobile Legends</h3><p>Алмазы и пассы · оплата в сомах<br>Нет нужного пакета? Напишите нам, всё учтём</p><button type="button" class="bn-btn" onclick="openGame('mlbb')">Пополнить →</button></div>
     <div class="bn-slide bn-game" style="--bg:url(/img/banners/pubg.webp?v=1)"><div class="bn-tag">Пополнить у нас</div><h3>PUBG Mobile</h3><p>UC, Prime и Elite Pass · оплата через банки КР</p><button type="button" class="bn-btn" onclick="openGame('pubg')">Пополнить →</button></div>
     <div class="bn-slide bn-game" style="--bg:url(/img/banners/freefire.webp?v=1)"><div class="bn-tag">Пополнить у нас</div><h3>Free Fire</h3><p>Алмазы и подписки · оплата в сомах</p><button type="button" class="bn-btn" onclick="openGame('freefire')">Пополнить →</button></div>
    </div>
@@ -1645,6 +1645,7 @@
       <div class="game-promo" id="gamePromo" hidden></div>
       <div class="pkg-tabs" id="pkgTabs" role="tablist" hidden></div>
       <div class="packages-grid" id="packagesGrid"></div>
+      <div class="method-note" id="pkgAsk" hidden style="margin-top:12px;text-align:center"></div>
     </div>
     <div class="form-card step-card" id="stepData" hidden>
       <button type="button" class="back-cat" onclick="backToPackages()">← Пакеты</button>
@@ -2385,6 +2386,8 @@ function renderGamePromo() {
 }
 function renderPackages() {
   renderGamePromo();
+  const ask = document.getElementById('pkgAsk');   // подсказка: нужного пакета нет в списке
+  if (ask) { if (currentGame === 'mlbb') { ask.innerHTML = '💬 Не нашли подходящее количество алмазов или цену? Напишите нам в <a href="https://wa.me/996555920204" target="_blank" rel="noopener">WhatsApp</a> или в <a href="https://t.me/diamond_kg_bot" target="_blank" rel="noopener">Telegram</a>: всё учтём и подберём нужный вариант.'; ask.hidden = false; } else { ask.hidden = true; ask.innerHTML = ''; } }
   const grid = document.getElementById('packagesGrid'), tabsEl = document.getElementById('pkgTabs');
   const cats = [...new Set(packages.map(pkgCat))];
   const useTabs = cats.length > 1;

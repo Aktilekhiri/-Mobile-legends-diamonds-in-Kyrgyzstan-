@@ -2,7 +2,7 @@
 // Авторизация: заголовок X-API-Key: fc_... (секрет FAZERCARDS_API_KEY в Cloudflare).
 // Создание заказа: POST /api/v2/topups/order, тело { category_id, offer_id, fields }, заголовок Idempotency-Key.
 // Статус заказа: GET /api/v2/orders/{orderId}. Ответы: { ok, order: {...} }.
-export const FZ_READY = false; // ВРЕМЕННО 21.11.2026: поставщик лежит (526), выдаём вручную. Вернуть true, когда FazerCards заработает
+export const FZ_READY = true;
 const BASE = 'https://api.fzr.cards';
 
 import { GAMES, CATALOGS } from './catalog.js';

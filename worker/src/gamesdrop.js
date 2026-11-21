@@ -223,8 +223,9 @@ export async function gdSpeedTest(env, b) {
   if (b.list) {
     let rows = [];
     for (let p = 1; p <= 3; p++) { const s = await gd(env, 'POST', '/api/v1/offers/sync', { search: 'Mobile Legends', page: p, limit: 100 }); const r = s.data.rows || s.data.data || []; rows = rows.concat(r); if (r.length < 100) break; }
-    const hit = rows.filter(r => /(^|\D)86(\D|$)/.test(JSON.stringify(r)) && r.isRequiredGameUserId);
-    return { total: rows.length, keys: rows[0] ? Object.keys(rows[0]) : [], found: hit.slice(0, 12).map(r => ({ offerGroupId: r.offerGroupId, name: r.productName || r.offerGroupName, title: r.name || r.title || r.offerName, price: r.price, inStock: r.inStock })) };
+    const txt = r => Object.entries(r).filter(([k, v]) => typeof v === 'string' && !/id$/i.test(k)).map(([, v]) => v).join(' | ');
+    const hit = rows.filter(r => r.isRequiredGameUserId && /(^|\D)86(\D|$)/.test(txt(r)));
+    return { total: rows.length, found: hit.slice(0, 12).map(r => Object.fromEntries(Object.entries(r).filter(([k, v]) => v !== null && typeof v !== 'object' && !/^(selected|provider|seller)/.test(k)))) };
   }
   const offerId = Number(b.offerId), id = String(b.id || '').replace(/\D/g, ''), server = String(b.server || '').replace(/\D/g, '');
   const maxUsd = Math.min(Number(b.maxUsd) || 1.6, 3);

@@ -180,13 +180,18 @@ export async function gdCreatePubgOrder(env, { offerKey, playerId, idempotencyKe
   if (!uc) throw gdErr('GamesDrop: этот пакет PUBG не поддерживается авто-выдачей (только UC)', 422);
   const cands = (await pubgOffers(env)).filter(r => ucOf(r) === uc).sort((a, b) => (a.price || 1e9) - (b.price || 1e9));
   if (!cands.length) throw gdErr('GamesDrop: OUT OF STOCK (нет оффера на ' + uc + ' UC)', 422);
+  return gdBuy(env, { groupId: cands[0].offerGroupId, customer: { gameUserId: String(playerId) }, idempotencyKey, maxUsd });
+}
+
+// Общая покупка оффера GamesDrop: свежая цена, потолок maxUsd, повтор при WRONG_PRICE, безопасный повтор по transactionId
+async function gdBuy(env, { groupId, customer, idempotencyKey, maxUsd }) {
   let last = null;
   for (let attempt = 0; attempt < 2; attempt++) {
-    const f = await gd(env, 'POST', '/api/v1/offers/find-one', { offerId: cands[0].offerGroupId });
+    const f = await gd(env, 'POST', '/api/v1/offers/find-one', { offerId: groupId });
     const price = f.data.price != null ? Number(f.data.price) : (f.data.offer && Number(f.data.offer.price));
     if (!(price > 0)) throw gdErr('GamesDrop: не удалось получить цену (' + (f.data.error && f.data.error.code || f.http) + ')', 502);
     if (maxUsd && price > maxUsd) throw gdErr('GamesDrop: цена $' + price + ' выше допустимой $' + maxUsd.toFixed(2), 422);
-    const body = { offerId: Number(cands[0].offerGroupId), price, transactionId: String(idempotencyKey), quantity: 1, customer: { gameUserId: String(playerId) } };
+    const body = { offerId: Number(groupId), price, transactionId: String(idempotencyKey), quantity: 1, customer };
     if (f.data.productOfferId) body.productOfferId = Number(f.data.productOfferId);
     const r = await gd(env, 'POST', '/api/v1/offers/create-order', body);
     const d = r.data || {}, er = d.error || null;
@@ -251,4 +256,24 @@ export async function gdSpeedTest(env, b) {
     last = q.data || {}; st = mapStatus(last.status); polls.push(((Date.now() - t0) / 1000).toFixed(1) + ' ' + (last.status || q.http));
   }
   return { orderId: od.orderId, price, status: st, sec_total: +((Date.now() - t0) / 1000).toFixed(1), sec_create_call: +(tCreated / 1000).toFixed(1), api_times: { createdAt: last.createdAt, completedAt: last.completedAt || last.finishedAt || last.updatedAt }, fail: [last.failureCode, last.failureReason].filter(Boolean).join(' '), polls: polls.slice(-6) };
+}
+
+// ══ Запасной канал MLBB (Global): если FazerCards недоступен (5xx), выдаём через GamesDrop. Только алмазы по сумме (86 Diamonds и т.п.) ══
+const _mlbb = { list: null, exp: 0 };
+async function mlbbOffers(env) {
+  if (_mlbb.list && _mlbb.exp > Date.now()) return _mlbb.list;
+  let all = [];
+  for (let p = 1; p <= 4; p++) { const s = await gd(env, 'POST', '/api/v1/offers/sync', { search: 'Mobile Legends', page: p, limit: 100 }); const r = s.data.rows || s.data.data || []; all = all.concat(r); if (r.length < 100) break; }
+  const list = all.filter(r => r.productName === 'Mobile Legends' && r.isRequiredGameUserId && r.isRequiredGameServerId && r.inStock);
+  _mlbb.list = list; _mlbb.exp = Date.now() + 15 * 60e3;
+  return list;
+}
+// fzOffer — оффер FazerCards вида '78_8_diamonds' (78+8) или '86_diamonds'; maxUsd — потолок цены
+export async function gdCreateMlbbOrder(env, { fzOffer, playerId, serverId, idempotencyKey, maxUsd }) {
+  const m = String(fzOffer).match(/^(\d+)_(?:(\d+)_)?diamonds$/);
+  if (!m) throw gdErr('GamesDrop: пакет не поддерживается запасным каналом', 422);
+  const total = Number(m[1]) + Number(m[2] || 0);
+  const cands = (await mlbbOffers(env)).filter(r => new RegExp('(^|\\D)' + total + '\\s*Diamonds', 'i').test(r.offerGroupName || '')).sort((a, b) => (a.price || 1e9) - (b.price || 1e9));
+  if (!cands.length) throw gdErr('GamesDrop: нет оффера на ' + total + ' алмазов', 422);
+  return gdBuy(env, { groupId: cands[0].offerGroupId, customer: { gameUserId: String(playerId), gameServerId: String(serverId) }, idempotencyKey, maxUsd });
 }

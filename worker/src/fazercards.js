@@ -6,7 +6,7 @@ export const FZ_READY = true;
 const BASE = 'https://api.fzr.cards';
 
 import { GAMES, CATALOGS } from './catalog.js';
-import { gdCreatePubgOrder, gdGetOrder } from './gamesdrop.js';
+import { gdCreatePubgOrder, gdCreateMlbbOrder, gdGetOrder } from './gamesdrop.js';
 const CATEGORY = { global: 'mobile_legends_global', russia: 'mobile_legends_ru', indonesia: 'mobile_legends_indonesia', turkey: 'mobile_legends_turkey', malaysia: 'mobile_legends_malaysia', philippines: 'mobile_legends_philippines', singapore: 'mobile_legends_singapore', brazil: 'mobile_legends_brazil', usa: 'mobile_legends_united_states', ...Object.fromEntries(Object.entries(GAMES).map(([k, g]) => [k, g.category])) };
 
 async function call(env, method, path, body, extraHeaders) {
@@ -101,9 +101,17 @@ export async function fzCreateOrder(env, { region, offerId, playerId, serverId, 
       try { d = await call(env, 'POST', '/api/v2/topups/order', { category_id: 'pubg_mobile_reserve', offer_id: offers[i], fields }, { 'Idempotency-Key': idem }); }
       catch (e) { if (!(e.status >= 400 && e.status < 500) || e.status === 401 || e.status === 402 || e.status === 403 || e.status === 429) throw e; }
     }
-    if (!d) d = await call(env, 'POST', '/api/v2/topups/order',
-      { category_id, offer_id: offers[i], fields },
-      { 'Idempotency-Key': idem });
+    if (!d) {
+      try { d = await call(env, 'POST', '/api/v2/topups/order', { category_id, offer_id: offers[i], fields }, { 'Idempotency-Key': idem }); }
+      catch (e) {
+        // FazerCards лежит (5xx, заказ точно не создан): MLBB Global алмазы покупаем у GamesDrop. Таймаут/сеть без кода не трогаем: исход неизвестен
+        if (region === 'global' && !g && offers.length === 1 && e.status >= 500 && e.status <= 599 && env.MLBB_GD_FALLBACK !== 'off') {
+          const cat = Object.values(CATALOGS.global || {}).find(c => c.offer === offers[0]);
+          if (cat && cat.cost > 0) { try { return await gdCreateMlbbOrder(env, { fzOffer: offers[0], playerId, serverId, idempotencyKey, maxUsd: cat.cost * 1.15 }); } catch (e2) { /* не вышло: отдаём исходную ошибку FazerCards */ } }
+        }
+        throw e;
+      }
+    }
     const o = normalize(d.order);
     if (!o.id) throw new Error('FazerCards не вернул номер заказа');
     parts.push(o);

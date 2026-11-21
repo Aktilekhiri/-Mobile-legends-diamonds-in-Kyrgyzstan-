@@ -1645,6 +1645,15 @@
       <div class="card-title">Выберите пакет</div>
       <div class="game-promo" id="gamePromo" hidden></div>
       <div class="pkg-tabs" id="pkgTabs" role="tablist" hidden></div>
+      <div class="pkg-custom" id="starsCustom" hidden style="margin:0 0 14px;padding:12px;border:1px solid var(--border,#2a2a3a);border-radius:14px">
+        <label for="starsQty" style="display:block;font-weight:600;margin-bottom:8px">Своё количество звёзд</label>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="starsQty" type="number" inputmode="numeric" min="50" max="10000" step="1" placeholder="например, 137" oninput="starsCustomInput()" onkeydown="if(event.key==='Enter'){event.preventDefault();starsCustomPick()}" style="flex:1 1 120px;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--border,#2a2a3a);background:transparent;color:inherit;font:inherit">
+          <strong id="starsQtyPrice" style="min-width:90px"></strong>
+          <button type="button" id="starsQtyBtn" class="pkg-buy" onclick="starsCustomPick()" disabled style="padding:10px 14px">Выбрать</button>
+        </div>
+        <div class="field-hint" style="margin-top:6px">От 50 до 10 000 звёзд, любое число. Или выберите готовый пакет ниже.</div>
+      </div>
       <div class="packages-grid" id="packagesGrid"></div>
       <div class="method-note" id="pkgAsk" hidden style="margin-top:12px;text-align:center"></div>
     </div>
@@ -2385,8 +2394,23 @@ function renderGamePromo() {
   const pr = GAME_PROMOS[currentGame];
   if (pr && Date.now() < pr.until) { el.innerHTML = pr.html; el.hidden = false; } else { el.hidden = true; el.innerHTML = ''; }
 }
+// Telegram Stars: своё количество (50–10 000), цена = ceil5(кол-во × 1,705): те же цифры проверяет воркер
+const starsPriceOf = q => Math.ceil(q * 1.705 / 5) * 5;
+function starsQtyVal() { const q = Number(document.getElementById('starsQty').value); return Number.isInteger(q) && q >= 50 && q <= 10000 ? q : 0; }
+function starsCustomInput() {
+  const el = document.getElementById('starsQty'), q = starsQtyVal();
+  document.getElementById('starsQtyPrice').textContent = q ? starsPriceOf(q).toLocaleString() + ' Сом' : (el.value ? 'От 50 до 10 000' : '');
+  document.getElementById('starsQtyBtn').disabled = !q;
+}
+function starsCustomPick() {
+  const q = starsQtyVal(); if (!q) return;
+  packages = packages.filter(x => x.id !== 'tgstars-custom');
+  packages.push({ type:'diamond', diam:q, bonus:0, price:starsPriceOf(q), key:String(q), unit:'звёзд', region:'tgstars', id:'tgstars-custom', totalDiamonds:q });
+  pickPackage('tgstars-custom');
+}
 function renderPackages() {
   renderGamePromo();
+  { const sc = document.getElementById('starsCustom'); if (sc) sc.hidden = currentGame !== 'tgstars'; }
   const ask = document.getElementById('pkgAsk');   // подсказка: нужного пакета нет в списке
   if (ask) { if (currentGame === 'mlbb') { ask.innerHTML = '💬 Не нашли подходящее количество алмазов или цену? Напишите нам в <a href="https://wa.me/996555920204" target="_blank" rel="noopener">WhatsApp</a> или в <a href="https://t.me/DiamondKgSupport" target="_blank" rel="noopener">Telegram</a>: всё учтём и подберём нужный вариант.'; ask.hidden = false; } else { ask.hidden = true; ask.innerHTML = ''; } }
   const grid = document.getElementById('packagesGrid'), tabsEl = document.getElementById('pkgTabs');

@@ -525,6 +525,18 @@ export const CATALOGS = { global: GLOBAL_CATALOG, russia: RU_CATALOG, indonesia:
 export const USD_KGS = 90; // курс для расчёта прибыли в уведомлениях (обновляйте вручную)
 export const MAX_AUTO_COST_USD = 116; // дороже — только вручную (самый дорогой пакет ≈ $115.82)
 
+// Telegram Stars: любое количество (FazerCards принимает quantity от 50). Цена на сайте = ceil5(кол-во × STARS_PRICE),
+// себестоимость пропорциональна пакету «50» (секрет CATALOG_COSTS); нет cost у «50» = выдача вручную.
+export const STARS_MIN = 50, STARS_MAX = 10000, STARS_PRICE = 1.705;
+export const starsPrice = (q) => Math.ceil(q * STARS_PRICE / 5) * 5;
+export function catEntry(region, pkg) {
+  const c = (CATALOGS[region] || {})[pkg];
+  if (c || region !== 'tgstars' || !/^[1-9]\d{1,4}$/.test(String(pkg))) return c || null;
+  const q = Number(pkg), base = CATALOGS.tgstars['50'];
+  if (q < STARS_MIN || q > STARS_MAX) return null;
+  return { offer: String(q), cost: base && base.cost > 0 ? Math.round(base.cost / 50 * q * 1e4) / 1e4 : 0 };
+}
+
 // Финансы с чистого листа: в выручку, прибыль и отчёты входят только заказы, созданные с этого момента (5.11.2026, 00:00 Бишкека)
 // и оплаченные через Finik (или с баланса, который пополняется через Finik). Старые заказы остаются в базе, но в отчёты не попадают.
 export const FIN_START_MS = 1793815200000;

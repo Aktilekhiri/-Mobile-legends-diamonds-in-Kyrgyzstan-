@@ -1,5 +1,5 @@
 // Заказы: приём с сайта, подтверждение оплаты админом, выдача через FazerCards, возврат.
-import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS, OFF_PKGS, MLBB_REGIONS } from './catalog.js';
+import { CATALOGS, GAMES, MAX_AUTO_COST_USD, USD_KGS, OFF_PKGS, MLBB_REGIONS, catEntry, starsPrice } from './catalog.js';
 import { fzCreateOrder, fzGetOrder, FZ_READY } from './fazercards.js';
 import { isPkgOff, markPkgOff } from './avail.js';
 import { notify, notifyPhoto, defer } from './notify.js';
@@ -50,7 +50,7 @@ const gameTitle = region => GAME_TITLE[region] || 'Mobile Legends';
 
 // Карточка заказа для уведомлений владельцу: игра, пакет, ID, сумма и прибыль (с учётом комиссии оплаты, если она известна)
 export function orderCard(o) {
-  const cat = (CATALOGS[o.region] || {})[o.pkg] || null;
+  const cat = catEntry(o.region, o.pkg);
   const fee = Number(o.fee_kgs) || 0;
   const pr = cat && cat.cost > 0 ? Math.round(o.price_kgs - cat.cost * USD_KGS - fee) : null;
   return `🎮 ${gameTitle(o.region)} · ${o.pkg_label}\nID ${o.player_id}${!o.server_id || o.server_id === '-' ? '' : ' (' + o.server_id + ')'}\n💰 ${o.price_kgs} сом` + (pr === null ? '' : ` · прибыль ${pr >= 0 ? '+' : '−'}${Math.abs(pr)} сом`) + (fee ? ` (комиссия ${fee} сом)` : '');
@@ -124,7 +124,9 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
     } catch (e) { /* без проверки не блокируем */ }
   }
   if (!opts.promo && (OFF_PKGS.includes(region + ':' + pkg) || await isPkgOff(env, region + ':' + pkg))) return { error: 'Этот пакет временно недоступен. Выберите другой или попробуйте позже.' };
-  const cat0 = (CATALOGS[region] || {})[pkg] || null;
+  const cat0 = catEntry(region, pkg);
+  if (!opts.promo && region === 'tgstars' && !cat0) return { error: 'Количество звёзд: от 50 до 10 000' };
+  if (!opts.promo && region === 'tgstars' && /^[1-9]\d{1,4}$/.test(pkg) && price < starsPrice(Number(pkg))) return { error: 'Цена изменилась, обновите страницу' };
   // нижняя граница суммы: по себестоимости; если её нет (ручной пак), по цене конкурента, иначе 20 сом
   const minPrice = cat0 && cat0.cost > 0 ? Math.floor(cat0.cost * USD_KGS * 0.9) : (COMPETITOR_PRICES[region + ':' + pkg] ? COMPETITOR_PRICES[region + ':' + pkg].price : 20);
   if (!opts.promo && price < minPrice) return { error: 'Некорректная сумма заказа' };
@@ -134,7 +136,7 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
     const r = await env.DB.prepare('SELECT COUNT(*) AS c FROM orders WHERE ip = ? AND created_at > ?').bind(ip, Date.now() - 3600000).first();
     if (r && r.c >= 8) return { error: 'Слишком много заказов, попробуйте позже', status: 429 };
   }
-  const cat = (CATALOGS[region] || {})[pkg] || null;
+  const cat = catEntry(region, pkg);
   const now = Date.now();
   let id = '';
   const secret = newSecret();
@@ -566,7 +568,7 @@ export async function saveReceipt(env, id, buf, opts = {}) {
     env.DB.prepare('INSERT OR REPLACE INTO receipts (order_id,mime,data,bytes,created_at) VALUES (?,?,?,?,?)').bind(o.id, mime, b64(u8), u8.length, now),
     env.DB.prepare('UPDATE orders SET receipt_at = ?, updated_at = ? WHERE id = ?').bind(now, now, o.id),
   ]);
-  const cat = (CATALOGS[o.region] || {})[o.pkg] || null;
+  const cat = catEntry(o.region, o.pkg);
   const auto = !!(cat && cat.cost <= MAX_AUTO_COST_USD) && o.status === 'new';
   const text = alertText(o, cat, auto, true);
   if (first && !opts.silent) { // повторная загрузка чека не плодит уведомления
@@ -591,7 +593,7 @@ export async function notifyWithoutReceipt(env, id) {
   if (!o) return { error: 'Заказ не найден', status: 404 };
   if (!['new', 'manual'].includes(o.status) || o.receipt_at) return { ok: true };
   await env.DB.prepare('UPDATE orders SET receipt_at = -1, updated_at = ? WHERE id = ?').bind(Date.now(), o.id).run();
-  const cat = (CATALOGS[o.region] || {})[o.pkg] || null;
+  const cat = catEntry(o.region, o.pkg);
   await notify(env, alertText(o, cat, !!(cat && cat.cost <= MAX_AUTO_COST_USD) && o.status === 'new', false), adminButtons(o));
   return { ok: true };
 }

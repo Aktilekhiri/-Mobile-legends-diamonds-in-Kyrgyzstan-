@@ -51,7 +51,7 @@ export async function gamesdropProbe(env, { search, test_order, check } = {}) {
 
 // ── Публичная проверка ника игрока по ID (клиент видит ник до оплаты). Ничего не покупает, баланс не нужен.
 // Только положительный результат: ник найден → {nick}; всё остальное (не найден, ошибка, нет игры у GamesDrop) → {nick:null}.
-const GD_SEARCH = { mlbb: 'Mobile Legends', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', bloodstrike: 'Blood Strike', hsr: 'Honkai Star Rail', zzz: 'Zenless Zone Zero', mchess: 'Magic Chess', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', whiteout: 'Whiteout Survival', lords: 'Lords Mobile', identityv: 'Identity V' };
+const GD_SEARCH = { tgstars: 'Telegram', mlbb: 'Mobile Legends', pubg: 'PUBG Mobile', freefire: 'Free Fire', hok: 'Honor of Kings', genshin: 'Genshin Impact', wuwa: 'Wuthering Waves', bloodstrike: 'Blood Strike', hsr: 'Honkai Star Rail', zzz: 'Zenless Zone Zero', mchess: 'Magic Chess', deltaforce: 'Delta Force', marvel: 'Marvel Rivals', arena: 'Arena Breakout', whiteout: 'Whiteout Survival', lords: 'Lords Mobile', identityv: 'Identity V' };
 const _offers = new Map(), _res = new Map(), _rl = new Map();
 async function offersFor(env, game) {
   const c = _offers.get(game); if (c && c.exp > Date.now()) return c.list;
@@ -59,6 +59,8 @@ async function offersFor(env, game) {
   const words = GD_SEARCH[game].toLowerCase().split(/\s+/);
   let rows = (s.data.rows || s.data.data || []).filter(r => { const nm = ((r.productName || '') + ' ' + (r.offerGroupName || '')).toLowerCase(); return r.isRequiredGameUserId && r.inStock && words.every(w => nm.includes(w)); });
   // MLBB: только обычный оффер и Russia. Найден на Russia = российский аккаунт, на обычном = не российский (проверено на реальных заказах)
+  // Telegram Stars: берём один оффер «Telegram … Stars»: по нему проверяется @username (возвращает имя аккаунта)
+  if (game === 'tgstars') rows = rows.filter(r => /^telegram$/i.test(String(r.productName || '').trim()) && /stars/i.test(String(r.offerGroupName || '')));
   if (game === 'mlbb') rows = rows.filter(r => /^mobile legends( russia)?$/i.test(String(r.productName || '').trim()));
   // по одному офферу с каждого продукта (регион/версия), «Global» в конце; максимум 3 попытки
   const seen = new Set(), list = [];
@@ -69,8 +71,9 @@ async function offersFor(env, game) {
   return out;
 }
 export async function checkPlayer(env, ip, b) {
-  const game = String(b.game || ''), pid = String(b.playerId || '').replace(/\D/g, ''), sid = String(b.serverId || '').trim().slice(0, 30);
-  if (!GD_SEARCH[game] || pid.length < 5 || pid.length > 14) return { nick: null };
+  const game = String(b.game || ''), tg = game === 'tgstars', sid = String(b.serverId || '').trim().slice(0, 30);
+  const pid = tg ? '@' + String(b.playerId || '').trim().replace(/^@/, '') : String(b.playerId || '').replace(/\D/g, '');
+  if (!GD_SEARCH[game] || (tg ? !/^@[A-Za-z][A-Za-z0-9_]{4,31}$/.test(pid) : (pid.length < 5 || pid.length > 14))) return { nick: null };
   const now = Date.now();
   const rl = _rl.get(ip); if (rl && rl.exp > now) { if (++rl.n > 40) return { nick: null }; } else _rl.set(ip, { n: 1, exp: now + 600e3 });
   if (_rl.size > 5000) _rl.clear();
@@ -86,7 +89,7 @@ export async function checkPlayer(env, ip, b) {
     }
   } catch (e) { return { nick: null }; }
   // «Не найден» только когда все проверки честно ответили INVALID (не сбой, не лимит); для Mobile Legends, где проверка надёжна для Global и России
-  const notfound = !nick && game === 'mlbb' && total > 0 && invalid === total;
+  const notfound = !nick && (game === 'mlbb' || tg) && total > 0 && invalid === total;
   _res.set(key, { nick, region, notfound, exp: now + (nick ? 3600e3 : 600e3) }); if (_res.size > 5000) _res.clear();
   return { nick, region, notfound };
 }

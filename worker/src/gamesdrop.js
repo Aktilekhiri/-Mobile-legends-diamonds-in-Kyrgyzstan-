@@ -227,6 +227,7 @@ export async function gdSpeedTest(env, b) {
     const hit = rows.filter(r => r.isRequiredGameUserId && /(^|\D)86(\D|$)/.test(txt(r)));
     return { total: rows.length, found: hit.slice(0, 12).map(r => Object.fromEntries(Object.entries(r).filter(([k, v]) => v !== null && typeof v !== 'object' && !/^(selected|provider|seller)/.test(k)))) };
   }
+  if (b.orderId) { const q = await gd(env, 'POST', '/api/v1/offers/order-status', { orderId: Number(b.orderId) }); const d = q.data || {}; return Object.fromEntries(Object.entries(d).filter(([k, v]) => v !== null && typeof v !== 'object')); }
   const offerId = Number(b.offerId), id = String(b.id || '').replace(/\D/g, ''), server = String(b.server || '').replace(/\D/g, '');
   const maxUsd = Math.min(Number(b.maxUsd) || 1.6, 3);
   if (!offerId || !id || !server) return { error: 'нужны offerId, id и server' };

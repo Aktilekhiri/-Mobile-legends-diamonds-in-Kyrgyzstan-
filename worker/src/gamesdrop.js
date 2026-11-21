@@ -217,3 +217,36 @@ export async function gdGetOrder(env, gdId) {
   if (!d.orderId) throw gdErr('GamesDrop: статус заказа не получен (' + (d.error && d.error.code || r.http) + ')', 502);
   return { id: 'gd-' + id, status: mapStatus(d.status), fail_reason: [d.failureCode, d.failureReason].filter(Boolean).join(' ').slice(0, 200), codes: [] };
 }
+
+// ══ Тест скорости выдачи MLBB (ручной, из админки). list = только поиск оффера, buy = ПОКУПКА одного пакета на указанный ID ══
+export async function gdSpeedTest(env, b) {
+  if (b.list) {
+    let rows = [];
+    for (let p = 1; p <= 3; p++) { const s = await gd(env, 'POST', '/api/v1/offers/sync', { search: 'Mobile Legends', page: p, limit: 100 }); const r = s.data.rows || s.data.data || []; rows = rows.concat(r); if (r.length < 100) break; }
+    const hit = rows.filter(r => /(^|\D)86(\D|$)/.test(JSON.stringify(r)) && r.isRequiredGameUserId);
+    return { total: rows.length, keys: rows[0] ? Object.keys(rows[0]) : [], found: hit.slice(0, 12).map(r => ({ offerGroupId: r.offerGroupId, name: r.productName || r.offerGroupName, title: r.name || r.title || r.offerName, price: r.price, inStock: r.inStock })) };
+  }
+  const offerId = Number(b.offerId), id = String(b.id || '').replace(/\D/g, ''), server = String(b.server || '').replace(/\D/g, '');
+  const maxUsd = Math.min(Number(b.maxUsd) || 1.6, 3);
+  if (!offerId || !id || !server) return { error: 'нужны offerId, id и server' };
+  const c = await gd(env, 'POST', '/api/v1/offers/check-game-data', { offerId, gameUserId: id, gameServerId: server });
+  if (!c.data || c.data.status !== 'VALID') return { error: 'ID не прошёл проверку', check: c.data };
+  const f = await gd(env, 'POST', '/api/v1/offers/find-one', { offerId });
+  const price = f.data.price != null ? Number(f.data.price) : (f.data.offer && Number(f.data.offer.price));
+  if (!(price > 0)) return { error: 'цена не получена', find: f.data };
+  if (price > maxUsd) return { error: 'цена $' + price + ' выше лимита $' + maxUsd };
+  const body = { offerId, price, transactionId: 'DKSPD-' + Date.now(), quantity: 1, customer: { gameUserId: id, gameServerId: server } };
+  if (f.data.productOfferId) body.productOfferId = Number(f.data.productOfferId);
+  const t0 = Date.now();
+  const o = await gd(env, 'POST', '/api/v1/offers/create-order', body);
+  const od = o.data || {};
+  if (!od.orderId) return { error: 'заказ не создан', http: o.http, data: od };
+  const tCreated = Date.now() - t0, polls = [];
+  let st = mapStatus(od.status), last = od;
+  while (st === 'processing' && Date.now() - t0 < 60000) {
+    await new Promise(r => setTimeout(r, Date.now() - t0 < 8000 ? 500 : 2000));
+    const q = await gd(env, 'POST', '/api/v1/offers/order-status', { orderId: Number(od.orderId) });
+    last = q.data || {}; st = mapStatus(last.status); polls.push(((Date.now() - t0) / 1000).toFixed(1) + ' ' + (last.status || q.http));
+  }
+  return { orderId: od.orderId, price, status: st, sec_total: +((Date.now() - t0) / 1000).toFixed(1), sec_create_call: +(tCreated / 1000).toFixed(1), api_times: { createdAt: last.createdAt, completedAt: last.completedAt || last.finishedAt || last.updatedAt }, fail: [last.failureCode, last.failureReason].filter(Boolean).join(' '), polls: polls.slice(-6) };
+}

@@ -2586,7 +2586,7 @@ function nickCheck() {
   if (key === _nickKey) return;
   _nickKey = key; box.hidden = true; box.className = 'nick-ok'; clearTimeout(_nickT); _nickRegion = ''; const rh = document.getElementById('regionFix'); if (rh) rh.hidden = true;
   if (!ready || !API_BASE()) return;
-  box.className = 'nick-ok load'; box.innerHTML = '<span class="nk-spin" aria-hidden="true"></span><span class="nk-t"><b>Проверяем ID…</b><small>Ищем аккаунт в игре, это займёт пару секунд</small></span>'; box.hidden = false;
+  box.className = 'nick-ok load'; box.innerHTML = '<span class="nk-spin" aria-hidden="true"></span><span class="nk-t"><b>Проверяем ' + (currentGame === 'tgstars' ? '@username' : 'ID') + '…</b><small>Ищем аккаунт ' + (currentGame === 'tgstars' ? 'в Telegram' : 'в игре') + ', это займёт пару секунд</small></span>'; box.hidden = false;
   _nickT = setTimeout(async () => {
     try {
       const ctrl = new AbortController(); const tm = setTimeout(() => ctrl.abort(), 8000);
@@ -2665,7 +2665,7 @@ function updateBuyBtn() {
     const sig = pid + '|' + sid + '|' + (selectedPkg ? selectedPkg.key || selectedPkg.id : '');
     if (iok.dataset.sig !== sig) { iok.checked = false; iok.dataset.sig = sig; }
     ior.hidden = !(ready && needIdOk);
-    if (ready) { const sl = gdk && gdk.servers ? ((gdk.servers.find(x => x.v === sid) || {}).l || sid) : sid; document.getElementById('idOkText').innerHTML = 'ID <b>' + esc(pid) + '</b>' + (sid && sid !== '-' ? ', сервер <b>' + esc(sl) + '</b>' : '') + (_nickMissSig && _nickMissSig === currentGame + '|' + pid + '|' + sid ? '. ⚠️ Аккаунт с такими ID не найден. Отметьте, только если уверены, что ID и Zone верные' : '') + '. Ошибочный ID вернуть нельзя.'; }
+    if (ready) { const sl = gdk && gdk.servers ? ((gdk.servers.find(x => x.v === sid) || {}).l || sid) : sid; const tgs = currentGame === 'tgstars'; document.getElementById('idOkText').innerHTML = (tgs ? 'Telegram ' : 'ID ') + '<b>' + esc(pid) + '</b>' + (sid && sid !== '-' ? ', сервер <b>' + esc(sl) + '</b>' : '') + (_nickMissSig && _nickMissSig === currentGame + '|' + pid + '|' + sid ? '. ⚠️ Аккаунт с такими ID не найден. Отметьте, только если уверены, что ID и Zone верные' : '') + '. Ошибочный ' + (tgs ? '@username' : 'ID') + ' вернуть нельзя.'; }
   }
   const idOkPass = !needIdOk || !!(iok && iok.checked);
   const ok = ready && idOkPass;

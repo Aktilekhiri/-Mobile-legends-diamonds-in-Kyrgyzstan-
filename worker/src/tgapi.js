@@ -25,7 +25,7 @@ export async function webhookSecret(env) {
   return [...mac].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
-// Сообщение клиенту в Telegram о смене статуса заказа. kind: 'paid' | 'delivered' | 'cancelled' | 'refund'.
+// Сообщение клиенту в Telegram о смене статуса заказа. kind: 'paid' | 'delivered' | 'cancelled' | 'refund' | 'balance'.
 // Получатель: чат, из которого оформлен заказ (бот), либо Telegram, привязанный к аккаунту сайта, под которым оформлен заказ.
 const MENU_BTN = { inline_keyboard: [[{ text: '‹ В главное меню', callback_data: 'menu' }]] };
 export function tgNotifyOrder(env, orderId, kind, titleOf) {
@@ -42,6 +42,7 @@ export function tgNotifyOrder(env, orderId, kind, titleOf) {
       const t = {
         paid: `✅ <b>Спасибо! Оплата получена.</b>\n🆔 ID: <code>${esc(o.player_id)}</code>${zone}\n\n🎮 ${game ? esc(game) + ' · ' : ''}${esc(o.pkg_label)}\nЗаказ <b>${esc(o.id)}</b> оформлен, пришлём результат сюда.`,
         delivered: `✅ <b>Заказ ${esc(o.id)} выполнен</b>\n${esc(o.pkg_label)}. ${o.delivery ? 'Ваш код:\n<code>' + esc(o.delivery) + '</code>\n\nАктивируйте его в игре и никому не показывайте.' : 'Проверьте аккаунт в игре.'}\n\nЕсли что-то не пришло, напишите в WhatsApp: +996 555 920 204`,
+        balance: `❌ <b>Заказ ${esc(o.id)} выполнить не удалось</b>\n${esc(o.price_kgs)} сом вернулись на баланс: попробуйте ещё раз или напишите в поддержку.`,
         cancelled: `❌ <b>Заказ ${esc(o.id)} отменён</b>\nЕсли вы уже оплатили, напишите нам в WhatsApp +996 555 920 204, мы вернём деньги.`,
         refund: `↩️ <b>Заказ ${esc(o.id)} не удалось выполнить</b>\n` + (/region/i.test(String(o.fail_reason || '')) ? 'Регион вашего аккаунта не подходит для выбранного пакета. Выберите в форме регион, в котором создан аккаунт (для большинства это «Глобальный»), и оформите заказ ещё раз.\n' : '') + `Вернём ${esc(o.price_kgs)} сом на ваш счёт. Если вопросы, WhatsApp +996 555 920 204.`,
       }[kind];

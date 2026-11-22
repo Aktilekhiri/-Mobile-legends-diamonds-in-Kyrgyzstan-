@@ -328,6 +328,7 @@ export async function syncFromFz(env, o, fz) {
       // есть кошелёк клиента (аккаунт или Telegram): возвращаем на баланс сразу, клиент не ждёт
       if (await refundOrderToWallet(env, o)) {
         await setStatus(env, o.id, { status: 'balance', fz_status: st, fail_reason: '[oos] нет в наличии у поставщика, возврат на баланс автоматически', finished_at: Date.now() });
+        await tgNotifyOrder(env, o.id, 'balance');
         await notify(env, `💰 Нет в наличии у поставщика: заказ ${o.id} автоматически возвращён клиенту на баланс сайта (${o.price_kgs} сом).\n${orderCard(o)}`);
         return;
       }
@@ -349,6 +350,7 @@ export async function syncFromFz(env, o, fz) {
     } else if (st === 'refund' && await refundOrderToWallet(env, o)) {
       // деньги сразу вернулись на баланс клиента (кошелёк по аккаунту сайта или Telegram), клиент может заказать заново
       await setStatus(env, o.id, { status: 'balance', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
+      await tgNotifyOrder(env, o.id, 'balance');
     } else if (st === 'refund') {
       await setStatus(env, o.id, { status: 'refund_due', fz_status: st, fail_reason: String(fz.fail_reason || '').slice(0, 300), finished_at: Date.now() });
       await notify(env, `↩️ Заказ ${o.id} не выполнен (FazerCards вернул деньги на баланс).\nВерните клиенту ${o.price_kgs} сом (${o.method}, тел. ${o.phone || '—'}) и нажмите «Деньги возвращены» в админке.\nПричина: ${String(fz.fail_reason || '—').slice(0, 150)}`);
@@ -503,6 +505,7 @@ export async function refundToBalance(env, id) {
   if (o.method === 'promo') return { error: 'Промо-заказ: используйте «Отменить», промокод вернётся сам', status: 409 };
   if (!(await refundOrderToWallet(env, o))) return { error: 'У заказа нет аккаунта (гость): баланс положить некуда. Верните деньги вручную и нажмите «Деньги возвращены»', status: 409 };
   await setStatus(env, id, { status: 'balance', fail_reason: ((o.fail_reason || '') + ' [возврат на баланс админом]').trim().slice(0, 300), finished_at: Date.now() });
+  await tgNotifyOrder(env, id, 'balance');
   await releasePromo(env, id);
   return { ok: true };
 }

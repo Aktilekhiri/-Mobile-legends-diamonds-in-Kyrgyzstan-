@@ -44,7 +44,16 @@ async function show(env, chat, msgId, text, markup) {
     const r = await tgApi(env, 'editMessageText', { chat_id: chat, message_id: msgId, text: String(text).slice(0, 4000), parse_mode: 'HTML', disable_web_page_preview: true, reply_markup: markup });
     if (r && r.ok) return;
   }
-  await send(env, chat, text, { reply_markup: markup });
+  const n = await send(env, chat, text, { reply_markup: markup });
+  if (msgId && n && n.ok) await tgApi(env, 'deleteMessage', { chat_id: chat, message_id: msgId });
+}
+
+// картинка + подпись + кнопки (иконки игр: на самих кнопках картинок в Telegram нет)
+const IMG = 'https://diamond.kg/img/bot/';
+async function showPhoto(env, chat, msgId, file, caption, markup) {
+  const r = await tgApi(env, 'sendPhoto', { chat_id: chat, photo: IMG + file, caption: String(caption).slice(0, 1000), parse_mode: 'HTML', reply_markup: markup });
+  if (r && r.ok) { if (msgId) await tgApi(env, 'deleteMessage', { chat_id: chat, message_id: msgId }); return; }
+  await show(env, chat, msgId, caption, markup);   // нет картинки: обычное сообщение
 }
 
 const welcome = chat => `<b>Diamond.kg</b>: пополнение игр за сомы\nMobile Legends, PUBG, Free Fire, Genshin и другие. Оплата по QR в приложении любого банка Кыргызстана, заказ выдаётся автоматически. Пароль от аккаунта не нужен.`;
@@ -52,7 +61,7 @@ const welcome = chat => `<b>Diamond.kg</b>: пополнение игр за с�
 async function showGames(env, chat, msgId) {
   const rows = []; for (let i = 0; i < SHOP.length; i += 2) rows.push(SHOP.slice(i, i + 2).map(g => btn((g.i ? g.i + ' ' : '') + g.name.replace('Mobile Legends', 'MLBB').replace(' Gift Card', ''), 'g:' + g.id)));
   rows.push([btn('« Меню', 'menu')]);
-  await show(env, chat, msgId, '<b>Выберите игру</b>', kb(rows));
+  await showPhoto(env, chat, msgId, 'games.png', '<b>Выберите игру</b>', kb(rows));
 }
 
 async function showPacks(env, chat, msgId, gid, page) {
@@ -62,7 +71,7 @@ async function showPacks(env, chat, msgId, gid, page) {
   const nav = []; if (page > 0) nav.push(btn('‹ Назад', `pg:${gid}:${page - 1}`)); if (from + PAGE < g.packs.length) nav.push(btn('Ещё ›', `pg:${gid}:${page + 1}`));
   if (nav.length) rows.push(nav);
   rows.push([btn('« Игры', 'games')]);
-  await show(env, chat, msgId, `<b>${esc(g.name)}</b>\nВыберите пакет:` + (g.packs.some(p => p.first) ? '\n⚠️ Только на 1-е пополнение аккаунта' : ''), kb(rows));
+  await showPhoto(env, chat, msgId, gid + '.png', `<b>${esc(g.name)}</b>\nВыберите пакет:` + (g.packs.some(p => p.first) ? '\n⚠️ Только на 1-е пополнение аккаунта' : ''), kb(rows));
 }
 
 async function askId(env, chat, msgId, st) {

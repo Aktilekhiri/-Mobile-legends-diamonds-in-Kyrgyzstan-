@@ -50,7 +50,7 @@ async function show(env, chat, msgId, text, markup) {
 const welcome = chat => `<b>Diamond.kg</b>: пополнение игр за сомы\nMobile Legends, PUBG, Free Fire, Genshin и другие. Оплата по QR в приложении любого банка Кыргызстана, заказ выдаётся автоматически. Пароль от аккаунта не нужен.`;
 
 async function showGames(env, chat, msgId) {
-  const rows = []; for (let i = 0; i < SHOP.length; i += 2) rows.push(SHOP.slice(i, i + 2).map(g => btn((g.i ? g.i + ' ' : '') + g.name, 'g:' + g.id)));
+  const rows = []; for (let i = 0; i < SHOP.length; i += 2) rows.push(SHOP.slice(i, i + 2).map(g => btn((g.i ? g.i + ' ' : '') + g.name.replace('Mobile Legends', 'MLBB').replace(' Gift Card', ''), 'g:' + g.id)));
   rows.push([btn('« Меню', 'menu')]);
   await show(env, chat, msgId, '<b>Выберите игру</b>', kb(rows));
 }

@@ -590,7 +590,7 @@ export function loadCosts(env) {
   if (_costsLoaded) return;
   let m = {};
   // секрет не больше 5 КБ: себестоимость лежит в нескольких секретах CATALOG_COSTS, CATALOG_COSTS2, ...
-  for (const nm of ['CATALOG_COSTS', 'CATALOG_COSTS2', 'CATALOG_COSTS3', 'CATALOG_COSTS4', 'CATALOG_COSTS5', 'CATALOG_COSTS6']) {
+  for (const nm of ['CATALOG_COSTS', 'CATALOG_COSTS2', 'CATALOG_COSTS3', 'CATALOG_COSTS4', 'CATALOG_COSTS5', 'CATALOG_COSTS6', 'CATALOG_COSTS7']) {
     try { Object.assign(m, JSON.parse((env && env[nm]) || '{}') || {}); } catch (e) {}
   }
   for (const k of Object.keys(m)) {

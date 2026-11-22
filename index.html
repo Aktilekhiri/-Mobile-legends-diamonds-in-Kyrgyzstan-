@@ -1323,7 +1323,7 @@
 </style>
 <link rel="stylesheet" href="accounts.css?v=95">
 <script>try{var _n=navigator;if((_n.deviceMemory&&_n.deviceMemory<=4)||(_n.hardwareConcurrency&&_n.hardwareConcurrency<=4)||matchMedia('(prefers-reduced-transparency: reduce)').matches)document.documentElement.classList.add('lite')}catch(e){}</script>
-<link rel="stylesheet" href="theme.css?v=62">
+<link rel="stylesheet" href="theme.css?v=63">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1523,6 +1523,7 @@
     <div class="lf-stats" id="lfStats"></div>
     <div class="lf-marquee" id="lfMarquee"><div class="lf-track" id="lfList"></div></div>
   </section>
+  <section id="payways"><div class="sec-label">Оплата</div><div class="sec-divider"></div><h2 class="sec-title">Способы <em>оплаты</em></h2><p class="pw-sub">Платите в сомах по QR из приложения своего банка. <a href="/delivery/">Как проходит оплата</a></p><div class="pw-box"><div class="pw-head"><b>Кыргызстан</b><span>валюта: сом</span></div><div class="pw-grid"><div class="pw-t mb"><img src="/img/pay/mbank.webp" width="44" height="44" alt="" loading="lazy"><b>MBANK</b></div><div class="pw-t ob"><img src="/img/pay/obank.webp" width="44" height="44" alt="" loading="lazy"><b>O!Bank</b></div><div class="pw-t bk"><img src="/img/pay/bakai.webp" width="44" height="44" alt="" loading="lazy"><b>Бакай</b></div><div class="pw-t any"><img src="/img/pay/qr.webp" width="44" height="44" alt="" loading="lazy"><b>и любой банк КР</b></div></div></div></section>
   <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>24/7 без выходных</h3><p>Заказы принимаем и выдаём в любое время.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
   <section id="reviews"><div class="sec-label">Отзывы</div><div class="sec-divider"></div><h2 class="sec-title">Что пишут <em>клиенты</em></h2>
     <div id="liveReviews" class="live-reviews" hidden></div>
@@ -2991,8 +2992,8 @@ async function payWithFinik(ui) {
     if (resp.status === 401) { try { localStorage.removeItem('dk_user'); } catch (e) {} updateUserUI(); loginRequired(); }
     if (!resp.ok || !d.url) { set(d.error || 'Не удалось создать оплату. Переведите вручную ниже.', 'err'); btn.disabled = false; return; }
     try { if (d.secret) localStorage.setItem('dk_sec_' + d.id, d.secret); } catch (e) {}
-    set('Открываем заказ…', 'ok');
-    location.href = d.secret ? '/?order=' + encodeURIComponent(d.id) + '&s=' + encodeURIComponent(d.secret) : d.url;
+    set('Переходим к оплате…', 'ok');
+    location.href = d.url;   // сразу в банк: одно нажатие. Назад банк вернёт на страницу заказа (?order=)
   } catch (e) { set('Нет связи с сервером. Переведите вручную ниже.', 'err'); btn.disabled = false; }
 }
 document.addEventListener('DOMContentLoaded', () => { try { if (!window.DK_API) return; const show = p => { window.FAST_PAY = p; const b = document.getElementById('finikBox'); if (b) b.hidden = false; };
@@ -3212,11 +3213,11 @@ function opRender(o) {
     <div class="op-head"><span class="op-ic" aria-hidden="true">${hd[0]}</span><div class="op-ht"><b>${esc(hd[1])}</b><span class="op-timer" id="opTimer" ${waiting ? '' : 'hidden'}></span></div><span class="op-no">№${esc(o.id)}</span></div>
     <div class="op-body">
       <div class="op-prod"><img src="/img/games/${esc(o.region)}.webp" width="56" height="56" alt="" onerror="this.onerror=null;this.src='/img/games/mlbb.webp'"><div><small>${esc((gamesData[o.region] || {}).name || 'Mobile Legends')}</small><b>${esc(o.pkg_label)}</b></div></div>
-      ${o.mine ? `<div class="op-row"><span>ID</span><b>${id}</b></div><div class="op-row"><span>Оплата</span><b>${esc(opMethod(o.method))}</b></div>` : ''}
+      ${o.mine ? `<div class="op-row"><span>ID</span><b>${id}</b></div><div class="op-row"><span>Оплата</span><b>${/finik|gopay/i.test(o.method || '') ? '<img class="op-pi" src="/img/pay/qr.webp" width="22" height="22" alt=""> ' : ''}${esc(opMethod(o.method))}</b></div>` : ''}
       <div class="op-row total"><span>Сумма</span><b>${esc(o.price_kgs)} сом</b></div>
       <div class="op-foot"><div><small>Дата</small><b>${esc(opDate(o.created_at))}</b></div><div><small>Оплачен</small><b>${esc(opDate(o.confirmed_at))}</b></div><div><small>Выполнен</small><b>${esc(opDate(o.status === 'delivered' ? o.finished_at : 0))}</b></div></div>
     </div>
-    ${waiting ? `<a class="op-pay" href="${esc(o.pay_url)}" rel="noopener">Оплатить ${esc(o.price_kgs)} сом</a><p class="op-hint">Откроется страница банка с QR. После оплаты вернитесь сюда: статус обновится сам.</p>` : ''}
+    ${waiting ? `<a class="op-pay" href="${esc(o.pay_url)}" rel="noopener"><img src="/img/pay/qr.webp" width="32" height="32" alt="">Оплатить ${esc(o.price_kgs)} сом</a><p class="op-hint">Откроется страница банка с QR. После оплаты вернитесь сюда: статус обновится сам.</p>` : ''}
     ${!o.mine ? '<p class="op-hint">Подробности видны на том устройстве, где оформлен заказ.</p>' : ''}
     <div class="suc-delivery" id="opDelivery" hidden></div>
     ${waitCard(o, _opSec)}

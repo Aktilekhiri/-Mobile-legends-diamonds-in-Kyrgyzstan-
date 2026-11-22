@@ -70,6 +70,22 @@ async function offersFor(env, game) {
   _offers.set(game, { list: out, exp: Date.now() + 6 * 3600e3 });
   return out;
 }
+// Shop2Topup: проверка ника по их API (работает без баланса). id = sub_category_id товара из каталога Shop2Topup.
+// Для новых игр добавить сюда id (и extra: имена доп. полей, напр. zone). Ключ в секрете S2T_API_KEY.
+const S2T = { freefire: { id: 33 } };
+async function s2tCheck(env, game, pid, sid) {
+  const c = S2T[game]; if (!c || !env.S2T_API_KEY) return null;
+  try {
+    const body = { sub_category_id: c.id, player_id: pid }; if (c.zone && sid && sid !== '-') body[c.zone] = sid;
+    const r = await fetch('https://shop2topup.com/api/endpoints/v1/player/validate', { method: 'POST', headers: { Authorization: 'Bearer ' + env.S2T_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(8000) });
+    const j = await r.json().catch(() => ({}));
+    const pl = j.data || j.player;
+    if (j.success && pl && pl.player_name) return { nick: String(pl.player_name).slice(0, 40) };
+    const code = (j.error && j.error.code) || j.code;
+    if (code === 'PLAYER_NOT_FOUND') return { notfound: true };
+  } catch (e) {}
+  return null;
+}
 export async function checkPlayer(env, ip, b) {
   const game = String(b.game || ''), tg = game === 'tgstars', sid = String(b.serverId || '').trim().slice(0, 30);
   const pid = tg ? '@' + String(b.playerId || '').trim().replace(/^@/, '') : String(b.playerId || '').replace(/\D/g, '');
@@ -80,6 +96,12 @@ export async function checkPlayer(env, ip, b) {
   const key = game + '|' + pid + '|' + sid;
   const hit = _res.get(key); if (hit && hit.exp > now) return { nick: hit.nick, region: hit.region || '', notfound: !!hit.notfound };
   let nick = null, region = '', invalid = 0, total = 0;
+  const s2 = await s2tCheck(env, game, pid, sid);
+  if (s2) {
+    const res = { nick: s2.nick || null, region: '', notfound: !!s2.notfound };
+    _res.set(key, { ...res, exp: now + (res.nick ? 3600e3 : 600e3) }); if (_res.size > 5000) _res.clear();
+    return res;
+  }
   try {
     for (const o of await offersFor(env, game)) {
       const body = { offerId: o.id, gameUserId: pid }; if (sid && sid !== '-') body.gameServerId = sid;

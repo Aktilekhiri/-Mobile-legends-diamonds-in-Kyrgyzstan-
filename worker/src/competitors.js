@@ -70,6 +70,9 @@ export const COMPETITOR_PRICES = {
 export function marketHint(o) {
   const c = COMPETITOR_PRICES[o.region + ':' + o.pkg];
   if (!c) return { text: '', profitable: null };
+  // Нет в наличии у FazerCards: Donix, Play.kg и др. берут у него же (проверено заказами), у них тоже нет. Исключение: Refill Store (другой поставщик)
+  if (o.oos && c.shop !== 'Refill Store') return { profitable: null, sameSupplier: true, shop: c.shop, price: c.price,
+    text: `\n⚠️ ${c.shop} берёт у того же поставщика (FazerCards), скорее всего, тоже нет в наличии. Refill Store работает с другим поставщиком: можно проверить там.` };
   const fee = Number(o.fee_kgs) || Math.round(o.price_kgs * 0.02);
   const profit = Math.round(o.price_kgs - c.price - fee);
   const ok = profit > 0;

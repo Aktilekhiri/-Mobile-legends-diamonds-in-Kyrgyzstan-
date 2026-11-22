@@ -319,7 +319,7 @@ export async function syncFromFz(env, o, fz) {
   } else if (st === 'refund' || st === 'failed') {
     // поставщик вернул деньги из-за «нет в наличии / временно недоступно»: прячем пак на сайте, чтобы клиенты не повторяли заказ (вернуть: админка → «Наличие паков»)
     const oos = st === 'refund' && /out of stock|(temporarily|currently) unavailable/i.test(String(fz.fail_reason || ''));
-    const hint = marketHint(o);
+    const hint = marketHint(oos ? { ...o, oos: true } : o);
     // клиентский заказ (не «для себя» и не промо): деньги клиента НЕ возвращаем, держим заказ и просим владельца выдать вручную (докупить у конкурента)
     if (oos && o.method !== 'Для себя' && o.method !== 'promo') {
       if (/\[oos\]/.test(o.fail_reason || '') || o.status === 'delivered') return; // повтор вебхука: уже держим заказ или он выдан, деньги не трогаем
@@ -327,7 +327,7 @@ export async function syncFromFz(env, o, fz) {
       if (hint.profitable !== true) { try { await markPkgOff(env, o.region + ':' + o.pkg, 'нет в наличии у FazerCards'); } catch (e) { /* не мешаем */ } }
       await setStatus(env, o.id, { status: 'manual', fz_status: st, fail_reason: '[oos] нет в наличии у поставщика, выдача вручную', finished_at: 0 });
       const o2 = { ...o, status: 'manual' };
-      await notify(env, `📦 Нет в наличии у поставщика: заказ ${o.id}\n${orderCard(o)}\nКлиент уже оплатил, деньги не возвращены.${hint.text || '\n(цены конкурентов для этого пакета не заданы)'}\n${hint.profitable === false ? '⚠️ Докупать невыгодно: лучше вернуть клиенту на баланс.' : 'Выдайте вручную и нажмите «Выдано вручную».'}`, adminButtons(o2));
+      await notify(env, `📦 Нет в наличии у поставщика: заказ ${o.id}\n${orderCard(o)}\nКлиент уже оплатил, деньги не возвращены.${hint.text || '\n(цены конкурентов для этого пакета не заданы)'}\n${hint.sameSupplier ? '⚠️ Докупать негде: верните клиенту на баланс или дождитесь поставщика.' : hint.profitable === false ? '⚠️ Докупать невыгодно: лучше вернуть клиенту на баланс.' : 'Выдайте вручную и нажмите «Выдано вручную».'}`, adminButtons(o2));
       return;
     }
     if (oos) { try { await markPkgOff(env, o.region + ':' + o.pkg, 'нет в наличии у FazerCards'); } catch (e) { /* не мешаем возврату */ } }

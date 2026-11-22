@@ -2299,7 +2299,7 @@ function pkgImg(p) {
     return `<img class="pkg-img" src="/img/packs/lords/${p.key}.webp?v=1" width="104" height="104" alt="${esc(p.name || (p.totalDiamonds + ' Diamonds'))}" loading="lazy" decoding="async">`;
   } else if (currentGame === 'standoff2') {
     return `<img class="pkg-img" src="/img/packs/standoff2/gold.webp?v=1" width="104" height="104" alt="${esc(p.totalDiamonds || '')} Gold" loading="lazy" decoding="async">`;
-  } else if (['oxide','hi3','supersus'].includes(currentGame)) {
+  } else if (['oxide','hi3','supersus','minecraft'].includes(currentGame)) {
     return `<img class="pkg-img" src="/img/packs/${currentGame}/${p.key}.webp?v=1" width="104" height="104" alt="${esc(p.name || (p.totalDiamonds + ' Coins'))}" loading="lazy" decoding="async">`;
   } else if (currentGame === 'whiteout') {
     const n = parseInt(p.key, 10);

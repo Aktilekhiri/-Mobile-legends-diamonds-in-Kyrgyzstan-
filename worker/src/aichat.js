@@ -118,6 +118,7 @@ async function runTool(env, name, a, ctx) {
       // страховка от слабой модели: заказ только после явного «да» клиента на сводку с суммой
       if (!/(^|[^а-яa-z])(да|верно|всё верно|все верно|подтвержда|согласен|согласна|ок|окей|ok|yes|давай|оформ|плат)/i.test(ctx.lastUser || '') || !ctx.sawSummary) return { error: 'Сначала перечисли клиенту игру, пакет, ID и сумму и дождись его подтверждения («да»)' };
       if (ctx.created >= 1) return { error: 'За одно сообщение создаётся один заказ. Скажи клиенту, что следующий заказ оформим отдельно.' };
+      if (!ctx.userId && !ctx.tgChat) return { error: 'Для оформления заказа клиенту нужно войти на сайте через Google или Telegram (кнопка «Войти»). Скажи ему об этом.' };
       const useQr = a.pay_method === 'qr' && fastReady(env);
       if (!useQr && ctx.channel === 'tg') return { error: 'В Telegram оплата вручную через меню /menu → Пополнить игру' };
       const phone = useQr ? '000' + String(ctx.sid || Date.now()).replace(/\D/g, '').slice(-9).padStart(9, '7') : String(a.phone || '');

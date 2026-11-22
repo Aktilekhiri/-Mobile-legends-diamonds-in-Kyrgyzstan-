@@ -1393,16 +1393,6 @@
 </div>
 
 <!-- Auth Modal -->
-<div id="guestGate" style="display:none" class="gg-back" role="dialog" aria-modal="true" aria-labelledby="ggTitle" onclick="if(event.target===this)guestGateClose()">
-  <div class="auth-card">
-    <button type="button" class="auth-x" aria-label="Закрыть" onclick="guestGateClose()">✕</button>
-    <h3 id="ggTitle">Привяжите Google или Telegram</h3>
-    <p class="auth-sub">С аккаунтом вы видите историю заказов на любом устройстве, получаете возврат на баланс сайта и можете пополнять баланс. Без входа тоже можно купить.</p>
-    <button type="button" class="btn-primary btn-full" onclick="guestGateGoogle()">Войти через Google</button>
-    <a class="btn-secondary btn-full gg-tg" href="https://t.me/diamond_kg_bot" target="_blank" rel="noopener">✈️ Открыть Telegram-бот</a>
-    <button type="button" class="gg-skip" onclick="guestGateContinue()">Продолжить без входа</button>
-  </div>
-</div>
 <div id="ocModal" role="dialog" aria-modal="true" aria-labelledby="ocTitle" hidden onclick="if(event.target===this)closeOrderChat()">
   <div class="oc-card">
     <div class="oc-head"><div><strong id="ocTitle">Чат по заказу</strong><div class="oc-sub" id="ocSub"></div></div><button type="button" class="auth-x" aria-label="Закрыть" onclick="closeOrderChat()">✕</button></div>
@@ -1417,8 +1407,9 @@
     <button type="button" class="auth-x" aria-label="Закрыть" onclick="closeAuthModal()">✕</button>
     <div id="authGuest">
       <h3 id="authTitle">Вход в Diamond.kg</h3>
-      <p class="auth-sub">Войдите через Google, чтобы видеть историю заказов на любом устройстве. Покупать можно и без входа.</p>
+      <p class="auth-sub" id="authSub">Войдите через Google или Telegram: так заказ привязан к вам, история видна на любом устройстве, а если заказ не получится выполнить, деньги вернутся на ваш баланс.</p>
       <div id="googleBtn" class="google-btn-wrap"></div>
+      <div id="tgLoginBtn" class="google-btn-wrap" style="margin-top:10px"></div>
       <p id="authMsg" class="auth-msg" role="status"></p>
     </div>
     <div id="authUser" style="display:none">
@@ -2478,29 +2469,20 @@ function backFromPayment() {
 }
 // клик по пакету: у игр без ID (Roblox) шаг «Данные» пропускаем
 function pickPackage(id) {
-  if (guestGateNeeded()) { guestGateOpen(id); return; }
+  if (!getCurrentUser()) { loginRequired(id); return; }
   pickPackageGo(id);
 }
 function pickPackageGo(id) {
   selectPackage(id);   // у подарочных карт тоже один экран «оплата», отдельной страницы нет
 }
 
-// ---------- Подсказка гостю: войти через Google или Telegram (один раз за визит, покупать можно и без входа) ----------
-function guestGateNeeded() {
-  try { if (getCurrentUser()) return false; if (sessionStorage.getItem('dk_guest_ok')) return false; } catch (e) { return false; }
-  return true;
-}
-let guestGatePick = null;
-function guestGateOpen(id) {
-  guestGatePick = id;
-  document.getElementById('guestGate').style.display = 'flex';
-}
-function guestGateClose() { document.getElementById('guestGate').style.display = 'none'; }
-function guestGateGoogle() { guestGateClose(); toggleAuthModal(); }
-function guestGateContinue() {
-  try { sessionStorage.setItem('dk_guest_ok', '1'); } catch (e) {}
-  guestGateClose();
-  if (guestGatePick) { const id = guestGatePick; guestGatePick = null; pickPackageGo(id); }
+// ---------- Вход обязателен: без аккаунта (Google или Telegram) заказ не оформить ----------
+let loginPick = null;
+function loginRequired(id) {
+  loginPick = id || null;
+  toggleAuthModal();
+  const m = document.getElementById('authSub');
+  if (m) m.textContent = 'Чтобы оформить заказ, войдите через Google или Telegram. Так заказ привязан к вам, а если его не получится выполнить, деньги вернутся на ваш баланс.';
 }
 function selectPackage(id) {
   const cand = packages.find(p => p.id === id);
@@ -2966,6 +2948,7 @@ async function payWithFinik(ui) {
     const resp = await fetch(API_BASE() + '/api/orders/' + (window.FAST_PAY || 'finik'), { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ playerId: currentOrder.playerId, serverId: currentOrder.serverId, region: currentOrder.region, pkg: currentOrder.packageName, pkgLabel: currentOrder.label, price: currentOrder.price, phone }) });
     const d = await resp.json().catch(() => ({}));
+    if (resp.status === 401) { try { localStorage.removeItem('dk_user'); } catch (e) {} updateUserUI(); loginRequired(); }
     if (!resp.ok || !d.url) { set(d.error || 'Не удалось создать оплату. Переведите вручную ниже.', 'err'); btn.disabled = false; return; }
     try { if (d.secret) localStorage.setItem('dk_sec_' + d.id, d.secret); } catch (e) {}
     set('Переходим к оплате…', 'ok');
@@ -3337,10 +3320,34 @@ async function onGoogleCredential(resp) {
     localStorage.setItem('dk_user', JSON.stringify({ token: d.token, name: d.user.name, email: d.user.email, picture: d.user.picture }));
     updateUserUI();
     showAuthState();
+    if (loginPick) { const id = loginPick; loginPick = null; closeAuthModal(); pickPackageGo(id); }
     if (document.getElementById('page-orders').classList.contains('active')) renderOrders();
   } catch (e) {
     if (msg) msg.textContent = 'Не удалось войти. Попробуйте ещё раз.';
   }
+}
+function renderTelegramButton() {
+  const box = document.getElementById('tgLoginBtn');
+  if (!box || box.dataset.ready) return;
+  box.dataset.ready = '1';
+  const sc = document.createElement('script');
+  sc.async = true; sc.src = 'https://telegram.org/js/telegram-widget.js?22';
+  sc.setAttribute('data-telegram-login', 'diamond_kg_bot'); sc.setAttribute('data-size', 'large'); sc.setAttribute('data-radius', '20');
+  sc.setAttribute('data-userpic', 'false'); sc.setAttribute('data-request-access', 'write'); sc.setAttribute('data-onauth', 'onTelegramAuth(user)');
+  box.appendChild(sc);
+}
+async function onTelegramAuth(tgu) {
+  const msg = document.getElementById('authMsg');
+  if (msg) msg.textContent = 'Входим…';
+  try {
+    const r = await fetch(API_BASE() + '/api/auth/telegram', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tgu) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.token) throw new Error(d.error || 'fail');
+    localStorage.setItem('dk_user', JSON.stringify({ token: d.token, name: d.user.name, email: d.user.email, picture: d.user.picture }));
+    updateUserUI(); showAuthState();
+    if (loginPick) { const id = loginPick; loginPick = null; closeAuthModal(); pickPackageGo(id); }
+    if (document.getElementById('page-orders').classList.contains('active')) renderOrders();
+  } catch (e) { if (msg) msg.textContent = 'Не удалось войти через Telegram. Попробуйте ещё раз.'; }
 }
 let myContact = null;
 async function loadContact() {
@@ -3388,9 +3395,10 @@ function toggleAuthModal() {
   if (getCurrentUser()) { closeAuthModal(); showPage('account'); return; }
   document.getElementById('authModal').style.display = 'flex';
   showAuthState();
-  if (!getCurrentUser()) renderGoogleButton();
+  if (!getCurrentUser()) { renderGoogleButton(); renderTelegramButton(); }
 }
 function closeAuthModal() {
+  loginPick = null;
   document.getElementById('authModal').style.display = 'none';
 }
 function logout() {

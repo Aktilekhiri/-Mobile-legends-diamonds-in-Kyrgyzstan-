@@ -5,6 +5,7 @@ import { createOrder, confirmOrder, orderCard } from './orders.js';
 import { createFinikPayment, finikReady } from './finik.js';
 import { ensureWallet, balanceOf, credit, debit, history, ownerLabel, ownerForTg, tellOwner } from './ledger.js';
 import { esc } from './tgapi.js';
+import { makeSession, ensureUsersTable } from './auth.js';
 
 const SITE = 'https://diamond.kg/';
 const BOT = 'diamond_kg_bot';
@@ -78,19 +79,50 @@ export async function makeLinkCode(env, sub) {
   return { code, url: `https://t.me/${BOT}?start=link_${code}` };
 }
 
-export async function linkTelegram(env, chat, code) {
-  await ensureWallet(env);
-  const row = await env.DB.prepare('SELECT user_id, exp FROM tg_link_codes WHERE code = ?').bind(String(code || '').toUpperCase()).first();
-  if (!row || row.exp < Date.now()) return { error: 'Код не подошёл или устарел. Получите новый на сайте: Профиль → «Привязать Telegram».' };
-  await env.DB.prepare('INSERT INTO tg_links (tg_chat, user_id, created_at) VALUES (?,?,?) ON CONFLICT(tg_chat) DO UPDATE SET user_id = excluded.user_id, created_at = excluded.created_at').bind(chat, row.user_id, Date.now()).run();
-  await env.DB.prepare('DELETE FROM tg_link_codes WHERE code = ?').bind(String(code).toUpperCase()).run();
-  // баланс, накопленный в боте до привязки, переносим в общий кошелёк
+// Привязка чата к аккаунту сайта; баланс, накопленный в боте до привязки, переносим в общий кошелёк
+async function linkChat(env, chat, userId) {
+  await env.DB.prepare('INSERT INTO tg_links (tg_chat, user_id, created_at) VALUES (?,?,?) ON CONFLICT(tg_chat) DO UPDATE SET user_id = excluded.user_id, created_at = excluded.created_at').bind(chat, userId, Date.now()).run();
   const old = await balanceOf(env, 'tg:' + chat);
   if (old > 0) {
     const ref = 'L' + chat + '-' + Date.now();
     const d = await debit(env, 'tg:' + chat, old, 'link-out', ref, 'Перенос в аккаунт сайта');
-    if (d.ok) await credit(env, 'g:' + row.user_id, old, 'link-in', ref, 'Перенос из Telegram');
+    if (d.ok) await credit(env, 'g:' + userId, old, 'link-in', ref, 'Перенос из Telegram');
   }
+}
+
+// Вход через Telegram Login Widget: подпись = HMAC-SHA256(данные, SHA256(токен бота)). Аккаунт: уже привязанный чат или новый (id = '99' + Telegram ID).
+export async function loginWithTelegram(env, d) {
+  const token = env.TG_SHOP_BOT_TOKEN;
+  if (!token) return { error: 'Вход через Telegram не настроен', status: 503 };
+  d = d && typeof d === 'object' ? d : {};
+  const hash = String(d.hash || '');
+  const enc = new TextEncoder();
+  const data = Object.keys(d).filter(k => k !== 'hash' && d[k] !== undefined && d[k] !== null).sort().map(k => k + '=' + d[k]).join('\n');
+  const key = await crypto.subtle.importKey('raw', await crypto.subtle.digest('SHA-256', enc.encode(token)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = [...new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(data)))].map(b => b.toString(16).padStart(2, '0')).join('');
+  const id = String(d.id || '');
+  if (!/^\d{3,15}$/.test(id) || sig.length !== hash.length || sig !== hash.toLowerCase() || Date.now() / 1000 - Number(d.auth_date) > 86400) return { error: 'Не удалось подтвердить вход через Telegram', status: 401 };
+  await ensureWallet(env); await ensureUsersTable(env);
+  const l = await env.DB.prepare('SELECT user_id FROM tg_links WHERE tg_chat = ?').bind(Number(id)).first();
+  const uid = l ? l.user_id : '99' + id;
+  const name = [d.first_name, d.last_name].filter(Boolean).join(' ').slice(0, 100) || ('@' + String(d.username || id));
+  const picture = /^https:\/\//.test(String(d.photo_url || '')) ? String(d.photo_url).slice(0, 500) : '';
+  const now = Date.now();
+  if (l) await env.DB.prepare('UPDATE users SET last_login = ? WHERE id = ?').bind(now, uid).run();
+  else {
+    await env.DB.prepare('INSERT INTO users (id, email, name, picture, created_at, last_login) VALUES (?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, picture = excluded.picture, last_login = excluded.last_login').bind(uid, '', name, picture, now, now).run();
+    await linkChat(env, Number(id), uid);
+  }
+  const u = await env.DB.prepare('SELECT name, email, picture FROM users WHERE id = ?').bind(uid).first();
+  return { token: await makeSession(env, uid), user: { name: (u && u.name) || name, email: (u && u.email) || '', picture: (u && u.picture) || picture } };
+}
+
+export async function linkTelegram(env, chat, code) {
+  await ensureWallet(env);
+  const row = await env.DB.prepare('SELECT user_id, exp FROM tg_link_codes WHERE code = ?').bind(String(code || '').toUpperCase()).first();
+  if (!row || row.exp < Date.now()) return { error: 'Код не подошёл или устарел. Получите новый на сайте: Профиль → «Привязать Telegram».' };
+  await env.DB.prepare('DELETE FROM tg_link_codes WHERE code = ?').bind(String(code).toUpperCase()).run();
+  await linkChat(env, chat, row.user_id);
   return { ok: true, label: await ownerLabel(env, 'g:' + row.user_id), balance: await balanceOf(env, 'g:' + row.user_id) };
 }
 

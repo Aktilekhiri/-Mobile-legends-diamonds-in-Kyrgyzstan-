@@ -21,7 +21,7 @@ import { gamesdropProbe, checkPlayer, comparePrices, regionTest, gdSpeedTest } f
 import { postToChannel, ensureMarket, createOffer, addOfferPhoto, submitOffer, submitOfferReceipt } from './market.js';
 import { createDeal, viewDeal, dealPaid, dealConfirm, dealProblem, remindDeals } from './deals.js';
 import { startFinikOrder, finikWebhook, cleanupFinik, finikReady } from './finik.js';
-import { walletInfo, startTopup, startWalletOrder, makeLinkCode, adminWallets, adminWalletHistory, adminWalletOp } from './wallet.js';
+import { loginWithTelegram, walletInfo, startTopup, startWalletOrder, makeLinkCode, adminWallets, adminWalletHistory, adminWalletOp } from './wallet.js';
 import { startGopayOrder, gopayWebhook, cleanupGopay, gopayReady, gopayPublic } from './gopay.js';
 import { redeemPromo } from './promo.js';
 import { aiChat, aiReady } from './aichat.js';
@@ -149,6 +149,10 @@ export default {
         const r = await loginWithGoogle(env, b.credential);
         return r.error ? err(req, r.error, r.status || 400) : json(req, r);
       }
+      if (path === '/api/auth/telegram' && m === 'POST') {
+        const r = await loginWithTelegram(env, await req.json().catch(() => ({})));
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+      }
       if (path === '/api/me' && m === 'GET') {
         const sub = await userFromRequest(req, env);
         if (!sub) return err(req, 'Нужен вход', 401);
@@ -221,19 +225,25 @@ export default {
       // ----- заказы (публично) -----
       if (path === '/api/orders' && m === 'POST') {
         const b = await req.json().catch(() => ({}));
-        const r = await createOrder(env, req.headers.get('CF-Connecting-IP') || '', b, await userFromRequest(req, env));
+        const uid = await userFromRequest(req, env);
+        if (!uid) return err(req, 'Войдите через Google или Telegram, чтобы оформить заказ', 401);
+        const r = await createOrder(env, req.headers.get('CF-Connecting-IP') || '', b, uid);
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
       }
       // оплата через Finik: создаём заказ и возвращаем ссылку на страницу оплаты; вебхук подтверждает оплату сам
       if (path === '/api/orders/finik' && m === 'POST') {
         const b = await req.json().catch(() => ({}));
-        const r = await startFinikOrder(env, req.headers.get('CF-Connecting-IP') || '', b, await userFromRequest(req, env));
+        const uid = await userFromRequest(req, env);
+        if (!uid) return err(req, 'Войдите через Google или Telegram, чтобы оформить заказ', 401);
+        const r = await startFinikOrder(env, req.headers.get('CF-Connecting-IP') || '', b, uid);
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
       }
       // оплата через GoPay (ELQR): то же самое, вебхук events_url подтверждает оплату сам
       if (path === '/api/orders/gopay' && m === 'POST') {
         const b = await req.json().catch(() => ({}));
-        const r = await startGopayOrder(env, req.headers.get('CF-Connecting-IP') || '', b, await userFromRequest(req, env));
+        const uid = await userFromRequest(req, env);
+        if (!uid) return err(req, 'Войдите через Google или Telegram, чтобы оформить заказ', 401);
+        const r = await startGopayOrder(env, req.headers.get('CF-Connecting-IP') || '', b, uid);
         return r.error ? err(req, r.error, r.status || 400) : json(req, r, 201);
       }
       // ИИ-чат: приём заказа в диалоге (история приходит с клиента, цены и оплата считаются на сервере)

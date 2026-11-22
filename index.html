@@ -1323,7 +1323,7 @@
 </style>
 <link rel="stylesheet" href="accounts.css?v=95">
 <script>try{var _n=navigator;if((_n.deviceMemory&&_n.deviceMemory<=4)||(_n.hardwareConcurrency&&_n.hardwareConcurrency<=4)||matchMedia('(prefers-reduced-transparency: reduce)').matches)document.documentElement.classList.add('lite')}catch(e){}</script>
-<link rel="stylesheet" href="theme.css?v=61">
+<link rel="stylesheet" href="theme.css?v=62">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1752,6 +1752,7 @@
 
 <!-- ORDER STATUS -->
 <!-- ORDERS HISTORY -->
+<div class="page" id="page-order"><div class="op-wrap"><button type="button" class="op-back" onclick="showPage('orders')">← Мои заказы</button><div id="opBox"><div class="orders-empty">Загружаем заказ…</div></div></div></div>
 <div class="page" id="page-orders"><div class="page-header"><h1>📋 История заказов</h1></div><div style="max-width:800px; margin:32px auto; padding:0 5%"><div class="code-check"><label for="statusCode">🔎 Проверить заказ по коду</label><div class="cc-row"><input type="text" class="input-field" id="statusCode" placeholder="DK-1042" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="14" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'')" onkeydown="if(event.key==='Enter')checkOrderStatus()"><button type="button" class="btn-primary" id="statusBtn" onclick="checkOrderStatus()">Проверить</button></div><div id="statusResult" aria-live="polite"></div></div><div id="ordersList"></div><p id="noOrdersMsg" style="text-align:center; color:var(--muted)">Нет заказов. Пополните алмазы!</p></div></div>
 
 
@@ -2990,8 +2991,8 @@ async function payWithFinik(ui) {
     if (resp.status === 401) { try { localStorage.removeItem('dk_user'); } catch (e) {} updateUserUI(); loginRequired(); }
     if (!resp.ok || !d.url) { set(d.error || 'Не удалось создать оплату. Переведите вручную ниже.', 'err'); btn.disabled = false; return; }
     try { if (d.secret) localStorage.setItem('dk_sec_' + d.id, d.secret); } catch (e) {}
-    set('Переходим к оплате…', 'ok');
-    location.href = d.url;
+    set('Открываем заказ…', 'ok');
+    location.href = d.secret ? '/?order=' + encodeURIComponent(d.id) + '&s=' + encodeURIComponent(d.secret) : d.url;
   } catch (e) { set('Нет связи с сервером. Переведите вручную ниже.', 'err'); btn.disabled = false; }
 }
 document.addEventListener('DOMContentLoaded', () => { try { if (!window.DK_API) return; const show = p => { window.FAST_PAY = p; const b = document.getElementById('finikBox'); if (b) b.hidden = false; };
@@ -3185,7 +3186,7 @@ async function payWithWallet(ui) {
     if (!resp.ok || !d.id) { set(d.error || 'Не удалось оплатить с баланса', 'err'); btn.disabled = false; loadWallet(); return; }
     try { if (d.secret) localStorage.setItem('dk_sec_' + d.id, d.secret); } catch (e) {}
     set('Готово! Открываем статус заказа…', 'ok');
-    location.href = '/?paid=' + encodeURIComponent(d.id);
+    location.href = '/?order=' + encodeURIComponent(d.id) + (d.secret ? '&s=' + encodeURIComponent(d.secret) : '');
   } catch (e) { set('Нет связи с сервером', 'err'); btn.disabled = false; }
 }
 // Возврат после пополнения баланса: открываем профиль и ждём, пока придёт вебхук
@@ -3195,16 +3196,62 @@ async function payWithWallet(ui) {
     window.addEventListener('load', () => { if (!getCurrentUser()) return; toggleAuthModal(); let n = 0; const t = setInterval(() => { loadWallet(); if (++n >= 6) clearInterval(t); }, 4000); });
   } catch (e) {}
 })();
-// Возврат со страницы оплаты Finik: показываем статус заказа и обновляем, пока он не выдан
+// ---------- Страница заказа: ?order=DK-1234&s=секрет (на неё возвращает банк; ?paid= — старая ссылка) ----------
+let _opCode = '', _opSec = '', _opTick = null, _opPoll = null;
+function opStop() { clearInterval(_opTick); clearTimeout(_opPoll); _opTick = _opPoll = null; }
+const OP_HEAD = { new: ['⏳', 'Проверяем оплату'], manual: ['⏳', 'Проверяем оплату'], processing: ['⚙️', 'Оплачено, выдаём заказ'], delivered: ['✅', 'Заказ выполнен'], balance: ['↩️', 'Деньги вернулись на баланс'], refund_due: ['⚠️', 'Возврат денег'], refunded: ['↩️', 'Деньги возвращены'], cancelled: ['✖️', 'Заказ отменён'] };
+const opDate = ms => ms ? new Date(ms).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).replace(' г.', '').replace(' в ', ', ') : '—';
+function opMethod(m) { return /finik|gopay/i.test(m || '') ? 'Банк КР · QR' : m === 'Баланс' ? 'Баланс сайта' : (m || '—'); }
+function opRender(o) {
+  const box = document.getElementById('opBox'); if (!box) return;
+  const waiting = o.status === 'new' && !!o.pay_url;
+  const hd = waiting ? ['💳', 'Ждём оплату'] : (OP_HEAD[o.status] || ['⏳', o.status]);
+  const cls = waiting ? 'wait' : o.status === 'delivered' ? 'ok' : ['cancelled', 'refund_due', 'refunded', 'balance'].includes(o.status) ? 'bad' : 'work';
+  const id = o.mine ? esc(o.player_id) + (o.server_id && o.server_id !== '-' ? ' (' + esc(o.server_id) + ')' : '') : '';
+  box.innerHTML = `<div class="op-card ${cls}">
+    <div class="op-head"><span class="op-ic" aria-hidden="true">${hd[0]}</span><div class="op-ht"><b>${esc(hd[1])}</b><span class="op-timer" id="opTimer" ${waiting ? '' : 'hidden'}></span></div><span class="op-no">№${esc(o.id)}</span></div>
+    <div class="op-body">
+      <div class="op-prod"><img src="/img/games/${esc(o.region)}.webp" width="56" height="56" alt="" onerror="this.onerror=null;this.src='/img/games/mlbb.webp'"><div><small>${esc((gamesData[o.region] || {}).name || 'Mobile Legends')}</small><b>${esc(o.pkg_label)}</b></div></div>
+      ${o.mine ? `<div class="op-row"><span>ID</span><b>${id}</b></div><div class="op-row"><span>Оплата</span><b>${esc(opMethod(o.method))}</b></div>` : ''}
+      <div class="op-row total"><span>Сумма</span><b>${esc(o.price_kgs)} сом</b></div>
+      <div class="op-foot"><div><small>Дата</small><b>${esc(opDate(o.created_at))}</b></div><div><small>Оплачен</small><b>${esc(opDate(o.confirmed_at))}</b></div><div><small>Выполнен</small><b>${esc(opDate(o.status === 'delivered' ? o.finished_at : 0))}</b></div></div>
+    </div>
+    ${waiting ? `<a class="op-pay" href="${esc(o.pay_url)}" rel="noopener">Оплатить ${esc(o.price_kgs)} сом</a><p class="op-hint">Откроется страница банка с QR. После оплаты вернитесь сюда: статус обновится сам.</p>` : ''}
+    ${!o.mine ? '<p class="op-hint">Подробности видны на том устройстве, где оформлен заказ.</p>' : ''}
+    <div class="suc-delivery" id="opDelivery" hidden></div>
+    ${waitCard(o, _opSec)}
+    <div class="rv-slot" id="opReview"></div>
+    <div class="op-acts"><button type="button" class="op-btn" onclick="opCopy(this)">🔗 Копировать ссылку</button><a class="op-btn" href="https://t.me/DiamondKgSupport" target="_blank" rel="noopener">💬 Поддержка</a></div>
+  </div>`;
+  if (o.delivery) renderDelivery(document.getElementById('opDelivery'), o.region, o.delivery);
+  if (o.status === 'delivered' && !o.reviewed && (_opSec || getCurrentUser())) showReviewOnce('opReview', o.id, _opSec);
+  const t = document.getElementById('opTimer');
+  if (waiting && t) {
+    const tick = () => { const left = Math.max(0, o.pay_exp - Date.now()); t.textContent = String(Math.floor(left / 60000)).padStart(2, '0') + ':' + String(Math.floor(left / 1000) % 60).padStart(2, '0'); if (!left) { clearInterval(_opTick); opLoad(); } };
+    clearInterval(_opTick); tick(); _opTick = setInterval(tick, 1000);
+  } else clearInterval(_opTick);
+}
+function opCopy(btn) { try { navigator.clipboard.writeText(location.href); const t = btn.textContent; btn.textContent = '✅ Готово'; setTimeout(() => { btn.textContent = t; }, 1600); } catch (e) { dkToast('Скопируйте адрес из строки браузера'); } }
+async function opLoad(n) {
+  n = n || 0; clearTimeout(_opPoll);
+  try {
+    const r = await fetch(API_BASE() + '/api/orders/' + encodeURIComponent(_opCode) + (_opSec ? '?s=' + encodeURIComponent(_opSec) : ''));
+    if (r.status === 404) { document.getElementById('opBox').innerHTML = '<div class="orders-empty">Заказ не найден. Проверьте ссылку или напишите в поддержку.</div>'; return; }
+    if (!r.ok) throw new Error('fail');
+    const o = await r.json();
+    if (!document.getElementById('page-order').classList.contains('active')) return;
+    opRender(o);
+    if (['new', 'manual', 'processing'].includes(o.status) && n < 720) _opPoll = setTimeout(() => opLoad(n + 1), 5000);
+  } catch (e) { if (n < 720) _opPoll = setTimeout(() => opLoad(n + 1), 8000); }
+}
+function openOrderPage(code, sec) { opStop(); _opCode = code; _opSec = sec || ''; showPage('order'); opLoad(); }
 (function () {
   try {
-    const code = new URLSearchParams(location.search).get('paid'); if (!code || !/^DK(?:-\d{3,7}|[A-Z0-9]{8})$/.test(code)) return;
-    window.addEventListener('load', () => {
-      showPage('orders');
-      const inp = document.getElementById('statusCode'); if (!inp) return; inp.value = code;
-      let n = 0; const run = () => { if (!document.getElementById('page-orders').classList.contains('active')) return; checkOrderStatus(); if (++n < 24) setTimeout(run, 6000); };
-      run();
-    });
+    const q = new URLSearchParams(location.search), code = q.get('order') || q.get('paid');
+    if (!code || !/^DK(?:-\d{3,7}|[A-Z0-9]{8})$/.test(code)) return;
+    let sec = q.get('s') || '';
+    try { if (sec) localStorage.setItem('dk_sec_' + code, sec); else sec = localStorage.getItem('dk_sec_' + code) || ''; } catch (e) {}
+    window.addEventListener('load', () => openOrderPage(code, sec));
   } catch (e) {}
 })();
 const phoneOk = v => String(v || '').replace(/\D/g, '').length >= 9; // пока нет ИП — телефон обязателен
@@ -3289,7 +3336,7 @@ function showPage(name) {
   const navLink = document.getElementById(`nav-${name === 'topup' || name === 'payment' ? 'catalog' : name}`);
   if (navLink) navLink.classList.add('active');
   document.body.dataset.page = name;
-  { const map = { home:'home', catalog:'topup', topup:'topup', payment:'topup', orders:'orders', status:'orders', accounts:'accounts', account:'profile' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
+  { const map = { home:'home', catalog:'topup', topup:'topup', payment:'topup', orders:'orders', order:'orders', status:'orders', accounts:'accounts', account:'profile' }; document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('on', b.id === 'bn-' + map[name])); }
   window.scrollTo(0,0);
   if (name === 'payment') { setSteps(2); if (getCurrentUser()) loadWallet(); else updateWalletPay(); }
   if (name === 'topup') renderPackages();

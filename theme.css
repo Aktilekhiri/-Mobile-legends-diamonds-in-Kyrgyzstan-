@@ -928,3 +928,31 @@ html.lite *,html.lite *::before,html.lite *::after{backdrop-filter:none!importan
 .sel-qty button{width:44px;height:44px;border:0;border-radius:9px;background:transparent;color:var(--text);font:inherit;font-size:1.4rem;font-weight:800;cursor:pointer}
 .sel-qty button:disabled{opacity:.3;cursor:default}
 .sel-qty b{min-width:34px;text-align:center;font-size:1.05rem;color:var(--text)}
+
+/* страница заказа */
+.op-wrap{max-width:520px;margin:0 auto;padding:16px 5% 120px}
+.op-back{border:0;background:none;color:var(--muted);font:inherit;font-weight:700;padding:10px 0;min-height:44px;cursor:pointer}
+.op-card{--st:var(--indigo);background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.12);padding-bottom:16px}
+.op-card.wait{--st:#2F6BFF}.op-card.work{--st:#8B5CF6}.op-card.ok{--st:#16A34A}.op-card.bad{--st:#E5484D}
+.op-head{display:flex;align-items:center;gap:12px;padding:16px;background:color-mix(in srgb,var(--st) 14%,var(--card))}
+.op-ic{flex:none;width:48px;height:48px;border-radius:50%;background:var(--st);display:grid;place-items:center;font-size:22px}
+.op-ht{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.op-ht b{font-size:1.25rem;line-height:1.15;color:var(--text)}
+.op-timer{font-weight:800;font-size:1.1rem;color:var(--st);font-variant-numeric:tabular-nums}
+.op-no{flex:none;font-weight:800;font-size:.8rem;padding:6px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--text)}
+.op-body{padding:16px}
+.op-prod{display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.op-prod img{border-radius:14px;flex:none}
+.op-prod small,.op-foot small{display:block;color:var(--muted);font-size:.72rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+.op-prod b{font-size:1.4rem;line-height:1.15;color:var(--text)}
+.op-row{display:flex;align-items:baseline;gap:8px;padding:9px 0;color:var(--muted)}
+.op-row::after{content:"";order:1;flex:1;border-bottom:2px dotted var(--line)}
+.op-row span{order:0}.op-row b{order:2;color:var(--text);text-align:right}
+.op-row.total{font-weight:800}.op-row.total b{font-size:1.3rem}
+.op-foot{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px;margin-top:8px;padding-top:14px;border-top:2px dashed var(--line)}
+.op-foot b{font-size:.88rem;color:var(--text)}
+.op-pay{display:flex;align-items:center;justify-content:center;min-height:56px;margin:4px 16px 0;border-radius:16px;background:linear-gradient(135deg,#16A34A,#22C55E);color:#fff;font-weight:800;font-size:1.1rem;text-decoration:none;box-shadow:0 8px 20px rgba(22,163,74,.35)}
+.op-hint{margin:10px 16px 0;color:var(--muted);font-size:.82rem;line-height:1.4}
+.op-card .suc-delivery,.op-card .wait-card,.op-card .rv-slot{margin:14px 16px 0}
+.op-acts{display:flex;gap:10px;margin:16px 16px 0}
+.op-btn{flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:14px;border:1px solid var(--line);background:transparent;color:var(--text);font:inherit;font-weight:700;font-size:.88rem;text-decoration:none;cursor:pointer}

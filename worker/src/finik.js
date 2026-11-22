@@ -89,7 +89,7 @@ export async function startFinikOrder(env, ip, b, userId) {
   const r = await createOrder(env, ip, { ...b, method: 'Finik', deferNotify: true }, userId);
   if (r.error) return r;
   const o = await env.DB.prepare('SELECT id, pkg, pkg_label, price_kgs FROM orders WHERE id = ?').bind(r.id).first();
-  const back = SITE + '?paid=' + encodeURIComponent(r.id);
+  const back = SITE + '?order=' + encodeURIComponent(r.id) + '&s=' + encodeURIComponent(r.secret);
   const p = await createFinikPayment(env, o, back);
   if (p.error) {
     await env.DB.prepare("UPDATE orders SET status = 'cancelled', fail_reason = ?, updated_at = ? WHERE id = ? AND status IN ('new','manual')").bind(p.error, Date.now(), r.id).run();

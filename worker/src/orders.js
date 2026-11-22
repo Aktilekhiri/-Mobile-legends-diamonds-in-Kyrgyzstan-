@@ -179,6 +179,11 @@ export async function getOrderPublic(env, id, secret) {
   const v = publicView(o);
   // выданный код видит только тот, у кого секрет заказа (его получает браузер, оформивший заказ)
   if (o.status === 'delivered' && o.delivery && safeEq(secret, o.secret)) v.delivery = o.delivery;
+  // страница заказа: ID, способ оплаты и ссылка на оплату — тоже только по секрету (номера заказов идут подряд, без секрета их видеть нельзя)
+  if (o.secret && safeEq(secret, o.secret)) {
+    v.mine = true; v.player_id = o.player_id; v.server_id = o.server_id; v.method = o.method;
+    if (o.status === 'new' && o.pay_url && Number(o.pay_exp) > Date.now()) { v.pay_url = o.pay_url; v.pay_exp = Number(o.pay_exp); }
+  }
   return v;
 }
 

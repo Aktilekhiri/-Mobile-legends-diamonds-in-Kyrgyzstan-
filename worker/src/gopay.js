@@ -41,7 +41,7 @@ export async function createGopayPayment(env, o) {
   const body = {
     order_id: o.id, amount: Number(o.price_kgs).toFixed(2), lifetime: 3600,
     description: (String(o.pkg_label || o.pkg || 'Заказ').slice(0, 60) + ' · ' + o.id).slice(0, 255),
-    success_url: SITE + '?paid=' + encodeURIComponent(o.id), failure_url: SITE,
+    success_url: SITE + '?order=' + encodeURIComponent(o.id) + (o.secret ? '&s=' + encodeURIComponent(o.secret) : ''), failure_url: SITE,
   };
   const ph = buyerPhone(o.phone); if (ph) body.buyer = { phone: ph };
   const r = await call(env, '/v1/payments', body);
@@ -64,12 +64,15 @@ export async function startGopayOrder(env, ip, b, userId) {
   await ensure(env);
   const r = await createOrder(env, ip, { ...b, method: 'GoPay', deferNotify: true }, userId);
   if (r.error) return r;
-  const o = await env.DB.prepare('SELECT id, pkg, pkg_label, price_kgs, phone FROM orders WHERE id = ?').bind(r.id).first();
+  const o = await env.DB.prepare('SELECT id, pkg, pkg_label, price_kgs, phone, secret FROM orders WHERE id = ?').bind(r.id).first();
   const p = await createGopayPayment(env, o);
   if (p.error) {
     await env.DB.prepare("UPDATE orders SET status = 'cancelled', fail_reason = ?, updated_at = ? WHERE id = ? AND status IN ('new','manual')").bind(p.error, Date.now(), r.id).run();
     return p;
   }
+  try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN pay_url TEXT').run(); } catch (e) { /* уже есть */ }
+  try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN pay_exp INTEGER').run(); } catch (e) { /* уже есть */ }
+  try { await env.DB.prepare('UPDATE orders SET pay_url = ?, pay_exp = ? WHERE id = ?').bind(p.url, Date.now() + 30 * 60 * 1000, r.id).run(); } catch (e) { /* колонок нет: страница заказа покажет только статус */ }
   return { id: r.id, secret: r.secret, url: p.url };
 }
 

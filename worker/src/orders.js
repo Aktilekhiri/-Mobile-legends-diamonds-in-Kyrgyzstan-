@@ -128,7 +128,14 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
   if (!opts.promo && region === 'tgstars' && !cat0) return { error: 'Количество звёзд: от 50 до 10 000' };
   if (!opts.promo && region === 'tgstars' && /^[1-9]\d{1,4}$/.test(pkg) && price < starsPrice(Number(pkg))) return { error: 'Цена изменилась, обновите страницу' };
   // нижняя граница суммы: по себестоимости; если её нет (ручной пак), по цене конкурента, иначе 20 сом
-  const minPrice = cat0 && cat0.cost > 0 ? Math.floor(cat0.cost * USD_KGS * 0.9) : (COMPETITOR_PRICES[region + ':' + pkg] ? COMPETITOR_PRICES[region + ':' + pkg].price : 20);
+  // количество одинаковых пакетов в одном заказе (как «14 алмазов × 4»): цена и себестоимость × qty, выдача цепочкой заказов FazerCards (offer|offer|…)
+  let qty = 1;
+  if (!opts.promo) {
+    qty = Math.floor(Number(b.qty) || 1);
+    if (qty < 1 || qty > 10) return { error: 'Количество: от 1 до 10' };
+    if (qty > 1 && (region === 'russia' || region === 'tgstars' || !cat0 || !cat0.offer || (game && (game.direct || game.type === 'gift_cards')) || /pass/i.test(pkg))) return { error: 'Для этого пакета количество изменить нельзя' };
+  }
+  const minPrice = cat0 && cat0.cost > 0 ? Math.floor(cat0.cost * USD_KGS * 0.9) * qty : (COMPETITOR_PRICES[region + ':' + pkg] ? COMPETITOR_PRICES[region + ':' + pkg].price : 20) * qty;
   if (!opts.promo && price < minPrice) return { error: 'Некорректная сумма заказа' };
 
   // защита от спама: не более 8 заказов с одного IP за час
@@ -140,7 +147,7 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
   const now = Date.now();
   let id = '';
   const secret = newSecret();
-  const auto = !!(cat && (cat.cost <= MAX_AUTO_COST_USD || opts.forceAuto));
+  const auto = !!(cat && (cat.cost * qty <= MAX_AUTO_COST_USD || opts.forceAuto));
   // номер заказа: DK-1001, DK-1002… (по порядку; старые заказы с длинными кодами DKXXXXXXXX остаются как есть)
   for (let attempt = 0; attempt < 6; attempt++) {
     if (attempt < 4) {
@@ -152,7 +159,7 @@ export async function createOrder(env, ip, b, userId = null, opts = {}) {
         `INSERT INTO orders (id,created_at,updated_at,player_id,server_id,region,pkg,pkg_label,price_kgs,method,phone,offer_id,cost_usd,status,ip)
          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
       ).bind(id, now, now, player, server, region, pkg, clean(b.pkgLabel || pkg, 100), price, clean(b.method, 30), clean(b.phone, 30),
-        auto ? cat.offer : '', auto ? cat.cost : 0, auto ? 'new' : 'manual', ip || '').run();
+        auto ? Array(qty).fill(cat.offer).join('|') : '', auto ? cat.cost * qty : 0, auto ? 'new' : 'manual', ip || '').run();
       break;
     } catch (e) { if (attempt === 5) throw e; }
   }

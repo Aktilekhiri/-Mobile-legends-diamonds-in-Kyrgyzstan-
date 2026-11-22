@@ -268,6 +268,7 @@ body.v2 .user-name:hover{background:rgba(14,116,144,.16)}
 .auth-x{position:absolute;top:10px;right:10px;width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:var(--muted);font-size:1.1rem;cursor:pointer}
 .auth-x:hover{background:var(--card-2);color:var(--text)}
 .google-btn-wrap{display:flex;justify-content:center;min-height:44px}
+#tgLoginBtn iframe{color-scheme:light;background:transparent;border:0}
 .auth-msg{min-height:1.2em;margin:12px 0 0;text-align:center;font-size:.85rem;color:var(--muted)}
 .auth-profile{display:flex;align-items:center;gap:14px;margin-bottom:18px}
 .auth-profile img{border-radius:50%;object-fit:cover;background:var(--card-2)}

@@ -1323,7 +1323,7 @@
 </style>
 <link rel="stylesheet" href="accounts.css?v=95">
 <script>try{var _n=navigator;if((_n.deviceMemory&&_n.deviceMemory<=4)||(_n.hardwareConcurrency&&_n.hardwareConcurrency<=4)||matchMedia('(prefers-reduced-transparency: reduce)').matches)document.documentElement.classList.add('lite')}catch(e){}</script>
-<link rel="stylesheet" href="theme.css?v=63">
+<link rel="stylesheet" href="theme.css?v=64">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1658,9 +1658,9 @@
       <div class="packages-grid" id="packagesGrid"></div>
       <div class="method-note" id="pkgAsk" hidden style="margin-top:12px;text-align:center"></div>
     </div>
-    <div class="form-card step-card" id="stepData" hidden>
-      <button type="button" class="back-cat" onclick="backToPackages()">← Пакеты</button>
-      <div class="card-title" id="dataTitle">Ваши данные</div>
+    <div class="form-card step-card op-card wait" id="stepData" hidden>
+      <div class="op-head"><div class="op-ic">🧾</div><div class="op-ht"><b id="dataTitle">Оформление заказа</b><span class="op-timer" style="font-size:.85rem;font-weight:700;color:var(--muted)">Проверьте и оплатите</span></div><button type="button" class="op-no" onclick="backToPackages()">← Пакеты</button></div>
+      <div class="op-body">
       <div class="sel-info" id="selectedInfo" style="display:none"><div class="sel-ic" id="selIc" hidden></div><div class="sel-body"><div class="sel-name" id="selDiamonds"></div><div class="sel-pay"><span>К оплате</span><b id="selPrice"></b></div><div class="sel-qty" id="selQty" hidden><button type="button" onclick="changeQty(-1)" aria-label="Меньше">−</button><b id="selQtyN" aria-live="polite">1</b><button type="button" onclick="changeQty(1)" aria-label="Больше">+</button></div><div class="sel-eta" id="selEta" hidden></div></div></div>
       <div id="userRow" style="display:none">
       <label for="tgUser">TELEGRAM @USERNAME</label>
@@ -1692,6 +1692,7 @@
       <button class="btn-primary btn-full" onclick="payNow()" id="buyBtn" disabled style="margin-top:14px; opacity:0.5">Оплатить</button>
       <div id="payMsg" class="receipt-msg" role="alert" aria-live="polite"></div>
       <div class="pay-terms">Нажимая «Оплатить», вы принимаете <a href="/terms/" target="_blank" rel="noopener">условия</a> и <a href="/refund/" target="_blank" rel="noopener">правила возврата</a>.</div>
+      </div>
     </div>
   </div>
 
@@ -2185,7 +2186,7 @@ function changeGame(g) {
   const kind = gd && gd.kind;
   document.getElementById('idRow').style.display = kind ? 'none' : '';
   document.getElementById('userRow').style.display = kind === 'username' ? '' : 'none';
-  { const hb = document.getElementById('helpBtn'), ig = document.getElementById('idGuide'), dt = document.getElementById('dataTitle'); if (hb) hb.style.display = kind === 'none' ? 'none' : ''; if (ig && kind) ig.hidden = true; if (dt) dt.textContent = kind === 'none' ? 'Оплата' : 'Ваши данные'; }
+  { const hb = document.getElementById('helpBtn'), ig = document.getElementById('idGuide'), dt = document.getElementById('dataTitle'); if (hb) hb.style.display = kind === 'none' ? 'none' : ''; if (ig && kind) ig.hidden = true; if (dt) dt.textContent = 'Оформление заказа'; }
   const srvRow = document.getElementById('serverRow'), srvIn = document.getElementById('serverId'), srvSel = document.getElementById('serverSelect');
   if (!gd || gd.zone) { srvRow.style.display = ''; srvIn.style.display = ''; srvSel.style.display = 'none'; document.getElementById('serverLabel').textContent = gd ? 'SERVER ID' : 'ZONE ID (СЕРВЕР)'; document.getElementById('serverId').placeholder = '8403'; }
   else if (gd.servers) {

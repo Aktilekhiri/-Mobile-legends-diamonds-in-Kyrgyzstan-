@@ -973,3 +973,12 @@ html.lite *,html.lite *::before,html.lite *::after{backdrop-filter:none!importan
 .pw-t.bk{background:linear-gradient(135deg,#0B5FB0,#0A4A8C)}
 .pw-t.any{background:var(--card-2);color:var(--text);border:1px solid var(--line)}
 @media(min-width:760px){.pw-grid{grid-template-columns:repeat(4,1fr)}}
+
+/* форма заказа в стиле квитанции */
+#stepData.op-card{padding:0}
+#stepData .op-body{padding:16px}
+#stepData .op-no{cursor:pointer;font:inherit;font-weight:700;font-size:.8rem}
+#stepData .sel-info{background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:0 0 14px;margin-bottom:14px}
+#stepData .sel-pay b{color:var(--text)}
+#stepData #buyBtn{background:linear-gradient(135deg,#16A34A,#22C55E);color:#fff;border:0;border-radius:16px;min-height:56px;font-size:1.1rem;font-weight:800;box-shadow:0 8px 20px rgba(22,163,74,.35)}
+#stepData #buyBtn:disabled{background:var(--card-2,#2a2f3a);color:var(--muted);box-shadow:none}

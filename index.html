@@ -2469,7 +2469,6 @@ function backFromPayment() {
 }
 // клик по пакету: у игр без ID (Roblox) шаг «Данные» пропускаем
 function pickPackage(id) {
-  if (!getCurrentUser()) { loginRequired(id); return; }
   pickPackageGo(id);
 }
 function pickPackageGo(id) {
@@ -2482,7 +2481,7 @@ function loginRequired(id) {
   loginPick = id || null;
   toggleAuthModal();
   const m = document.getElementById('authSub');
-  if (m) m.textContent = 'Чтобы оформить заказ, войдите через Google или Telegram. Так заказ привязан к вам, а если его не получится выполнить, деньги вернутся на ваш баланс.';
+  if (m) m.textContent = 'Чтобы оплатить, войдите через Google или Telegram. Ваши заказы и время выполнения будут видны в «Мои заказы», а если заказ не получится выполнить, деньги вернутся на баланс. После входа нажмите «Оплатить» ещё раз.';
 }
 function selectPackage(id) {
   const cand = packages.find(p => p.id === id);
@@ -2593,6 +2592,7 @@ async function payNow() {
   const btn = document.getElementById('buyBtn'), msg = document.getElementById('payMsg');
   msg.textContent = ''; msg.className = 'receipt-msg';
   if (btn.disabled) return;
+  if (!getCurrentUser()) { loginRequired(); return; }
   const off = document.getElementById('finikOff');
   if (_pm !== 'wallet' && off && !off.hidden) { msg.textContent = 'Оплата временно недоступна. Попробуйте позже.'; msg.className = 'receipt-msg err'; return; }
   window._payInline = true;
@@ -2639,6 +2639,7 @@ function updateBuyBtn() {
 }
 
 function proceedToPayment() {
+  if (!getCurrentUser()) { loginRequired(); return; }
   const pid = getPlayerValue();
   const sid = getServerValue();
   if (!pid || !sid || !selectedPkg || mlbbIdProblem(pid, sid)) return;

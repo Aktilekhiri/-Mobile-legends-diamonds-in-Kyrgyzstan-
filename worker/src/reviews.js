@@ -15,8 +15,16 @@ function safeEq(a, b) {
   return r === 0;
 }
 
+let _rvReady = false;
 export async function ensureReviewsTable(env) {
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS reviews (id TEXT PRIMARY KEY, order_id TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL, rating INTEGER NOT NULL, text TEXT NOT NULL DEFAULT '', name TEXT NOT NULL DEFAULT '', game TEXT NOT NULL DEFAULT '', pkg_label TEXT NOT NULL DEFAULT '', user_id TEXT, status TEXT NOT NULL DEFAULT 'pending')").run();
+  if (!_rvReady) {
+    // ответ владельца и реакции (идемпотентно; ALTER падает, если колонка уже есть)
+    try { await env.DB.prepare('ALTER TABLE reviews ADD COLUMN reply TEXT').run(); } catch (e) {}
+    try { await env.DB.prepare('ALTER TABLE reviews ADD COLUMN reply_at INTEGER').run(); } catch (e) {}
+    await env.DB.prepare('CREATE TABLE IF NOT EXISTS review_reactions (review_id TEXT NOT NULL, emoji TEXT NOT NULL, voter TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (review_id, emoji, voter))').run();
+    _rvReady = true;
+  }
 }
 
 // POST /api/orders/:id/review  { rating, text, name, s }
@@ -53,8 +61,9 @@ export async function listPublicReviews(env, game, limit) {
   const q = (sel, tail) => env.DB.prepare(`SELECT ${sel} FROM reviews WHERE ${where}${tail || ''}`);
   const bind = st => (g ? st.bind(g) : st);
   const stats = await bind(q('COUNT(*) AS c, AVG(rating) AS a')).first();
-  const { results } = await (g ? q('rating, text, name, game, pkg_label, created_at', ' ORDER BY created_at DESC LIMIT ' + n).bind(g) : q('rating, text, name, game, pkg_label, created_at', ' ORDER BY created_at DESC LIMIT ' + n)).all();
-  return { reviews: results.map(r => ({ ...r, game_title: GAME_TITLE[r.game] || '' })), count: (stats && stats.c) || 0, avg: stats && stats.a ? Math.round(stats.a * 10) / 10 : 0 };
+  const { results } = await (g ? q('id, rating, text, name, game, pkg_label, created_at, reply, reply_at', ' ORDER BY created_at DESC LIMIT ' + n).bind(g) : q('id, rating, text, name, game, pkg_label, created_at, reply, reply_at', ' ORDER BY created_at DESC LIMIT ' + n)).all();
+  const rx = await reactionsOf(env, results.map(r => r.id));
+  return { reviews: results.map(r => ({ ...r, reactions: rx[r.id] || {}, game_title: GAME_TITLE[r.game] || '' })), count: (stats && stats.c) || 0, avg: stats && stats.a ? Math.round(stats.a * 10) / 10 : 0 };
 }
 
 export async function adminListReviews(env, status) {
@@ -75,4 +84,39 @@ export async function adminSetReview(env, id, action) {
 // Есть ли отзыв на заказ (для кнопки «Оставить отзыв»)
 export async function hasReview(env, orderId) {
   try { await ensureReviewsTable(env); return !!(await env.DB.prepare('SELECT 1 AS x FROM reviews WHERE order_id = ?').bind(orderId).first()); } catch (e) { return false; }
+}
+
+// ── Реакции на отзывы. Ключи вместо эмодзи (без проблем с кодировкой); один голос на (отзыв, реакция, устройство); повторный клик снимает.
+export const REACTIONS = ['heart', 'like', 'fire', 'lol', 'wow', 'pray', 'clap'];
+async function reactionsOf(env, ids) {
+  const out = {};
+  if (!ids.length) return out;
+  const { results } = await env.DB.prepare(`SELECT review_id, emoji, COUNT(*) AS c FROM review_reactions WHERE review_id IN (${ids.map(() => '?').join(',')}) GROUP BY review_id, emoji`).bind(...ids).all();
+  for (const r of results) (out[r.review_id] = out[r.review_id] || {})[r.emoji] = r.c;
+  return out;
+}
+const _rrl = new Map();
+// POST /api/reviews/:id/react  { emoji, v }  v = случайный id устройства (из localStorage браузера)
+export async function reactToReview(env, ip, id, b) {
+  const emoji = String(b.emoji || ''), voter = String(b.v || '');
+  if (!REACTIONS.includes(emoji) || !/^[A-Za-z0-9]{16,40}$/.test(voter)) return { error: 'Некорректная реакция', status: 400 };
+  const now = Date.now(), rl = _rrl.get(ip);
+  if (rl && rl.exp > now) { if (++rl.n > 60) return { error: 'Слишком часто, попробуйте позже', status: 429 }; } else _rrl.set(ip, { n: 1, exp: now + 600e3 });
+  if (_rrl.size > 5000) _rrl.clear();
+  await ensureReviewsTable(env);
+  const rid = clean(id, 40);
+  const rv = await env.DB.prepare("SELECT 1 AS x FROM reviews WHERE id = ? AND status = 'approved'").bind(rid).first();
+  if (!rv) return { error: 'Отзыв не найден', status: 404 };
+  const del = await env.DB.prepare('DELETE FROM review_reactions WHERE review_id = ? AND emoji = ? AND voter = ?').bind(rid, emoji, voter).run();
+  let on = false;
+  if (!(del.meta && del.meta.changes)) { await env.DB.prepare('INSERT OR IGNORE INTO review_reactions (review_id, emoji, voter, created_at) VALUES (?,?,?,?)').bind(rid, emoji, voter, now).run(); on = true; }
+  return { ok: true, on, reactions: (await reactionsOf(env, [rid]))[rid] || {} };
+}
+
+// Ответ владельца под отзывом (пустой текст = удалить ответ)
+export async function adminReplyReview(env, id, text) {
+  await ensureReviewsTable(env);
+  const t = clean(text, 500);
+  const r = await env.DB.prepare('UPDATE reviews SET reply = ?, reply_at = ? WHERE id = ?').bind(t || null, t ? Date.now() : null, String(id).slice(0, 40)).run();
+  return r.meta && r.meta.changes ? { ok: true } : { error: 'Отзыв не найден', status: 404 };
 }

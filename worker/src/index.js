@@ -28,7 +28,7 @@ import { aiChat, aiReady } from './aichat.js';
 import { SHOP } from './shop_data.js';
 import { syncAvailability, offKeys, adminAvailability, adminForceOn } from './avail.js';
 import { postComment, listComments, adminListComments, adminSetComment, deleteAccountComments } from './acomments.js';
-import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview } from './reviews.js';
+import { hasReview, submitReview, listPublicReviews, adminListReviews, adminSetReview, reactToReview, adminReplyReview } from './reviews.js';
 import { createOrder, saveReceipt, notifyWithoutReceipt, getReceipt, getOrderPublic, listOrders, confirmOrder, refreshOrder, markRefunded, refundToBalance, selfOrder, selfOrders, markManualDone, cancelOrder, blacklistOrder, listBlacklist, addBlacklist, removeBlacklist, pollProcessing, handleWebhook, listRecentDeliveries, requestRefund } from './orders.js';
 
 function cors(req) {
@@ -285,6 +285,12 @@ export default {
       if (path === '/api/recent' && m === 'GET') {
         return json(req, await listRecentDeliveries(env, url.searchParams.get('game') || ''), 200, { 'Cache-Control': 'public, max-age=30' });
       }
+      mm = path.match(/^\/api\/reviews\/([A-Za-z0-9]{4,40})\/react$/);
+      if (mm && m === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const r = await reactToReview(env, req.headers.get('CF-Connecting-IP') || 'anon', mm[1], b);
+        return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+      }
       if (path === '/api/reviews' && m === 'GET') {
         return json(req, await listPublicReviews(env, url.searchParams.get('game') || '', url.searchParams.get('limit')), 200, { 'Cache-Control': 'public, max-age=60' });
       }
@@ -456,6 +462,12 @@ export default {
           return r.error ? err(req, r.error, r.status || 400) : json(req, r);
         }
         if (path === '/api/admin/reviews' && m === 'GET') return json(req, await adminListReviews(env, url.searchParams.get('status') || 'all'));
+        mm = path.match(/^\/api\/admin\/reviews\/([A-Za-z0-9]{4,40})\/reply$/);
+        if (mm && m === 'POST') {
+          const b = await req.json().catch(() => ({}));
+          const r = await adminReplyReview(env, mm[1], b.text);
+          return r.error ? err(req, r.error, r.status || 400) : json(req, r);
+        }
         mm = path.match(/^\/api\/admin\/reviews\/([A-Za-z0-9]{4,40})\/(approve|hide|pending)$/);
         if (mm && m === 'POST') {
           const r = await adminSetReview(env, mm[1], mm[2]);

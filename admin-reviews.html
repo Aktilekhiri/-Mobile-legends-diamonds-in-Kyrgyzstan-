@@ -42,6 +42,7 @@ button:disabled{opacity:.5;cursor:default}
 .warn{color:#ffd28a;font-size:.85rem;margin-top:6px}
 .rcpt img{display:block;max-width:100%;max-height:420px;border-radius:10px;border:1px solid var(--line);margin-top:10px;background:#0B1020}
 .rcpt-hint{color:var(--mu);font-size:.85rem;margin-top:6px}
+.rpl{width:100%;background:#0B1020;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;margin:4px 0 10px;resize:vertical}
 .stars{color:#F59E0B;letter-spacing:2px}.txt{margin:8px 0;white-space:pre-wrap;word-break:break-word}.st.pending{background:#7a5a0a}.st.approved{background:#12633a}.st.hidden{background:#444}
 </style>
 </head>
@@ -66,7 +67,7 @@ button:disabled{opacity:.5;cursor:default}
 (function(){
   var $=function(i){return document.getElementById(i)};
   var TK='dk_admin_token', AK='dk_admin_api';
-  var token='', filter='pending', items=[], timer=null;
+  var token='', filter='pending', items=[], timer=null, dirty=false;
   function sget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
   function sset(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}
   function api(){return (window.DK_API||sget(AK)||'').replace(/\/+$/,'')}
@@ -96,24 +97,29 @@ button:disabled{opacity:.5;cursor:default}
       if(r.status!=='hidden')acts+='<button class="dng" data-a="hide" data-id="'+r.id+'">Скрыть</button>';
       return '<div class="card"><div class="o-head"><div><span class="stars">'+'★'.repeat(r.rating)+'☆'.repeat(5-r.rating)+'</span><span class="st '+r.status+'">'+(LBL[r.status]||r.status)+'</span></div><div class="o-meta" style="margin:0">'+new Date(r.created_at).toLocaleDateString('ru-RU')+'</div></div>'
         +'<div class="txt">'+esc(r.text)+'</div><div class="o-meta"><b>'+esc(r.name)+'</b> · '+esc(r.game_title||r.game)+' · '+esc(r.pkg_label)+' · заказ '+esc(r.order_id)+'</div>'
-        +'<div class="acts">'+acts+'</div></div>';
+        +'<textarea class="rpl" id="rp-'+r.id+'" rows="2" maxlength="500" placeholder="Ответ владельца: виден под отзывом на сайте">'+esc(r.reply||'')+'</textarea>'
+        +'<div class="acts">'+acts+'<button class="pri" data-a="reply" data-id="'+r.id+'">'+(r.reply?'Обновить ответ':'Ответить')+'</button></div></div>';
     }).join('');
     Array.prototype.forEach.call($('list').querySelectorAll('button[data-a]'),function(b){b.onclick=function(){act(b)}});
   }
   async function act(b){
     b.disabled=true;
-    try{await call('POST','/api/admin/reviews/'+b.dataset.id+'/'+b.dataset.a);msg(b.dataset.a==='approve'?'Отзыв опубликован':'Отзыв скрыт','good');await load()}
+    try{
+      if(b.dataset.a==='reply'){var t=$('rp-'+b.dataset.id);await call('POST','/api/admin/reviews/'+b.dataset.id+'/reply',{text:t?t.value:''});msg(t&&t.value.trim()?'Ответ сохранён':'Ответ удалён','good')}
+      else{await call('POST','/api/admin/reviews/'+b.dataset.id+'/'+b.dataset.a);msg(b.dataset.a==='approve'?'Отзыв опубликован':'Отзыв скрыт','good')}
+      await load()}
     catch(e){msg(e.message,'err');b.disabled=false}
   }
+  $('list').addEventListener('input',function(e){if(e.target.classList&&e.target.classList.contains('rpl'))dirty=true});
   async function load(){
-    try{var d=await call('GET','/api/admin/reviews');items=d.reviews||[];show('listBox');drawChips();draw()}
+    try{var d=await call('GET','/api/admin/reviews');dirty=false;items=d.reviews||[];show('listBox');drawChips();draw()}
     catch(e){msg(e.message,'err')}
   }
   function start(){
     token=sget(TK);msg('');
     if(!api()){msg('Не задан адрес API (api-config.js)','err');return}
     if(!token){show('loginBox');return}
-    load();clearInterval(timer);timer=setInterval(function(){if(!document.hidden&&token)load()},30000);
+    load();clearInterval(timer);timer=setInterval(function(){if(!document.hidden&&token&&!dirty)load()},30000);
   }
   $('loginBtn').onclick=async function(){var b=this;b.disabled=true;try{var d=await call('POST','/api/login',{password:$('pw').value});token=d.token;sset(TK,token);$('pw').value='';start()}catch(e){msg(e.message,'err')}b.disabled=false};
   $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')$('loginBtn').click()});

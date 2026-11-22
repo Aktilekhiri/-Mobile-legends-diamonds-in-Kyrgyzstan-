@@ -325,6 +325,12 @@ export async function syncFromFz(env, o, fz) {
       if (/\[oos\]/.test(o.fail_reason || '') || o.status === 'delivered') return; // повтор вебхука: уже держим заказ или он выдан, деньги не трогаем
       // пак прячем только если докупать невыгодно (или цены конкурентов нет): иначе продолжаем продавать и выдаём вручную
       if (hint.profitable !== true) { try { await markPkgOff(env, o.region + ':' + o.pkg, 'нет в наличии у FazerCards'); } catch (e) { /* не мешаем */ } }
+      // есть кошелёк клиента (аккаунт или Telegram): возвращаем на баланс сразу, клиент не ждёт
+      if (await refundOrderToWallet(env, o)) {
+        await setStatus(env, o.id, { status: 'balance', fz_status: st, fail_reason: '[oos] нет в наличии у поставщика, возврат на баланс автоматически', finished_at: Date.now() });
+        await notify(env, `💰 Нет в наличии у поставщика: заказ ${o.id} автоматически возвращён клиенту на баланс сайта (${o.price_kgs} сом).\n${orderCard(o)}`);
+        return;
+      }
       await setStatus(env, o.id, { status: 'manual', fz_status: st, fail_reason: '[oos] нет в наличии у поставщика, выдача вручную', finished_at: 0 });
       const o2 = { ...o, status: 'manual' };
       await notify(env, `📦 Нет в наличии у поставщика: заказ ${o.id}\n${orderCard(o)}\nКлиент уже оплатил, деньги не возвращены.${hint.text || '\n(цены конкурентов для этого пакета не заданы)'}\n${hint.sameSupplier ? '⚠️ Докупать негде: верните клиенту на баланс или дождитесь поставщика.' : hint.profitable === false ? '⚠️ Докупать невыгодно: лучше вернуть клиенту на баланс.' : 'Выдайте вручную и нажмите «Выдано вручную».'}`, adminButtons(o2));

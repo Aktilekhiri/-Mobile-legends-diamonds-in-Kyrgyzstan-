@@ -518,6 +518,41 @@ export const GAMES = {
     '50': { offer: '50_eur' },
     '100': { offer: '100_eur' },
   } },
+  oxide: { category: 'oxide_survival_island', serverField: null, servers: null, catalog: {
+    '50_coins': { offer: '50_coins' },
+    '135_coins': { offer: '135_coins' },
+    '290_coins_15_more_value': { offer: '290_coins_15_more_value' },
+    '630_coins_25_more_value': { offer: '630_coins_25_more_value' },
+    '1675_coins_30_more_value': { offer: '1675_coins_30_more_value' },
+    '3550_coins_40_more_value': { offer: '3550_coins_40_more_value' },
+    'battle_pass_elite': { offer: 'battle_pass_elite' },
+  } },
+  hi3: { category: 'honkai_impact_3rd_asia', serverField: null, servers: null, catalog: {
+    '65_crystals': { offer: '65_crystals' },
+    '330_crystals': { offer: '330_crystals' },
+    'monthly_card': { offer: 'monthly_card' },
+    '660_crystals': { offer: '660_crystals' },
+    '1320_crystals': { offer: '1320_crystals' },
+    '3300_crystals': { offer: '3300_crystals' },
+    '6600_crystals': { offer: '6600_crystals' },
+  } },
+  supersus: { category: 'super_sus', serverField: null, servers: null, idField: 'user_id', catalog: {
+    '100_goldstar': { offer: '100_goldstar' },
+    'weekly_card': { offer: 'weekly_card' },
+    '310_goldstar': { offer: '310_goldstar' },
+    '520_goldstar': { offer: '520_goldstar' },
+    'super_pass': { offer: 'super_pass' },
+    '1060_goldstar': { offer: '1060_goldstar' },
+    'monthly_card': { offer: 'monthly_card' },
+    '2180_goldstar': { offer: '2180_goldstar' },
+    '5600_goldstar': { offer: '5600_goldstar' },
+  } },
+  minecraft: { category: 'minecraft_minecoins', serverField: null, servers: null, type: 'gift_cards', kind: 'none', catalog: {
+    '330': { offer: '330_minecoins' },
+    '1720': { offer: '1720_minecoins' },
+    '3500': { offer: '3500_minecoins' },
+    '8800': { offer: '8800_minecoins' },
+  } },
 };
 
 // Все каталоги по ключу региона/игры, которые шлёт сайт

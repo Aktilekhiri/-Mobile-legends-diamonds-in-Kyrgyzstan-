@@ -31,10 +31,10 @@ async function ensureTg(env) {
 const getSt = async (env, chat) => { const r = await env.DB.prepare('SELECT st FROM tg_sessions WHERE chat_id = ?').bind(chat).first(); try { return r ? JSON.parse(r.st) : {}; } catch (e) { return {}; } };
 const setSt = (env, chat, st) => env.DB.prepare('INSERT INTO tg_sessions (chat_id, st, updated) VALUES (?,?,?) ON CONFLICT(chat_id) DO UPDATE SET st = excluded.st, updated = excluded.updated').bind(chat, JSON.stringify(st), Date.now()).run();
 
-const btn = (text, data) => ({ text, callback_data: data });
+const btn = (text, data, style) => style ? { text, callback_data: data, style } : { text, callback_data: data };   // style: primary (синяя) | success (зелёная) | danger (красная)
 const kb = rows => ({ inline_keyboard: rows });
 const CHANNEL = 'https://t.me/topupdiamondskg';
-const MENU = kb([[btn('🎮 Пополнить игру', 'games')], [btn('🛒 Купить аккаунт', 'acc'), btn('💼 Продать аккаунт', 'sell')], [btn('📋 Мои заказы', 'orders'), btn('💬 Поддержка', 'help')], [btn('💰 Баланс', 'bal'), btn('🎁 Промокод', 'promo')], [{ text: '📣 Наш канал', url: CHANNEL }]]);
+const MENU = kb([[btn('🎮 Игры', 'games', 'primary')], [btn('🛒 Купить аккаунт', 'acc'), btn('💼 Продать аккаунт', 'sell')], [btn('📋 Мои заказы', 'orders'), btn('💰 Баланс', 'bal')], [btn('🎁 Промокод', 'promo', 'success')], [btn('💬 Поддержка', 'help'), { text: '📣 Наш канал', url: CHANNEL }], [{ text: '📄 Договор оферты', url: 'https://diamond.kg/terms/' }]]);
 const CANCEL = [btn('❌ Отмена', 'menu')];
 const money = n => Number(n).toLocaleString('ru-RU').replace(/ /g, ' ');
 
@@ -50,7 +50,7 @@ async function show(env, chat, msgId, text, markup) {
 const welcome = chat => `<b>Diamond.kg</b>: пополнение игр за сомы\nMobile Legends, PUBG, Free Fire, Genshin и другие. Оплата по QR в приложении любого банка Кыргызстана, заказ выдаётся автоматически. Пароль от аккаунта не нужен.`;
 
 async function showGames(env, chat, msgId) {
-  const rows = []; for (let i = 0; i < SHOP.length; i += 2) rows.push(SHOP.slice(i, i + 2).map(g => btn(g.name, 'g:' + g.id)));
+  const rows = []; for (let i = 0; i < SHOP.length; i += 2) rows.push(SHOP.slice(i, i + 2).map(g => btn((g.i ? g.i + ' ' : '') + g.name, 'g:' + g.id)));
   rows.push([btn('« Меню', 'menu')]);
   await show(env, chat, msgId, '<b>Выберите игру</b>', kb(rows));
 }

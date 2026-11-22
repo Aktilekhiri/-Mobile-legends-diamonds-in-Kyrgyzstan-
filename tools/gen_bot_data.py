@@ -24,7 +24,7 @@ def mlbb(region, title):
         if 'firstOnly:true' in rest: p['first'] = 1
         packs.append(p)
     packs.sort(key=lambda x: (x['t'] == 0, x['t']))
-    games.append(dict(id=region, region=region, name=title, hint=hints.get('mlbb', ''), mlbb=1, packs=packs))
+    games.append(dict(id=region, region=region, name=title, hint=hints.get('mlbb', ''), mlbb=1, i='💎', packs=packs))
 
 mlbb('global', 'Mobile Legends (Глобальный)')
 mlbb('russia', 'Mobile Legends (Россия)')
@@ -44,7 +44,7 @@ for k, g in gd.items():
             tot = p['amt'] + p.get('bonus', 0)
             packs.append(dict(k=p['k'], l=f"{tot} {g['unit']}", p=p['price'], t=tot))
     packs.sort(key=lambda x: (x['t'] == 0, x['t']))
-    e = dict(id=k, region=k, name=g['name'], hint=hints.get(k, ''), packs=packs)
+    e = dict(id=k, region=k, name=g['name'], hint=hints.get(k, ''), i=g.get('icon') or '🎮', packs=packs)
     if g.get('kind') == 'none': e['none'] = 1
     if g.get('kind') == 'username': e['user'] = 1
     if g.get('servers'): e['servers'] = g['servers']

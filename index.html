@@ -2667,7 +2667,7 @@ function updateBuyBtn() {
     const sig = pid + '|' + sid + '|' + (selectedPkg ? selectedPkg.key || selectedPkg.id : '');
     if (iok.dataset.sig !== sig) { iok.checked = false; iok.dataset.sig = sig; }
     ior.hidden = !(ready && needIdOk);
-    if (ready) { const sl = gdk && gdk.servers ? ((gdk.servers.find(x => x.v === sid) || {}).l || sid) : sid; const tgs = currentGame === 'tgstars'; document.getElementById('idOkText').innerHTML = (tgs ? 'Telegram ' : 'ID ') + '<b>' + esc(pid) + '</b>' + (sid && sid !== '-' ? ', сервер <b>' + esc(sl) + '</b>' : '') + (_nickMissSig && _nickMissSig === currentGame + '|' + pid + '|' + sid ? '. ⚠️ Аккаунт с такими ID не найден. Отметьте, только если уверены, что ID и Zone верные' : '') + '. Ошибочный ' + (tgs ? '@username' : 'ID') + ' вернуть нельзя.'; }
+    if (ready) { const sl = gdk && gdk.servers ? ((gdk.servers.find(x => x.v === sid) || {}).l || sid) : sid; const tgs = currentGame === 'tgstars'; document.getElementById('idOkText').innerHTML = (tgs ? 'Telegram ' : 'ID ') + '<b>' + esc(pid) + '</b>' + (sid && sid !== '-' ? ', сервер <b>' + esc(sl) + '</b>' : '') + (_nickMissSig && _nickMissSig === currentGame + '|' + pid + '|' + sid ? (currentGame === 'mlbb' ? '. ⚠️ Аккаунт с такими ID не найден. Отметьте, только если уверены, что ID и Zone верные' : tgs ? '. ⚠️ Аккаунт не найден. Отметьте, только если уверены, что @username верный' : '. ⚠️ Аккаунт с таким ID не найден. Отметьте, только если уверены, что ID верный') : '') + '. Ошибочный ' + (tgs ? '@username' : 'ID') + ' вернуть нельзя.'; }
   }
   const idOkPass = !needIdOk || !!(iok && iok.checked);
   const ok = ready && idOkPass;

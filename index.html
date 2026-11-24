@@ -1323,7 +1323,7 @@
 </style>
 <link rel="stylesheet" href="accounts.css?v=95">
 <script>try{var _n=navigator;if((_n.deviceMemory&&_n.deviceMemory<=4)||(_n.hardwareConcurrency&&_n.hardwareConcurrency<=4)||matchMedia('(prefers-reduced-transparency: reduce)').matches)document.documentElement.classList.add('lite')}catch(e){}</script>
-<link rel="stylesheet" href="theme.css?v=64">
+<link rel="stylesheet" href="theme.css?v=65">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -1474,12 +1474,13 @@
   </div>
   <style>.promo-box{margin:0 0 22px;border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:0 16px}.promo-box summary{cursor:pointer;font-weight:800;padding:14px 0;min-height:44px;list-style:none}.promo-box summary::-webkit-details-marker{display:none}.promo-box[open] summary{border-bottom:1px solid var(--line)}.promo-box .pm-help{color:var(--muted);font-size:14px;margin:12px 0}.promo-box form{padding-bottom:16px}.promo-box label{display:block;font-weight:700;font-size:14px;margin:6px 0}.promo-box .btn-primary{width:100%;min-height:48px;margin-top:6px}.pm-msg{margin-top:12px;font-size:15px;line-height:1.4}.pm-msg.err{color:#C0392B}.pm-msg.ok{color:#15803D;font-weight:700}</style>
     </div>
-    <div class="quick-buy"><div class="qb-title">Популярные пакеты</div><div class="qb-grid">
+    <div class="quick-buy" id="heroPacks"><div class="qb-title">Популярные пакеты</div><div class="qb-grid">
       <button type="button" class="qb-card hot" onclick="quickBuy('Weekly Elite Pack')"><div class="qd"><img class="qd-img" src="/img/packs/mlbb/weekly-elite.webp?v=2" width="64" height="64" alt="" loading="lazy" decoding="async"> Weekly</div><div class="qp">102 Сом</div><div class="qb">Elite Pack −29%</div></button>
       <button type="button" class="qb-card" onclick="quickBuy('Monthly Elite Pack')"><div class="qd"><img class="qd-img" src="/img/packs/mlbb/monthly-elite.webp?v=2" width="64" height="64" alt="" loading="lazy" decoding="async"> Monthly</div><div class="qp">515 Сом</div><div class="qb">Elite Pack −20%</div></button>
       <button type="button" class="qb-card" onclick="quickBuy(1000)"><div class="qd"><img class="qd-img" src="/img/packs/mlbb/sack.webp?v=2" width="64" height="64" alt="" loading="lazy" decoding="async"> 1160</div><div class="qp">1 880 Сом</div><div class="qb">1000+160 бонус</div></button>
       <button type="button" class="qb-card" onclick="quickBuy(2015)"><div class="qd"><img class="qd-img" src="/img/packs/mlbb/sacks.webp?v=2" width="64" height="64" alt="" loading="lazy" decoding="async"> 2398</div><div class="qp">3 675 Сом</div><div class="qb">2015+383 бонус</div></button>
     </div><button type="button" class="qb-all" onclick="showPage('topup')">Все пакеты →</button></div>
+    <div class="quick-buy" id="heroFeed" hidden><div class="qb-title">Последние заказы</div><div class="hf-sub" id="hfSub"></div><div class="hf-list" id="hfList"></div><button type="button" class="qb-all" onclick="showPage('topup')">Пополнить игру →</button></div>
     <div class="hero-timer">⏱ Среднее время зачисления: <strong>1–5 минут</strong></div>
     <div class="hero-stats"><div class="stat-pill"><div class="val">1-5 мин</div><div class="lbl">Доставка</div></div><div class="stat-pill"><div class="val">24/7</div><div class="lbl">Приём заказов</div></div><div class="stat-pill"><div class="val">Банки КР</div><div class="lbl">и QR из России</div></div></div>
   </section>
@@ -1519,10 +1520,6 @@
       <a class="game-card" href="/valorant-vp-kyrgyzstan/"><div class="gc-i"><img src="/img/games/valorant.webp" width="56" height="56" alt="Valorant VP" loading="lazy" decoding="async"></div><h3>Valorant VP</h3><p>Коды VP, регион RU</p></a>
       <a class="game-card" href="/fortnite-gift-card-kyrgyzstan/"><div class="gc-i"><img src="/img/games/fortnite.webp" width="56" height="56" alt="Fortnite Gift Card" loading="lazy" decoding="async"></div><h3>Fortnite Gift Card</h3><p>Карты региона ЕС</p></a>
     </div></section>
-  <section id="liveFeed" hidden><div class="sec-label">Живая лента</div><div class="sec-divider"></div><h2 class="sec-title">Последние <em>заказы</em></h2>
-    <div class="lf-stats" id="lfStats"></div>
-    <div class="lf-marquee" id="lfMarquee"><div class="lf-track" id="lfList"></div></div>
-  </section>
   <section id="payways"><div class="sec-label">Оплата</div><div class="sec-divider"></div><h2 class="sec-title">Способы <em>оплаты</em></h2><p class="pw-sub">Платите в сомах по QR из приложения своего банка. <a href="/delivery/">Как проходит оплата</a></p><div class="pw-box"><div class="pw-head"><b>Кыргызстан</b><span>валюта: сом</span></div><div class="pw-grid"><div class="pw-t mb"><img src="/img/pay/mbank.webp" width="44" height="44" alt="" loading="lazy"><b>MBANK</b></div><div class="pw-t ob"><img src="/img/pay/obank.webp" width="44" height="44" alt="" loading="lazy"><b>O!Bank</b></div><div class="pw-t bk"><img src="/img/pay/bakai.webp" width="44" height="44" alt="" loading="lazy"><b>Бакай</b></div><div class="pw-t any"><img src="/img/pay/qr.webp" width="44" height="44" alt="" loading="lazy"><b>и любой банк КР</b></div></div></div></section>
   <section><div class="sec-label">Доверие</div><div class="sec-divider"></div><h2 class="sec-title">Почему нам <em>доверяют</em></h2><div class="trust-grid"><div class="trust-card reveal reveal-delay-2"><div class="trust-icon">🕐</div><h3>24/7 без выходных</h3><p>Заказы принимаем и выдаём в любое время.</p></div><div class="trust-card reveal reveal-delay-3"><div class="trust-icon">🔒</div><h3>Без пароля</h3><p>Только ID игрока.</p></div><div class="trust-card reveal reveal-delay-4"><div class="trust-icon">💸</div><h3>Гарантия возврата</h3><p>Вернём деньги при ошибке.</p></div></div></section>
   <section id="reviews"><div class="sec-label">Отзывы</div><div class="sec-divider"></div><h2 class="sec-title">Что пишут <em>клиенты</em></h2>
@@ -3681,27 +3678,18 @@ async function loadGameReviews() {
   };
 }
 async function loadRecentOrders() {
-  const box = document.getElementById('liveFeed');
+  const box = document.getElementById('heroFeed');
   if (!box || !window.DK_API) return;
   try {
     const r = await fetch(API_BASE() + '/api/recent');
     if (!r.ok) return;
     const d = await r.json();
     if (!(d.items || []).length) return;
-    const st = [];
-    if (d.total) st.push(`<div><strong>${d.total}</strong><span>заказов выдано</span></div>`);
-    if (d.median_sec) st.push(`<div><strong>~${d.median_sec} сек</strong><span>выдача после подтверждения оплаты</span></div>`);
-    st.push('<div><strong>24/7</strong><span>заказы принимаем всегда</span></div>');
-    document.getElementById('lfStats').innerHTML = st.join('');
-    const card = lfCard;
-    const one = d.items.map(card).join('');
-    const reps = Math.max(1, Math.ceil(1500 / (d.items.length * 330)));
-    const set = one.repeat(reps);
-    const trk = document.getElementById('lfList');
-    trk.innerHTML = `<div class="lf-set">${set}</div><div class="lf-set" aria-hidden="true">${set}</div>`;
+    document.getElementById('hfSub').textContent = [d.total ? d.total + ' заказов выдано' : '', d.median_sec ? 'выдача за ' + d.median_sec + ' сек' : ''].filter(Boolean).join(' · ');
+    document.getElementById('hfList').innerHTML = d.items.slice(0, 4).map(lfCard).join('');
     box.hidden = false;
-    lfInit(document.getElementById('lfMarquee'));
-  } catch (e) { /* без ленты блок просто скрыт */ }
+    const p = document.getElementById('heroPacks'); if (p) p.hidden = true;
+  } catch (e) { /* без ленты остаются популярные пакеты */ }
 }
 async function loadLiveReviews() {
   const box = document.getElementById('liveReviews');

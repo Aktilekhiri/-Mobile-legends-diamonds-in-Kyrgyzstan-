@@ -1011,4 +1011,10 @@ footer.ft{display:block;padding:44px max(16px,5%) 0;background:var(--surface);bo
 .ft-word{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(2.6rem,12.2vw,10.5rem);line-height:.8;letter-spacing:-.02em;text-align:center;white-space:nowrap;margin:26px 0 -.12em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;opacity:.9;user-select:none}
 @media (max-width:900px){.ft-grid{grid-template-columns:1fr 1fr}.ft-brand{grid-column:1/-1}}
 @media (max-width:480px){.ft-grid{grid-template-columns:1fr 1fr;gap:22px 16px}}
-@media (max-width:640px){footer.ft{padding-bottom:78px}.ft-word{margin-bottom:0}}
+@media (max-width:640px){footer.ft{padding-bottom:84px}}
+.ft-legal{padding-bottom:22px}
+/* статусы заказов: читаемость на тёмных темах */
+html[data-theme="dark"] .hist-st,html[data-theme="blue"] .hist-st{font-size:.8rem}
+html[data-theme="dark"] .hist-st.ok,html[data-theme="blue"] .hist-st.ok{background:rgba(52,211,153,.16);color:#6ee7b7}
+html[data-theme="dark"] .hist-st.wait,html[data-theme="blue"] .hist-st.wait{background:rgba(251,191,36,.16);color:#fcd34d}
+html[data-theme="dark"] .hist-st.bad,html[data-theme="blue"] .hist-st.bad{background:rgba(248,113,113,.18);color:#fca5a5}

@@ -222,7 +222,9 @@
   }
 
   function build() {
-    var css = '#dkc-fab{position:fixed;right:16px;bottom:88px;z-index:300;width:56px;height:56px;border-radius:50%;border:0;background:linear-gradient(135deg,#22d3ee,#6366f1);color:#fff;font-size:26px;box-shadow:0 6px 20px rgba(30,40,100,.35);cursor:pointer}' +
+    var css = '#dkc-tz{position:fixed;right:16px;bottom:154px;z-index:301;width:min(280px,calc(100vw - 32px));background:var(--surface,#fff);color:var(--text,#101828);border:1px solid rgba(127,140,170,.35);border-radius:16px 16px 4px 16px;box-shadow:0 10px 30px rgba(10,20,60,.25);padding:12px 12px 10px;font:600 .92rem/1.4 Nunito,system-ui,sans-serif;display:none}#dkc-tz.show{display:block;animation:dkctz .3s ease-out}@keyframes dkctz{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){#dkc-tz.show{animation:none}}' +
+      '#dkc-tz b{display:block;margin:0 22px 8px 0}#dkc-tz .x{position:absolute;top:4px;right:4px;width:32px;height:32px;border:0;background:none;color:inherit;opacity:.6;font-size:20px;cursor:pointer}#dkc-tz .q{display:flex;flex-wrap:wrap;gap:6px}#dkc-tz .q button{border:1px solid rgba(127,140,170,.45);background:transparent;color:inherit;border-radius:999px;padding:7px 12px;font-size:.82rem;cursor:pointer;min-height:34px}#dkc-tz .q button:hover{border-color:#6366f1}' +
+      '#dkc-fab{position:fixed;right:16px;bottom:88px;z-index:300;width:56px;height:56px;border-radius:50%;border:0;background:linear-gradient(135deg,#22d3ee,#6366f1);color:#fff;font-size:26px;box-shadow:0 6px 20px rgba(30,40,100,.35);cursor:pointer}' +
       '#dkc{position:fixed;right:16px;bottom:88px;z-index:310;width:min(380px,calc(100vw - 32px));height:min(560px,calc(100vh - 120px));background:var(--surface,#fff);color:var(--text,#101828);border:1px solid rgba(127,140,170,.3);border-radius:18px;box-shadow:0 12px 40px rgba(10,20,60,.35);display:none;flex-direction:column;overflow:hidden;font-family:Nunito,system-ui,sans-serif}' +
       '#dkc.open{display:flex}#dkc header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:linear-gradient(135deg,#22d3ee,#6366f1);color:#fff;font-weight:800}#dkc header button{background:none;border:0;color:#fff;font-size:22px;cursor:pointer}' +
       '.dkc-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}.dkc-m{max-width:86%;padding:9px 12px;border-radius:14px;font-size:.93rem;line-height:1.45;word-wrap:break-word}.dkc-m.bot{background:rgba(127,140,170,.16);align-self:flex-start}.dkc-m.me{background:#4f6df5;color:#fff;align-self:flex-end}.dkc-m.typing{opacity:.6}' +
@@ -242,9 +244,24 @@
     fab.onclick = function () { root.classList.add('open'); fab.style.display = 'none'; input.focus(); scroll(); };
     load();
     if (msgs.length > 24) msgs = msgs.slice(-12);
+    var fresh = !msgs.length;
     msgs.forEach(function (m) { bubble(m.role, m.content); });
     say(msgs.length ? 'Чем ещё помочь?' : 'Здравствуйте! Я помощник Diamond.kg. Что нужно пополнить? Выберите кнопку или напишите, например: «звёзды телеграм» или «алмазы».');
     menu();
+    if (fresh) teaser();
+  }
+
+  function teaser() {
+    try { if (sessionStorage.getItem('dkTz')) return; } catch (e) {}
+    var tz = el('div'); tz.id = 'dkc-tz'; tz.setAttribute('role', 'status');
+    tz.innerHTML = '<button type="button" class="x" aria-label="Закрыть">×</button><b>Привет! 👋 Есть вопросы по пополнению?</b><div class="q"></div>';
+    var qs = ['Как оплатить?', 'Сколько ждать?', 'Где мой заказ?', 'Это безопасно?'], qb = tz.querySelector('.q');
+    function hide() { tz.classList.remove('show'); try { sessionStorage.setItem('dkTz', '1'); } catch (e) {} }
+    qs.forEach(function (t) { var b = el('button', '', t); b.type = 'button'; b.onclick = function () { hide(); fab.click(); send(t === 'Где мой заказ?' ? 'статус заказа' : t); }; qb.appendChild(b); });
+    tz.querySelector('.x').onclick = hide;
+    fab.addEventListener('click', hide);
+    document.body.appendChild(tz);
+    setTimeout(function () { if (!root.classList.contains('open')) tz.classList.add('show'); }, 8000);
   }
 
   Promise.all([fetch(API + '/api/chat/status').then(function (r) { return r.json(); }), fetch(API + '/api/chat/catalog').then(function (r) { return r.json(); })])

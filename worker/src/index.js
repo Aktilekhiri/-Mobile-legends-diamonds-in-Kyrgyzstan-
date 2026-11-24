@@ -8,6 +8,7 @@ const MAX_PHOTO_BYTES = 450 * 1024;
 const TOKEN_DAYS = 30;
 const enc = new TextEncoder();
 import { checkBalance } from './balance.js';
+import { indgmWebhook } from './indgm.js';
 import { loginWithGoogle, getMe, saveContact, listMyOrders, userFromRequest, adminListUsers } from './auth.js';
 import { maybeSendReport } from './report.js';
 import { ipaccHandle, ipaccRemind } from './ipacc.js';
@@ -319,6 +320,12 @@ export default {
       if (path === '/api/fz/webhook' && m === 'POST') {
         const raw = await req.text();
         const r = await handleWebhook(env, raw, req.headers.get('X-Webhook-Signature'));
+        return r.error ? err(req, r.error, r.status || 400) : json(req, { ok: true });
+      }
+
+      // вебхук INDGM (подпись HMAC проверяется внутри)
+      if (path === '/api/webhooks/indgm' && m === 'POST') {
+        const r = await indgmWebhook(env, req);
         return r.error ? err(req, r.error, r.status || 400) : json(req, { ok: true });
       }
 

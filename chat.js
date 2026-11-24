@@ -261,7 +261,11 @@
     tz.querySelector('.x').onclick = hide;
     fab.addEventListener('click', hide);
     document.body.appendChild(tz);
-    setTimeout(function () { if (!root.classList.contains('open')) tz.classList.add('show'); }, 8000);
+    setTimeout(function () {
+      var f = document.getElementById('stepData');
+      if (root.classList.contains('open') || (f && !f.hidden) || window.scrollY > 1200) return;
+      tz.classList.add('show'); setTimeout(hide, 10000);
+    }, 8000);
   }
 
   Promise.all([fetch(API + '/api/chat/status').then(function (r) { return r.json(); }), fetch(API + '/api/chat/catalog').then(function (r) { return r.json(); })])

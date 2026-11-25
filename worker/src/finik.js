@@ -5,6 +5,7 @@
 import { createOrder, confirmOrder, orderCard, adminButtons } from './orders.js';
 import { marketHint } from './competitors.js';
 import { notify } from './notify.js';
+import { send } from './tgapi.js';
 import { handleTopupPayment } from './wallet.js';
 
 const PROD_BASE = 'https://api.acquiring.averspay.kg';
@@ -143,6 +144,16 @@ export async function finikWebhook(env, req) {
 export async function cleanupFinik(env) {
   if (!finikReady(env)) return;
   await ensure(env);
-  await env.DB.prepare("UPDATE orders SET status = 'cancelled', fail_reason = 'Не оплачен в Finik', updated_at = ? WHERE method = 'Finik' AND status IN ('new','manual') AND created_at < ? AND NOT EXISTS (SELECT 1 FROM finik_payments p WHERE p.order_id = orders.id)")
-    .bind(Date.now(), Date.now() - (PAY_MIN + 5) * 60 * 1000).run();
+  const where = "method = 'Finik' AND status IN ('new','manual') AND created_at < ? AND NOT EXISTS (SELECT 1 FROM finik_payments p WHERE p.order_id = orders.id)";
+  const lim = Date.now() - (PAY_MIN + 5) * 60 * 1000;
+  let tg = [];
+  try { tg = (await env.DB.prepare('SELECT id, tg_chat FROM orders WHERE ' + where + ' AND tg_chat IS NOT NULL AND tg_chat != 0').bind(lim).all()).results; } catch (e) { /* не критично */ }
+  await env.DB.prepare("UPDATE orders SET status = 'cancelled', fail_reason = 'Не оплачен в Finik', updated_at = ? WHERE " + where).bind(Date.now(), lim).run();
+  // клиентам из Telegram-бота: один раз сообщаем, что счёт отменён (заказ уже cancelled, повторно не выберется)
+  for (const o of tg) {
+    try {
+      await send(env, o.tg_chat, '⏳ <b>Время на оплату вышло, счёт отменён.</b>\n\nЕсли ты уже оплатил — платёж зачтётся автоматически в ближайшие минуты.\nЕсли нет — начни оплату заново.',
+        { reply_markup: { inline_keyboard: [[{ text: '🛒 Оформить заново', callback_data: 'games', style: 'success' }]] } });
+    } catch (e) { /* не критично */ }
+  }
 }

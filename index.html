@@ -2170,7 +2170,9 @@ function renderGameAbout() {
 }
 
 // Важная заметка вверху заказа для кодов, которые активируются не в игре (чтобы читали до оплаты)
-const CODE_NOTICES = { mlbbcode: '<b>⚠️ Это код, а не пополнение по ID.</b> Активируйте его на <a href="https://mdirect.me/mobile-legends" target="_blank" rel="noopener">mdirect.me/mobile-legends</a>: выберите номинал, введите почту, ID игрока и ID сервера, проверьте игрока и введите код. Не в игре и не в «Код выкупа». <b>Код не работает на аккаунтах из России, Сингапура, Филиппин, Бразилии, Малайзии и Индонезии.</b> Возврат и обмен после покупки невозможны.' };
+const CODE_NOTICES = { mlbbcode: '<b>⚠️ Это код, а не пополнение по ID.</b> Активируйте его на <a href="https://mdirect.me/mobile-legends" target="_blank" rel="noopener">mdirect.me/mobile-legends</a>: выберите номинал, введите почту, ID игрока и ID сервера, проверьте игрока и введите код. Не в игре и не в «Код выкупа». <b>Код не работает на аккаунтах из России, Сингапура, Филиппин, Бразилии, Малайзии и Индонезии.</b> Возврат и обмен после покупки невозможны.',
+  pubgcode: '<b>⚠️ Это код, а не пополнение по ID.</b> Активируйте его на <a href="https://www.midasbuy.com/midasbuy/ot/redeem/pubgm" target="_blank" rel="noopener">Midasbuy</a>: введите ID игрока PUBG Mobile и код, а не в игре. Проверяйте ID перед подтверждением. Возврат и обмен после покупки невозможны.',
+  ffcode: '<b>⚠️ Это код, а не пополнение по ID.</b> Активируйте его на <a href="https://reseller.fazercards.com/redeem" target="_blank" rel="noopener">странице активации</a>: введите ID игрока Free Fire и код, а не в игре. Проверяйте ID перед подтверждением. Возврат и обмен после покупки невозможны.' };
 function renderCodeNotice() {
   const ph = document.querySelector('#topupTitle').closest('.page-header'); if (!ph) return;
   let n = document.getElementById('codeNotice');

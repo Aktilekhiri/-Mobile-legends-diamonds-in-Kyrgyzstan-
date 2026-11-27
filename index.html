@@ -2169,6 +2169,16 @@ function renderGameAbout() {
   box.innerHTML = '<h2>Что такое ' + esc(a[0]) + '</h2><p>' + esc(a[1]) + '</p><h2>Как пополнить ' + esc(a[0]) + ' в Кыргызстане</h2><ol class="ga-steps">' + steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol><p class="ga-note">Пароль от игрового аккаунта не нужен. Если что-то пошло не так, напишите в <a href="#" onclick="showPage(\'support\');return false">поддержку</a>.</p>';
 }
 
+// Важная заметка вверху заказа для кодов, которые активируются не в игре (чтобы читали до оплаты)
+const CODE_NOTICES = { mlbbcode: '<b>⚠️ Это код, а не пополнение по ID.</b> Активируйте его на <a href="https://www.mobilelegends.com/redeem" target="_blank" rel="noopener">mobilelegends.com/redeem</a> (войдите в игровой аккаунт и введите код там), а не в игре и не в «Код выкупа». <b>Код не работает на аккаунтах из России, Сингапура, Филиппин, Бразилии, Малайзии и Индонезии.</b> Возврат и обмен после покупки невозможны.' };
+function renderCodeNotice() {
+  const ph = document.querySelector('#topupTitle').closest('.page-header'); if (!ph) return;
+  let n = document.getElementById('codeNotice');
+  const t = CODE_NOTICES[currentGame];
+  if (!t) { if (n) n.hidden = true; return; }
+  if (!n) { n = document.createElement('div'); n.id = 'codeNotice'; n.setAttribute('role', 'note'); n.style.cssText = 'margin:14px 5% 0;padding:12px 14px;border-radius:12px;border:1px solid rgba(245,158,11,.55);background:rgba(245,158,11,.14);font-size:14px;line-height:1.5'; ph.after(n); }
+  n.innerHTML = t; n.hidden = false;
+}
 function renderRobloxHero(on) {
   const ph = document.querySelector('#topupTitle').closest('.page-header'); if (!ph) return;
   if (!ph.dataset.orig) ph.dataset.orig = ph.innerHTML;
@@ -2204,6 +2214,7 @@ function changeGame(g) {
     im.onerror = () => { im.remove(); tt.textContent = (gd ? gd.icon : '💎') + ' ' + tt.textContent; };
     tt.prepend(im); }
   if (currentGame === 'roblox') renderRobloxHero(true);
+  renderCodeNotice();
   document.getElementById('playerId').placeholder = gd ? '123456789' : '598505997';
   document.getElementById('idHint').textContent = gd ? 'Только цифры' : 'Только цифры, без скобок';
   document.getElementById('serverHint').textContent = (gd && gd.zone) ? 'Число в скобках рядом с ID' : !gd ? 'Цифры в скобках рядом с ID' : (gd.servers ? 'Как указано в игре рядом с UID' : '');

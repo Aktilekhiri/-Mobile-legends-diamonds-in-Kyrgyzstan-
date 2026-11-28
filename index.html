@@ -2072,7 +2072,7 @@ function syncThemePicker() { const c = currentTheme(); document.querySelectorAll
 // ===== Каталог =====
 const CAT_ORDER = ['mlbb','freefire','pubg','genshin','hok','wuwa','hsr','zzz','bloodstrike','mchess','deltaforce','marvel','arena','standoff2','brawlstars','clashofclans','whiteout','lords','identityv','oxide','hi3','supersus'];
 const CAT_SERVICES = ['ffcode', 'mlbbcode', 'pubgcode', 'roblox', 'steam', 'discord', 'netflix', 'psn', 'gplay', 'gplay_tr', 'gplay_de', 'gplay_uk', 'gplay_ae', 'nintendo', 'valorant', 'fortnite', 'minecraft', 'apple_us', 'apple_tr', 'apple_ru', 'tgstars', 'tgpremium'];
-const CAT_DISABLED = ['standoff2', 'tgstars'];
+const CAT_DISABLED = ['standoff2'];
 // плитки на главной для отключённых игр: серые, без перехода (Telegram Stars временно отключены)
 document.querySelectorAll('a.game-card[href="/telegram-stars-kyrgyzstan/"]').forEach(a => {
   if (!CAT_DISABLED.includes('tgstars')) return;

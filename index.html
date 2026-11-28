@@ -1323,7 +1323,7 @@
 </style>
 <link rel="stylesheet" href="accounts.css?v=95">
 <script>try{var _n=navigator;if((_n.deviceMemory&&_n.deviceMemory<=4)||(_n.hardwareConcurrency&&_n.hardwareConcurrency<=4)||matchMedia('(prefers-reduced-transparency: reduce)').matches)document.documentElement.classList.add('lite')}catch(e){}</script>
-<link rel="stylesheet" href="theme.css?v=69">
+<link rel="stylesheet" href="theme.css?v=70">
 <style id="rbHeroCss">.rb-hero{background:linear-gradient(180deg,#F9B233,#F6A623);padding:22px 5% 26px;border-bottom:1px solid var(--border)}.rb-hero .rb-top{display:flex;gap:14px;align-items:center;max-width:1100px;margin:0 auto}.rb-hero .rb-ic{width:64px;height:64px;border-radius:16px;flex:none;box-shadow:0 2px 8px rgba(20,30,60,.2)}.rb-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.1;color:#101828;margin:0}.rb-hero .rb-sub{color:#3a2a05;font-weight:700;margin:4px 0 0}.rb-chips{max-width:1100px;margin:14px auto 0;background:rgba(255,255,255,.55);border-radius:14px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-weight:700;color:#101828;font-size:.92rem}.rb-info{max-width:1100px;margin:12px auto 0;background:#fff;border-radius:16px;padding:6px 16px;box-shadow:0 1px 4px rgba(20,30,60,.1)}.rb-info p{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:#344054;font-size:.95rem}.rb-info p b{flex:none}</style><style id="gwAnim">.giveaway{position:relative;overflow:hidden;isolation:isolate}
 .giveaway::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 60%,rgba(80,220,255,.35) 75%,transparent 90%);animation:gwSpin 6s linear infinite}
 .giveaway::after{content:"";position:absolute;inset:2px;border-radius:inherit;z-index:-1;background:var(--surface,#fff)}
@@ -2072,7 +2072,13 @@ function syncThemePicker() { const c = currentTheme(); document.querySelectorAll
 // ===== Каталог =====
 const CAT_ORDER = ['mlbb','freefire','pubg','genshin','hok','wuwa','hsr','zzz','bloodstrike','mchess','deltaforce','marvel','arena','standoff2','brawlstars','clashofclans','whiteout','lords','identityv','oxide','hi3','supersus'];
 const CAT_SERVICES = ['ffcode', 'mlbbcode', 'pubgcode', 'roblox', 'steam', 'discord', 'netflix', 'psn', 'gplay', 'gplay_tr', 'gplay_de', 'gplay_uk', 'gplay_ae', 'nintendo', 'valorant', 'fortnite', 'minecraft', 'apple_us', 'apple_tr', 'apple_ru', 'tgstars', 'tgpremium'];
-const CAT_DISABLED = ['standoff2'];
+const CAT_DISABLED = ['standoff2', 'tgstars'];
+// плитки на главной для отключённых игр: серые, без перехода (Telegram Stars временно отключены)
+document.querySelectorAll('a.game-card[href="/telegram-stars-kyrgyzstan/"]').forEach(a => {
+  if (!CAT_DISABLED.includes('tgstars')) return;
+  a.classList.add('off'); const p = a.querySelector('p'); if (p) p.textContent = 'Пока недоступно';
+  a.addEventListener('click', e => { e.preventDefault(); showNotice('Пока что недоступно. Мы работаем над возвращением, попробуйте позже.'); });
+});
 const GUIDE_GAMES = { standoff2:['Standoff 2','/standoff-2-gold-kyrgyzstan/'], brawlstars:['Brawl Stars','/brawl-stars-kyrgyzstan/'], clashofclans:['Clash of Clans','/clash-of-clans-kyrgyzstan/'] };
 const CAT_TG = ['tgstars', 'tgpremium'], CAT_GIFT = ['roblox', 'steam', 'discord', 'netflix', 'psn', 'gplay', 'gplay_tr', 'gplay_de', 'gplay_uk', 'gplay_ae', 'nintendo', 'valorant', 'pubgcode', 'ffcode', 'mlbbcode', 'fortnite', 'minecraft', 'apple_us', 'apple_tr', 'apple_ru'];
 let catTab = 'all';

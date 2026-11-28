@@ -1018,3 +1018,5 @@ html[data-theme="dark"] .hist-st,html[data-theme="blue"] .hist-st{font-size:.8re
 html[data-theme="dark"] .hist-st.ok,html[data-theme="blue"] .hist-st.ok{background:rgba(52,211,153,.16);color:#6ee7b7}
 html[data-theme="dark"] .hist-st.wait,html[data-theme="blue"] .hist-st.wait{background:rgba(251,191,36,.16);color:#fcd34d}
 html[data-theme="dark"] .hist-st.bad,html[data-theme="blue"] .hist-st.bad{background:rgba(248,113,113,.18);color:#fca5a5}
+
+.game-card.off{opacity:.55;filter:grayscale(1)}body.v2 .game-card.off:hover{transform:none}
